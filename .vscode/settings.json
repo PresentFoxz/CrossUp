@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "library.h": "c",
+        "stdint.h": "c",
+        "movement.h": "c",
+        "stdio.h": "c",
+        "loadfiles.h": "c",
+        "baketris.h": "c",
+        "entities.h": "c",
+        "draw.h": "c",
+        "test.h": "c",
+        "mesh.h": "c",
+        "collisions.h": "c",
+        "stdlib.h": "c",
+        "string.h": "c"
+    }
+}

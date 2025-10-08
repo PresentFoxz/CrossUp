@@ -431,7 +431,7 @@ LOAD C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb
 LOAD C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a
 END GROUP
 
-.text           0x00000000     0x511c
+.text           0x00000000     0x4f88
  *(.text)
  .text          0x00000000      0x378 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_addsubdf3.o)
                 0x00000000                __aeabi_drsub
@@ -490,8 +490,7 @@ END GROUP
  *(.text.*)
  *fill*         0x00000a6c        0x4 
  .text.cLib_addEnt
-                0x00000a70      0x198 CMakeFiles\CrossUp.dir\C\main.c.obj
- *fill*         0x00000c08        0x8 
+                0x00000a70      0x1a0 CMakeFiles\CrossUp.dir\C\main.c.obj
  .text.cLib_playerAction
                 0x00000c10       0xac CMakeFiles\CrossUp.dir\C\main.c.obj
  *fill*         0x00000cbc        0x4 
@@ -499,150 +498,153 @@ END GROUP
                 0x00000cc0      0x334 CMakeFiles\CrossUp.dir\C\main.c.obj
  *fill*         0x00000ff4        0xc 
  .text.cLib_init
-                0x00001000      0x354 CMakeFiles\CrossUp.dir\C\main.c.obj
- *fill*         0x00001354        0xc 
+                0x00001000      0x2c4 CMakeFiles\CrossUp.dir\C\main.c.obj
+ *fill*         0x000012c4        0xc 
+ .text.addObjectToWorld.isra.0
+                0x000012d0      0x214 CMakeFiles\CrossUp.dir\C\main.c.obj
+ *fill*         0x000014e4        0xc 
  .text.cLib_render
-                0x00001360      0x698 CMakeFiles\CrossUp.dir\C\main.c.obj
- *fill*         0x000019f8        0x8 
+                0x000014f0      0x364 CMakeFiles\CrossUp.dir\C\main.c.obj
+ *fill*         0x00001854        0xc 
  .text.eventHandler
-                0x00001a00       0x5c CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x00001a00                eventHandler
- *fill*         0x00001a5c        0x4 
+                0x00001860       0x5c CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x00001860                eventHandler
+ *fill*         0x000018bc        0x4 
  .text.randomInt
-                0x00001a60       0x1c CMakeFiles\CrossUp.dir\C\library.c.obj
-                0x00001a60                randomInt
- *fill*         0x00001a7c        0x4 
+                0x000018c0       0x1c CMakeFiles\CrossUp.dir\C\library.c.obj
+                0x000018c0                randomInt
+ *fill*         0x000018dc        0x4 
  .text.randomFloat
-                0x00001a80       0x34 CMakeFiles\CrossUp.dir\C\library.c.obj
-                0x00001a80                randomFloat
- *fill*         0x00001ab4        0xc 
+                0x000018e0       0x34 CMakeFiles\CrossUp.dir\C\library.c.obj
+                0x000018e0                randomFloat
+ *fill*         0x00001914        0xc 
  .text.degToRad
-                0x00001ac0       0x10 CMakeFiles\CrossUp.dir\C\library.c.obj
-                0x00001ac0                degToRad
+                0x00001920       0x10 CMakeFiles\CrossUp.dir\C\library.c.obj
+                0x00001920                degToRad
  .text.setPixelRaw
-                0x00001ad0       0x28 CMakeFiles\CrossUp.dir\C\library.c.obj
-                0x00001ad0                setPixelRaw
- *fill*         0x00001af8        0x8 
+                0x00001930       0x28 CMakeFiles\CrossUp.dir\C\library.c.obj
+                0x00001930                setPixelRaw
+ *fill*         0x00001958        0x8 
  .text.createCamera
-                0x00001b00       0xec CMakeFiles\CrossUp.dir\C\entities.c.obj
-                0x00001b00                createCamera
- *fill*         0x00001bec        0x4 
+                0x00001960       0xec CMakeFiles\CrossUp.dir\C\entities.c.obj
+                0x00001960                createCamera
+ *fill*         0x00001a4c        0x4 
  .text.createEntity
-                0x00001bf0      0x128 CMakeFiles\CrossUp.dir\C\entities.c.obj
-                0x00001bf0                createEntity
- *fill*         0x00001d18        0x8 
+                0x00001a50      0x128 CMakeFiles\CrossUp.dir\C\entities.c.obj
+                0x00001a50                createEntity
+ *fill*         0x00001b78        0x8 
  .text.createPlayer
-                0x00001d20      0x128 CMakeFiles\CrossUp.dir\C\entities.c.obj
-                0x00001d20                createPlayer
- *fill*         0x00001e48        0x8 
+                0x00001b80      0x128 CMakeFiles\CrossUp.dir\C\entities.c.obj
+                0x00001b80                createPlayer
+ *fill*         0x00001ca8        0x8 
  .text.movePlayer
-                0x00001e50       0x5c CMakeFiles\CrossUp.dir\C\entities.c.obj
-                0x00001e50                movePlayer
- *fill*         0x00001eac        0x4 
+                0x00001cb0       0x5c CMakeFiles\CrossUp.dir\C\entities.c.obj
+                0x00001cb0                movePlayer
+ *fill*         0x00001d0c        0x4 
  .text.moveEnt.constprop.0
-                0x00001eb0       0xf8 CMakeFiles\CrossUp.dir\C\movement.c.obj
- *fill*         0x00001fa8        0x8 
- .text.runColl  0x00001fb0      0x3cc CMakeFiles\CrossUp.dir\C\movement.c.obj
- *fill*         0x0000237c        0x4 
+                0x00001d10       0xf8 CMakeFiles\CrossUp.dir\C\movement.c.obj
+ *fill*         0x00001e08        0x8 
+ .text.runColl  0x00001e10      0x3cc CMakeFiles\CrossUp.dir\C\movement.c.obj
+ *fill*         0x000021dc        0x4 
  .text.movePlayerObj
-                0x00002380      0x420 CMakeFiles\CrossUp.dir\C\movement.c.obj
-                0x00002380                movePlayerObj
+                0x000021e0      0x420 CMakeFiles\CrossUp.dir\C\movement.c.obj
+                0x000021e0                movePlayerObj
  .text.updateCamera
-                0x000027a0      0x140 CMakeFiles\CrossUp.dir\C\movement.c.obj
-                0x000027a0                updateCamera
+                0x00002600      0x140 CMakeFiles\CrossUp.dir\C\movement.c.obj
+                0x00002600                updateCamera
  .text.handleCameraInput
-                0x000028e0      0x138 CMakeFiles\CrossUp.dir\C\movement.c.obj
-                0x000028e0                handleCameraInput
- *fill*         0x00002a18        0x8 
+                0x00002740      0x138 CMakeFiles\CrossUp.dir\C\movement.c.obj
+                0x00002740                handleCameraInput
+ *fill*         0x00002878        0x8 
  .text.moveEntObj
-                0x00002a20      0x258 CMakeFiles\CrossUp.dir\C\movement.c.obj
-                0x00002a20                moveEntObj
- *fill*         0x00002c78        0x8 
+                0x00002880      0x258 CMakeFiles\CrossUp.dir\C\movement.c.obj
+                0x00002880                moveEntObj
+ *fill*         0x00002ad8        0x8 
  .text.project2D
-                0x00002c80       0x40 CMakeFiles\CrossUp.dir\C\draw.c.obj
-                0x00002c80                project2D
+                0x00002ae0       0x40 CMakeFiles\CrossUp.dir\C\draw.c.obj
+                0x00002ae0                project2D
  .text.RotationMatrix
-                0x00002cc0       0x40 CMakeFiles\CrossUp.dir\C\draw.c.obj
-                0x00002cc0                RotationMatrix
+                0x00002b20       0x40 CMakeFiles\CrossUp.dir\C\draw.c.obj
+                0x00002b20                RotationMatrix
  .text.rotateVertex
-                0x00002d00       0x58 CMakeFiles\CrossUp.dir\C\draw.c.obj
-                0x00002d00                rotateVertex
- *fill*         0x00002d58        0x8 
+                0x00002b60       0x58 CMakeFiles\CrossUp.dir\C\draw.c.obj
+                0x00002b60                rotateVertex
+ *fill*         0x00002bb8        0x8 
  .text.computeRotScaleMatrix
-                0x00002d60       0xe8 CMakeFiles\CrossUp.dir\C\draw.c.obj
-                0x00002d60                computeRotScaleMatrix
- *fill*         0x00002e48        0x8 
+                0x00002bc0       0xe8 CMakeFiles\CrossUp.dir\C\draw.c.obj
+                0x00002bc0                computeRotScaleMatrix
+ *fill*         0x00002ca8        0x8 
  .text.windingOrder
-                0x00002e50       0x34 CMakeFiles\CrossUp.dir\C\draw.c.obj
-                0x00002e50                windingOrder
- *fill*         0x00002e84        0xc 
+                0x00002cb0       0x34 CMakeFiles\CrossUp.dir\C\draw.c.obj
+                0x00002cb0                windingOrder
+ *fill*         0x00002ce4        0xc 
  .text.drawFilledTrisZ
-                0x00002e90      0x374 CMakeFiles\CrossUp.dir\C\draw.c.obj
-                0x00002e90                drawFilledTrisZ
- *fill*         0x00003204        0xc 
+                0x00002cf0      0x374 CMakeFiles\CrossUp.dir\C\draw.c.obj
+                0x00002cf0                drawFilledTrisZ
+ *fill*         0x00003064        0xc 
  .text.TriangleClipping
-                0x00003210      0x2ec CMakeFiles\CrossUp.dir\C\draw.c.obj
-                0x00003210                TriangleClipping
- *fill*         0x000034fc        0x4 
+                0x00003070      0x2ec CMakeFiles\CrossUp.dir\C\draw.c.obj
+                0x00003070                TriangleClipping
+ *fill*         0x0000335c        0x4 
  .text.resetCollisionSurface
-                0x00003500       0x28 CMakeFiles\CrossUp.dir\C\collisions.c.obj
-                0x00003500                resetCollisionSurface
- *fill*         0x00003528        0x8 
+                0x00003360       0x28 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+                0x00003360                resetCollisionSurface
+ *fill*         0x00003388        0x8 
  .text.addCollisionSurface
-                0x00003530      0x140 CMakeFiles\CrossUp.dir\C\collisions.c.obj
-                0x00003530                addCollisionSurface
+                0x00003390      0x140 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+                0x00003390                addCollisionSurface
  .text.cylinderInTriangle
-                0x00003670      0x2e0 CMakeFiles\CrossUp.dir\C\collisions.c.obj
-                0x00003670                cylinderInTriangle
+                0x000034d0      0x2e0 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+                0x000034d0                cylinderInTriangle
  .text.eventHandlerShim
-                0x00003950       0x1c CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
-                0x00003950                eventHandlerShim
+                0x000037b0       0x1c CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+                0x000037b0                eventHandlerShim
  .text.__fixsfdi
-                0x0000396c       0x28 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_fixsfdi.o)
-                0x0000396c                __fixsfdi
-                0x0000396c                __aeabi_f2lz
+                0x000037cc       0x28 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_fixsfdi.o)
+                0x000037cc                __fixsfdi
+                0x000037cc                __aeabi_f2lz
  .text.__fixunssfdi
-                0x00003994       0x40 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_fixunssfdi.o)
-                0x00003994                __fixunssfdi
-                0x00003994                __aeabi_f2ulz
- .text.rand     0x000039d4       0x40 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-rand.o)
-                0x000039d4                rand
- .text.atan2f   0x00003a14        0x4 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-wf_atan2.o)
-                0x00003a14                atan2f
- .text.fmodf    0x00003a18       0x48 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-wf_fmod.o)
-                0x00003a18                fmodf
- .text.cosf     0x00003a60       0x70 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_cos.o)
-                0x00003a60                cosf
- .text.sinf     0x00003ad0       0x74 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_sin.o)
-                0x00003ad0                sinf
+                0x000037f4       0x40 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_fixunssfdi.o)
+                0x000037f4                __fixunssfdi
+                0x000037f4                __aeabi_f2ulz
+ .text.rand     0x00003834       0x40 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-rand.o)
+                0x00003834                rand
+ .text.atan2f   0x00003874        0x4 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-wf_atan2.o)
+                0x00003874                atan2f
+ .text.fmodf    0x00003878       0x48 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-wf_fmod.o)
+                0x00003878                fmodf
+ .text.cosf     0x000038c0       0x70 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_cos.o)
+                0x000038c0                cosf
+ .text.sinf     0x00003930       0x74 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_sin.o)
+                0x00003930                sinf
  .text.__kernel_cosf
-                0x00003b44      0x104 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_cos.o)
-                0x00003b44                __kernel_cosf
+                0x000039a4      0x104 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_cos.o)
+                0x000039a4                __kernel_cosf
  .text.__kernel_sinf
-                0x00003c48       0x90 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_sin.o)
-                0x00003c48                __kernel_sinf
+                0x00003aa8       0x90 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_sin.o)
+                0x00003aa8                __kernel_sinf
  .text.__ieee754_atan2f
-                0x00003cd8      0x14c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_atan2.o)
-                0x00003cd8                __ieee754_atan2f
+                0x00003b38      0x14c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_atan2.o)
+                0x00003b38                __ieee754_atan2f
  .text.__ieee754_fmodf
-                0x00003e24      0x184 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_fmod.o)
-                0x00003e24                __ieee754_fmodf
+                0x00003c84      0x184 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_fmod.o)
+                0x00003c84                __ieee754_fmodf
  .text.__ieee754_rem_pio2f
-                0x00003fa8      0x26c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_rem_pio2.o)
-                0x00003fa8                __ieee754_rem_pio2f
- .text.atanf    0x00004214      0x1a4 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_atan.o)
-                0x00004214                atanf
- .text.fabsf    0x000043b8       0x10 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_fabs.o)
-                0x000043b8                fabsf
+                0x00003e08      0x26c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_rem_pio2.o)
+                0x00003e08                __ieee754_rem_pio2f
+ .text.atanf    0x00004074      0x1a4 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_atan.o)
+                0x00004074                atanf
+ .text.fabsf    0x00004218       0x10 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_fabs.o)
+                0x00004218                fabsf
  .text.__kernel_rem_pio2f
-                0x000043c8      0x68c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_rem_pio2.o)
-                0x000043c8                __kernel_rem_pio2f
- .text.scalbnf  0x00004a54       0xdc C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_scalbn.o)
-                0x00004a54                scalbnf
- .text.floorf   0x00004b30       0x94 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_floor.o)
-                0x00004b30                floorf
- .text.__errno  0x00004bc4        0xc C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-errno.o)
-                0x00004bc4                __errno
+                0x00004228      0x68c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_rem_pio2.o)
+                0x00004228                __kernel_rem_pio2f
+ .text.scalbnf  0x000048b4       0xdc C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_scalbn.o)
+                0x000048b4                scalbnf
+ .text.floorf   0x00004990       0x94 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_floor.o)
+                0x00004990                floorf
+ .text.__errno  0x00004a24        0xc C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-errno.o)
+                0x00004a24                __errno
  *(.init)
  *(.fini)
  *crtbegin.o(.ctors)
@@ -657,245 +659,244 @@ END GROUP
  *(.dtors)
  *(.rodata*)
  .rodata.cLib_addEnt.str1.4
-                0x00004bd0       0x97 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x00004a30       0x97 CMakeFiles\CrossUp.dir\C\main.c.obj
                                  0x16 (size before relaxing)
  .rodata.eventHandler.str1.4
-                0x00004c67       0x5e CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x00004ac7       0x5e CMakeFiles\CrossUp.dir\C\main.c.obj
  .rodata.str1.4
-                0x00004c67       0x1f CMakeFiles\CrossUp.dir\C\main.c.obj
- *fill*         0x00004c67        0x1 
- .rodata.cLibs  0x00004c68       0x28 CMakeFiles\CrossUp.dir\C\main.c.obj
- .rodata.map    0x00004c90        0xc CMakeFiles\CrossUp.dir\C\main.c.obj
- .rodata.arm    0x00004c9c        0xc CMakeFiles\CrossUp.dir\C\main.c.obj
- .rodata.cube   0x00004ca8        0xc CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x00004ac7       0x1f CMakeFiles\CrossUp.dir\C\main.c.obj
+ *fill*         0x00004ac7        0x1 
+ .rodata.cLibs  0x00004ac8       0x28 CMakeFiles\CrossUp.dir\C\main.c.obj
+ .rodata.map    0x00004af0        0xc CMakeFiles\CrossUp.dir\C\main.c.obj
+ .rodata.arm    0x00004afc        0xc CMakeFiles\CrossUp.dir\C\main.c.obj
+ .rodata.cube   0x00004b08        0xc CMakeFiles\CrossUp.dir\C\main.c.obj
+ .rodata        0x00004b14        0xc CMakeFiles\CrossUp.dir\C\main.c.obj
  .rodata.pattern
-                0x00004cb4       0x40 CMakeFiles\CrossUp.dir\C\draw.c.obj
-                0x00004cb4                pattern
- .rodata        0x00004cf4       0x18 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+                0x00004b20       0x40 CMakeFiles\CrossUp.dir\C\draw.c.obj
+                0x00004b20                pattern
+ .rodata        0x00004b60       0x18 CMakeFiles\CrossUp.dir\C\collisions.c.obj
  .rodata.CSWTCH.9
-                0x00004d0c        0xc C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_atan2.o)
+                0x00004b78        0xc C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_atan2.o)
  .rodata.CSWTCH.8
-                0x00004d18        0xc C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_atan2.o)
- .rodata.Zero   0x00004d24        0x8 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_fmod.o)
+                0x00004b84        0xc C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_atan2.o)
+ .rodata.Zero   0x00004b90        0x8 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_fmod.o)
  .rodata.npio2_hw
-                0x00004d2c       0x80 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_rem_pio2.o)
+                0x00004b98       0x80 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_rem_pio2.o)
  .rodata.two_over_pi
-                0x00004dac      0x318 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_rem_pio2.o)
+                0x00004c18      0x318 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_rem_pio2.o)
  .rodata.atanlo
-                0x000050c4       0x10 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_atan.o)
+                0x00004f30       0x10 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_atan.o)
  .rodata.atanhi
-                0x000050d4       0x10 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_atan.o)
- .rodata.PIo2   0x000050e4       0x2c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_rem_pio2.o)
+                0x00004f40       0x10 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_atan.o)
+ .rodata.PIo2   0x00004f50       0x2c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_rem_pio2.o)
  .rodata.init_jk
-                0x00005110        0xc C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_rem_pio2.o)
+                0x00004f7c        0xc C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_rem_pio2.o)
  *(.eh_frame*)
 
-.glue_7         0x0000511c        0x0
- .glue_7        0x0000511c        0x0 linker stubs
+.glue_7         0x00004f88        0x0
+ .glue_7        0x00004f88        0x0 linker stubs
 
-.glue_7t        0x0000511c        0x0
- .glue_7t       0x0000511c        0x0 linker stubs
+.glue_7t        0x00004f88        0x0
+ .glue_7t       0x00004f88        0x0 linker stubs
 
-.vfp11_veneer   0x0000511c        0x0
- .vfp11_veneer  0x0000511c        0x0 linker stubs
+.vfp11_veneer   0x00004f88        0x0
+ .vfp11_veneer  0x00004f88        0x0 linker stubs
 
-.v4_bx          0x0000511c        0x0
- .v4_bx         0x0000511c        0x0 linker stubs
+.v4_bx          0x00004f88        0x0
+ .v4_bx         0x00004f88        0x0 linker stubs
 
-.iplt           0x0000511c        0x0
- .iplt          0x0000511c        0x0 CMakeFiles\CrossUp.dir\C\main.c.obj
+.iplt           0x00004f88        0x0
+ .iplt          0x00004f88        0x0 CMakeFiles\CrossUp.dir\C\main.c.obj
 
-.rel.dyn        0x0000511c        0x0
- .rel.iplt      0x0000511c        0x0 CMakeFiles\CrossUp.dir\C\main.c.obj
+.rel.dyn        0x00004f88        0x0
+ .rel.iplt      0x00004f88        0x0 CMakeFiles\CrossUp.dir\C\main.c.obj
 
-.data           0x00005120     0x8820
-                0x00005120                        __etext = .
-                0x00005120                        __data_start__ = .
+.data           0x00004f88     0x8820
+                0x00004f88                        __etext = .
+                0x00004f88                        __data_start__ = .
  *(vtable)
  *(.data*)
  .data.__compound_literal.5
-                0x00005120      0xce4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x00004f88      0xce4 CMakeFiles\CrossUp.dir\C\main.c.obj
  .data.__compound_literal.4
-                0x00005e04     0x7404 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x00005c6c     0x7404 CMakeFiles\CrossUp.dir\C\main.c.obj
  .data.__compound_literal.3
-                0x0000d208       0x68 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d070       0x68 CMakeFiles\CrossUp.dir\C\main.c.obj
  .data.__compound_literal.2
-                0x0000d270      0x3a8 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d0d8      0x3a8 CMakeFiles\CrossUp.dir\C\main.c.obj
  .data.__compound_literal.1
-                0x0000d618       0x30 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d480       0x30 CMakeFiles\CrossUp.dir\C\main.c.obj
  .data.__compound_literal.0
-                0x0000d648      0x1b0 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d4b0      0x1b0 CMakeFiles\CrossUp.dir\C\main.c.obj
  .data.substeps
-                0x0000d7f8        0x4 CMakeFiles\CrossUp.dir\C\movement.c.obj
-                0x0000d7f8                substeps
+                0x0000d660        0x4 CMakeFiles\CrossUp.dir\C\movement.c.obj
+                0x0000d660                substeps
  .data._impure_ptr
-                0x0000d7fc        0x4 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-impure.o)
-                0x0000d7fc                _impure_ptr
+                0x0000d664        0x4 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-impure.o)
+                0x0000d664                _impure_ptr
  .data._impure_data
-                0x0000d800      0x140 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-impure.o)
-                0x0000d800                _impure_data
-                0x0000d940                        . = ALIGN (0x4)
+                0x0000d668      0x140 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-impure.o)
+                0x0000d668                _impure_data
+                0x0000d7a8                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__preinit_array_start = .)
  *(.preinit_array)
                 [!provide]                        PROVIDE (__preinit_array_end = .)
-                0x0000d940                        . = ALIGN (0x4)
+                0x0000d7a8                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__init_array_start = .)
  *(SORT_BY_NAME(.init_array.*))
  *(.init_array)
                 [!provide]                        PROVIDE (__init_array_end = .)
-                0x0000d940                        . = ALIGN (0x4)
+                0x0000d7a8                        . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__fini_array_start = .)
  *(SORT_BY_NAME(.fini_array.*))
  *(.fini_array)
                 [!provide]                        PROVIDE (__fini_array_end = .)
-                0x0000d940                        . = ALIGN (0x4)
-                0x0000d940                        __data_end__ = .
+                0x0000d7a8                        . = ALIGN (0x4)
+                0x0000d7a8                        __data_end__ = .
 
-.igot.plt       0x0000d940        0x0
- .igot.plt      0x0000d940        0x0 CMakeFiles\CrossUp.dir\C\main.c.obj
+.igot.plt       0x0000d7a8        0x0
+ .igot.plt      0x0000d7a8        0x0 CMakeFiles\CrossUp.dir\C\main.c.obj
 
-.bss            0x0000d940    0x5dea4
-                0x0000d940                        . = ALIGN (0x4)
-                0x0000d940                        __bss_start__ = .
+.bss            0x0000d7a8    0x5de9c
+                0x0000d7a8                        . = ALIGN (0x4)
+                0x0000d7a8                        __bss_start__ = .
  *(.bss*)
+ .bss.allPointsCount
+                0x0000d7a8        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d7a8                allPointsCount
  .bss.modelIndex
-                0x0000d940        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0000d940                modelIndex
- .bss.entArray  0x0000d944        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0000d944                entArray
- .bss.mapArray  0x0000d948        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0000d948                mapArray
- *fill*         0x0000d94c        0x4 
- .bss.player    0x0000d950       0x98 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0000d950                player
- .bss.allEnts   0x0000d9e8        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0000d9e8                allEnts
+                0x0000d7ac        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d7ac                modelIndex
+ .bss.entArray  0x0000d7b0        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d7b0                entArray
+ .bss.mapArray  0x0000d7b4        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d7b4                mapArray
+ .bss.player    0x0000d7b8       0x98 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d7b8                player
+ .bss.allEnts   0x0000d850        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d850                allEnts
  .bss.staticAmt
-                0x0000d9ec        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0000d9ec                staticAmt
- .bss.allAmt    0x0000d9f0        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0000d9f0                allAmt
- .bss.entAmt    0x0000d9f4        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0000d9f4                entAmt
- .bss.rendAmt   0x0000d9f8        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0000d9f8                rendAmt
- *fill*         0x0000d9fc        0x4 
- .bss.zBuffer   0x0000da00    0x5dc00 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0000da00                zBuffer
- .bss.buf       0x0006b600        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0006b600                buf
+                0x0000d854        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d854                staticAmt
+ .bss.allAmt    0x0000d858        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d858                allAmt
+ .bss.entAmt    0x0000d85c        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d85c                entAmt
+ .bss.rendAmt   0x0000d860        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d860                rendAmt
+ *fill*         0x0000d864        0x4 
+ .bss.zBuffer   0x0000d868    0x5dc00 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0000d868                zBuffer
+ .bss.buf       0x0006b468        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0006b468                buf
  .bss.entModels
-                0x0006b604        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0006b604                entModels
- .bss.static3D  0x0006b608        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0006b608                static3D
+                0x0006b46c        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0006b46c                entModels
+ .bss.static3D  0x0006b470        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0006b470                static3D
  .bss.allPoints
-                0x0006b60c        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0006b60c                allPoints
- .bss.mapPoints
-                0x0006b610        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0006b610                mapPoints
- *fill*         0x0006b614        0x4 
- .bss.cam       0x0006b618       0x48 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0006b618                cam
- .bss.pd        0x0006b660        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
-                0x0006b660                pd
+                0x0006b474        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0006b474                allPoints
+ .bss.cam       0x0006b478       0x48 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0006b478                cam
+ .bss.pd        0x0006b4c0        0x4 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x0006b4c0                pd
  .bss.pColPoints
-                0x0006b664       0x30 CMakeFiles\CrossUp.dir\C\movement.c.obj
-                0x0006b664                pColPoints
+                0x0006b4c4       0x30 CMakeFiles\CrossUp.dir\C\movement.c.obj
+                0x0006b4c4                pColPoints
  .bss.pCollisionPos
-                0x0006b694        0xc CMakeFiles\CrossUp.dir\C\movement.c.obj
-                0x0006b694                pCollisionPos
+                0x0006b4f4        0xc CMakeFiles\CrossUp.dir\C\movement.c.obj
+                0x0006b4f4                pCollisionPos
  .bss.collisionCount
-                0x0006b6a0        0x4 CMakeFiles\CrossUp.dir\C\collisions.c.obj
-                0x0006b6a0                collisionCount
+                0x0006b500        0x4 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+                0x0006b500                collisionCount
  .bss.collisionSurfaces
-                0x0006b6a4        0x4 CMakeFiles\CrossUp.dir\C\collisions.c.obj
-                0x0006b6a4                collisionSurfaces
+                0x0006b504        0x4 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+                0x0006b504                collisionSurfaces
  .bss.pdrealloc
-                0x0006b6a8        0x4 CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
- .bss.__sf      0x0006b6ac      0x138 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-findfp.o)
-                0x0006b6ac                __sf
+                0x0006b508        0x4 CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+ .bss.__sf      0x0006b50c      0x138 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-findfp.o)
+                0x0006b50c                __sf
  *(COMMON)
  *(COM)
-                0x0006b7e4                        . = ALIGN (0x4)
-                0x0006b7e4                        __bss_end__ = .
+                0x0006b644                        . = ALIGN (0x4)
+                0x0006b644                        __bss_end__ = .
 
 /DISCARD/
  *(.ARM.exidx)
 OUTPUT(CrossUp.elf elf32-littlearm)
 LOAD linker stubs
 
-.debug_info     0x00000000    0x2e10e
- .debug_info    0x00000000     0x8aab CMakeFiles\CrossUp.dir\C\main.c.obj
- .debug_info    0x00008aab      0x505 CMakeFiles\CrossUp.dir\C\library.c.obj
- .debug_info    0x00008fb0     0x7320 CMakeFiles\CrossUp.dir\C\entities.c.obj
- .debug_info    0x000102d0     0x7f47 CMakeFiles\CrossUp.dir\C\movement.c.obj
- .debug_info    0x00018217     0x7a74 CMakeFiles\CrossUp.dir\C\draw.c.obj
- .debug_info    0x0001fc8b     0x70a7 CMakeFiles\CrossUp.dir\C\collisions.c.obj
- .debug_info    0x00026d32     0x73dc CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+.debug_info     0x00000000    0x2ddf9
+ .debug_info    0x00000000     0x8796 CMakeFiles\CrossUp.dir\C\main.c.obj
+ .debug_info    0x00008796      0x505 CMakeFiles\CrossUp.dir\C\library.c.obj
+ .debug_info    0x00008c9b     0x7320 CMakeFiles\CrossUp.dir\C\entities.c.obj
+ .debug_info    0x0000ffbb     0x7f47 CMakeFiles\CrossUp.dir\C\movement.c.obj
+ .debug_info    0x00017f02     0x7a74 CMakeFiles\CrossUp.dir\C\draw.c.obj
+ .debug_info    0x0001f976     0x70a7 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+ .debug_info    0x00026a1d     0x73dc CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
 
-.debug_abbrev   0x00000000     0x1a96
- .debug_abbrev  0x00000000      0x5c4 CMakeFiles\CrossUp.dir\C\main.c.obj
- .debug_abbrev  0x000005c4      0x19c CMakeFiles\CrossUp.dir\C\library.c.obj
- .debug_abbrev  0x00000760      0x342 CMakeFiles\CrossUp.dir\C\entities.c.obj
- .debug_abbrev  0x00000aa2      0x52b CMakeFiles\CrossUp.dir\C\movement.c.obj
- .debug_abbrev  0x00000fcd      0x45a CMakeFiles\CrossUp.dir\C\draw.c.obj
- .debug_abbrev  0x00001427      0x355 CMakeFiles\CrossUp.dir\C\collisions.c.obj
- .debug_abbrev  0x0000177c      0x31a CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+.debug_abbrev   0x00000000     0x1abf
+ .debug_abbrev  0x00000000      0x5ed CMakeFiles\CrossUp.dir\C\main.c.obj
+ .debug_abbrev  0x000005ed      0x19c CMakeFiles\CrossUp.dir\C\library.c.obj
+ .debug_abbrev  0x00000789      0x342 CMakeFiles\CrossUp.dir\C\entities.c.obj
+ .debug_abbrev  0x00000acb      0x52b CMakeFiles\CrossUp.dir\C\movement.c.obj
+ .debug_abbrev  0x00000ff6      0x45a CMakeFiles\CrossUp.dir\C\draw.c.obj
+ .debug_abbrev  0x00001450      0x355 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+ .debug_abbrev  0x000017a5      0x31a CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
 
-.debug_loc      0x00000000     0x702e
- .debug_loc     0x00000000      0xe5f CMakeFiles\CrossUp.dir\C\main.c.obj
- .debug_loc     0x00000e5f      0x3ce CMakeFiles\CrossUp.dir\C\library.c.obj
- .debug_loc     0x0000122d      0xd0a CMakeFiles\CrossUp.dir\C\entities.c.obj
- .debug_loc     0x00001f37     0x14d4 CMakeFiles\CrossUp.dir\C\movement.c.obj
- .debug_loc     0x0000340b     0x26a5 CMakeFiles\CrossUp.dir\C\draw.c.obj
- .debug_loc     0x00005ab0     0x1314 CMakeFiles\CrossUp.dir\C\collisions.c.obj
- .debug_loc     0x00006dc4      0x26a CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+.debug_loc      0x00000000     0x7028
+ .debug_loc     0x00000000      0xe59 CMakeFiles\CrossUp.dir\C\main.c.obj
+ .debug_loc     0x00000e59      0x3ce CMakeFiles\CrossUp.dir\C\library.c.obj
+ .debug_loc     0x00001227      0xd0a CMakeFiles\CrossUp.dir\C\entities.c.obj
+ .debug_loc     0x00001f31     0x14d4 CMakeFiles\CrossUp.dir\C\movement.c.obj
+ .debug_loc     0x00003405     0x26a5 CMakeFiles\CrossUp.dir\C\draw.c.obj
+ .debug_loc     0x00005aaa     0x1314 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+ .debug_loc     0x00006dbe      0x26a CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
 
-.debug_aranges  0x00000000      0x240
+.debug_aranges  0x00000000      0x248
  .debug_aranges
-                0x00000000       0x48 CMakeFiles\CrossUp.dir\C\main.c.obj
+                0x00000000       0x50 CMakeFiles\CrossUp.dir\C\main.c.obj
  .debug_aranges
-                0x00000048       0x78 CMakeFiles\CrossUp.dir\C\library.c.obj
+                0x00000050       0x78 CMakeFiles\CrossUp.dir\C\library.c.obj
  .debug_aranges
-                0x000000c0       0x78 CMakeFiles\CrossUp.dir\C\entities.c.obj
+                0x000000c8       0x78 CMakeFiles\CrossUp.dir\C\entities.c.obj
  .debug_aranges
-                0x00000138       0x48 CMakeFiles\CrossUp.dir\C\movement.c.obj
+                0x00000140       0x48 CMakeFiles\CrossUp.dir\C\movement.c.obj
  .debug_aranges
-                0x00000180       0x58 CMakeFiles\CrossUp.dir\C\draw.c.obj
+                0x00000188       0x58 CMakeFiles\CrossUp.dir\C\draw.c.obj
  .debug_aranges
-                0x000001d8       0x30 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+                0x000001e0       0x30 CMakeFiles\CrossUp.dir\C\collisions.c.obj
  .debug_aranges
-                0x00000208       0x38 CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+                0x00000210       0x38 CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
 
-.debug_ranges   0x00000000      0x928
- .debug_ranges  0x00000000      0x318 CMakeFiles\CrossUp.dir\C\main.c.obj
- .debug_ranges  0x00000318       0x68 CMakeFiles\CrossUp.dir\C\library.c.obj
- .debug_ranges  0x00000380       0x68 CMakeFiles\CrossUp.dir\C\entities.c.obj
- .debug_ranges  0x000003e8      0x1f8 CMakeFiles\CrossUp.dir\C\movement.c.obj
- .debug_ranges  0x000005e0      0x258 CMakeFiles\CrossUp.dir\C\draw.c.obj
- .debug_ranges  0x00000838       0xc8 CMakeFiles\CrossUp.dir\C\collisions.c.obj
- .debug_ranges  0x00000900       0x28 CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+.debug_ranges   0x00000000      0x830
+ .debug_ranges  0x00000000      0x220 CMakeFiles\CrossUp.dir\C\main.c.obj
+ .debug_ranges  0x00000220       0x68 CMakeFiles\CrossUp.dir\C\library.c.obj
+ .debug_ranges  0x00000288       0x68 CMakeFiles\CrossUp.dir\C\entities.c.obj
+ .debug_ranges  0x000002f0      0x1f8 CMakeFiles\CrossUp.dir\C\movement.c.obj
+ .debug_ranges  0x000004e8      0x258 CMakeFiles\CrossUp.dir\C\draw.c.obj
+ .debug_ranges  0x00000740       0xc8 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+ .debug_ranges  0x00000808       0x28 CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
 
-.debug_line     0x00000000     0x4480
- .debug_line    0x00000000     0x11d9 CMakeFiles\CrossUp.dir\C\main.c.obj
- .debug_line    0x000011d9      0x3b2 CMakeFiles\CrossUp.dir\C\library.c.obj
- .debug_line    0x0000158b      0x7ba CMakeFiles\CrossUp.dir\C\entities.c.obj
- .debug_line    0x00001d45     0x107f CMakeFiles\CrossUp.dir\C\movement.c.obj
- .debug_line    0x00002dc4      0xc6c CMakeFiles\CrossUp.dir\C\draw.c.obj
- .debug_line    0x00003a30      0x704 CMakeFiles\CrossUp.dir\C\collisions.c.obj
- .debug_line    0x00004134      0x34c CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+.debug_line     0x00000000     0x4227
+ .debug_line    0x00000000      0xf80 CMakeFiles\CrossUp.dir\C\main.c.obj
+ .debug_line    0x00000f80      0x3b2 CMakeFiles\CrossUp.dir\C\library.c.obj
+ .debug_line    0x00001332      0x7ba CMakeFiles\CrossUp.dir\C\entities.c.obj
+ .debug_line    0x00001aec     0x107f CMakeFiles\CrossUp.dir\C\movement.c.obj
+ .debug_line    0x00002b6b      0xc6c CMakeFiles\CrossUp.dir\C\draw.c.obj
+ .debug_line    0x000037d7      0x704 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+ .debug_line    0x00003edb      0x34c CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
 
-.debug_str      0x00000000     0x3e29
- .debug_str     0x00000000     0x3e29 CMakeFiles\CrossUp.dir\C\main.c.obj
-                               0x36a1 (size before relaxing)
- .debug_str     0x00003e29      0x2fb CMakeFiles\CrossUp.dir\C\library.c.obj
- .debug_str     0x00003e29     0x328e CMakeFiles\CrossUp.dir\C\entities.c.obj
- .debug_str     0x00003e29     0x3489 CMakeFiles\CrossUp.dir\C\movement.c.obj
- .debug_str     0x00003e29     0x3389 CMakeFiles\CrossUp.dir\C\draw.c.obj
- .debug_str     0x00003e29     0x32a2 CMakeFiles\CrossUp.dir\C\collisions.c.obj
- .debug_str     0x00003e29     0x354c CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+.debug_str      0x00000000     0x3e4c
+ .debug_str     0x00000000     0x3e4c CMakeFiles\CrossUp.dir\C\main.c.obj
+                               0x36c4 (size before relaxing)
+ .debug_str     0x00003e4c      0x2fb CMakeFiles\CrossUp.dir\C\library.c.obj
+ .debug_str     0x00003e4c     0x328e CMakeFiles\CrossUp.dir\C\entities.c.obj
+ .debug_str     0x00003e4c     0x3489 CMakeFiles\CrossUp.dir\C\movement.c.obj
+ .debug_str     0x00003e4c     0x3389 CMakeFiles\CrossUp.dir\C\draw.c.obj
+ .debug_str     0x00003e4c     0x32a2 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+ .debug_str     0x00003e4c     0x354c CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
 
 .comment        0x00000000       0x45
  .comment       0x00000000       0x45 CMakeFiles\CrossUp.dir\C\main.c.obj
@@ -976,39 +977,39 @@ LOAD linker stubs
  .ARM.attributes
                 0x000005f6       0x34 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-errno.o)
 
-.debug_frame    0x00000000     0x11d8
- .debug_frame   0x00000000      0x234 CMakeFiles\CrossUp.dir\C\main.c.obj
- .debug_frame   0x00000234      0x100 CMakeFiles\CrossUp.dir\C\library.c.obj
- .debug_frame   0x00000334      0x2b8 CMakeFiles\CrossUp.dir\C\entities.c.obj
- .debug_frame   0x000005ec      0x22c CMakeFiles\CrossUp.dir\C\movement.c.obj
- .debug_frame   0x00000818      0x178 CMakeFiles\CrossUp.dir\C\draw.c.obj
- .debug_frame   0x00000990      0x118 CMakeFiles\CrossUp.dir\C\collisions.c.obj
- .debug_frame   0x00000aa8       0x5c CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
- .debug_frame   0x00000b04       0xac C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_addsubdf3.o)
- .debug_frame   0x00000bb0       0xc4 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_cmpdf2.o)
- .debug_frame   0x00000c74       0x4c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_addsubsf3.o)
- .debug_frame   0x00000cc0       0x28 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_fixsfdi.o)
- .debug_frame   0x00000ce8       0x2c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_fixunssfdi.o)
- .debug_frame   0x00000d14       0x30 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_muldf3.o)
- .debug_frame   0x00000d44       0x24 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_fixunsdfsi.o)
- .debug_frame   0x00000d68       0x3c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-rand.o)
- .debug_frame   0x00000da4       0x28 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-memcpy.o)
- .debug_frame   0x00000dcc      0x13c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-findfp.o)
- .debug_frame   0x00000f08       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-wf_atan2.o)
- .debug_frame   0x00000f28       0x44 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-wf_fmod.o)
- .debug_frame   0x00000f6c       0x34 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_cos.o)
- .debug_frame   0x00000fa0       0x34 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_sin.o)
- .debug_frame   0x00000fd4       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_cos.o)
- .debug_frame   0x00000ff4       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_sin.o)
- .debug_frame   0x00001014       0x44 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_atan2.o)
- .debug_frame   0x00001058       0x3c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_fmod.o)
- .debug_frame   0x00001094       0x3c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_rem_pio2.o)
- .debug_frame   0x000010d0       0x2c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_atan.o)
- .debug_frame   0x000010fc       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_fabs.o)
- .debug_frame   0x0000111c       0x5c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_rem_pio2.o)
- .debug_frame   0x00001178       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_scalbn.o)
- .debug_frame   0x00001198       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_floor.o)
- .debug_frame   0x000011b8       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-errno.o)
+.debug_frame    0x00000000     0x122c
+ .debug_frame   0x00000000      0x288 CMakeFiles\CrossUp.dir\C\main.c.obj
+ .debug_frame   0x00000288      0x100 CMakeFiles\CrossUp.dir\C\library.c.obj
+ .debug_frame   0x00000388      0x2b8 CMakeFiles\CrossUp.dir\C\entities.c.obj
+ .debug_frame   0x00000640      0x22c CMakeFiles\CrossUp.dir\C\movement.c.obj
+ .debug_frame   0x0000086c      0x178 CMakeFiles\CrossUp.dir\C\draw.c.obj
+ .debug_frame   0x000009e4      0x118 CMakeFiles\CrossUp.dir\C\collisions.c.obj
+ .debug_frame   0x00000afc       0x5c CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+ .debug_frame   0x00000b58       0xac C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_addsubdf3.o)
+ .debug_frame   0x00000c04       0xc4 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_cmpdf2.o)
+ .debug_frame   0x00000cc8       0x4c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_addsubsf3.o)
+ .debug_frame   0x00000d14       0x28 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_fixsfdi.o)
+ .debug_frame   0x00000d3c       0x2c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_fixunssfdi.o)
+ .debug_frame   0x00000d68       0x30 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_muldf3.o)
+ .debug_frame   0x00000d98       0x24 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_fixunsdfsi.o)
+ .debug_frame   0x00000dbc       0x3c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-rand.o)
+ .debug_frame   0x00000df8       0x28 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-memcpy.o)
+ .debug_frame   0x00000e20      0x13c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-findfp.o)
+ .debug_frame   0x00000f5c       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-wf_atan2.o)
+ .debug_frame   0x00000f7c       0x44 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-wf_fmod.o)
+ .debug_frame   0x00000fc0       0x34 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_cos.o)
+ .debug_frame   0x00000ff4       0x34 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_sin.o)
+ .debug_frame   0x00001028       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_cos.o)
+ .debug_frame   0x00001048       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_sin.o)
+ .debug_frame   0x00001068       0x44 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_atan2.o)
+ .debug_frame   0x000010ac       0x3c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_fmod.o)
+ .debug_frame   0x000010e8       0x3c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-ef_rem_pio2.o)
+ .debug_frame   0x00001124       0x2c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_atan.o)
+ .debug_frame   0x00001150       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_fabs.o)
+ .debug_frame   0x00001170       0x5c C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-kf_rem_pio2.o)
+ .debug_frame   0x000011cc       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_scalbn.o)
+ .debug_frame   0x000011ec       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_floor.o)
+ .debug_frame   0x0000120c       0x20 C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libc.a(libc_a-errno.o)
 
 .debug_line_str
                 0x00000000      0x1be
@@ -1216,6 +1217,7 @@ addCollisionSurface                               CMakeFiles\CrossUp.dir\C\colli
 allAmt                                            CMakeFiles\CrossUp.dir\C\main.c.obj
 allEnts                                           CMakeFiles\CrossUp.dir\C\main.c.obj
 allPoints                                         CMakeFiles\CrossUp.dir\C\main.c.obj
+allPointsCount                                    CMakeFiles\CrossUp.dir\C\main.c.obj
 atan2f                                            C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-wf_atan2.o)
                                                   CMakeFiles\CrossUp.dir\C\movement.c.obj
 atanf                                             C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7e-m+fp/hard\libm.a(libm_a-sf_atan.o)
@@ -1280,7 +1282,6 @@ inside                                            CMakeFiles\CrossUp.dir\C\libra
 lengthJoints                                      CMakeFiles\CrossUp.dir\C\main.c.obj
 lerp                                              CMakeFiles\CrossUp.dir\C\library.c.obj
 mapArray                                          CMakeFiles\CrossUp.dir\C\main.c.obj
-mapPoints                                         CMakeFiles\CrossUp.dir\C\main.c.obj
 maxEntStored                                      CMakeFiles\CrossUp.dir\C\main.c.obj
 maxEntities                                       CMakeFiles\CrossUp.dir\C\main.c.obj
 maxMaps                                           CMakeFiles\CrossUp.dir\C\main.c.obj

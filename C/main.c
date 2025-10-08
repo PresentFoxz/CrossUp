@@ -8,7 +8,6 @@
 
 PlaydateAPI* pd;
 Camera cam;
-worldTris* mapPoints;
 worldTris* allPoints;
 staticPoints* static3D;
 worldTris* entModels;
@@ -36,6 +35,7 @@ const int maxMaps = 1;
 const int maxEntStored = 2;
 
 int modelIndex = 0;
+int allPointsCount = 0;
 const int lengthJoints = 3;
 
 static int cLib_init(lua_State* L);
@@ -69,17 +69,6 @@ static void generateMap(int len){
     resetCollisionSurface();
     for (int i=0; i < len; i++){
         int idx[3] = {(i*3), (i*3)+1, (i*3)+2};
-
-        mapPoints[rendAmt++] = (worldTris){
-            .verts = {
-                {mapArray[modelIndex].data[idx[0]].x, mapArray[modelIndex].data[idx[0]].y, mapArray[modelIndex].data[idx[0]].z},
-                {mapArray[modelIndex].data[idx[1]].x, mapArray[modelIndex].data[idx[1]].y, mapArray[modelIndex].data[idx[1]].z},
-                {mapArray[modelIndex].data[idx[2]].x, mapArray[modelIndex].data[idx[2]].y, mapArray[modelIndex].data[idx[2]].z}
-            },
-            .objType = mapArray[modelIndex].color[i],
-            .dist = 0.0f
-        };
-
         addCollisionSurface(
             mapArray[modelIndex].data[idx[0]].x, mapArray[modelIndex].data[idx[0]].y, mapArray[modelIndex].data[idx[0]].z,
             mapArray[modelIndex].data[idx[1]].x, mapArray[modelIndex].data[idx[1]].y, mapArray[modelIndex].data[idx[1]].z,
@@ -88,9 +77,11 @@ static void generateMap(int len){
         );
     }
 
-    int entCheck = 0;
-    for (int i=0; i < entAmt; i++){ entCheck += entArray[allEnts[i].type].count; }
-    allPoints = pd->system->realloc(allPoints, (rendAmt + entCheck + entArray[player.type].count) * sizeof(worldTris));
+    allPointsCount = 0;
+    for (int i=0; i < entAmt; i++){ allPointsCount += entArray[allEnts[i].type].count; }
+    allPointsCount += (rendAmt + entArray[player.type].count);
+
+    allPoints = pd->system->realloc(allPoints, allPointsCount * sizeof(worldTris));
 }
 
 static void generatePoints(int len){
@@ -125,7 +116,6 @@ static int cLib_init(lua_State* L) {
     entArray[0] = cube;
     entArray[1] = arm;
 
-    mapPoints = pd->system->realloc(mapPoints, sizeof(worldTris) * mapArray[modelIndex].count);
     static3D = pd->system->realloc(static3D, sizeof(staticPoints) * lengthJoints);
     allEnts = pd->system->realloc(allEnts, sizeof(EntStruct) * entAmt);
 
@@ -163,7 +153,7 @@ static int cLib_addEnt(lua_State* L){
         allEnts[entAmt] = createEntity(xPos, yPos, zPos, xRot, yRot, zRot, xSize, ySize, zSize, radius, height, frict, fallFrict, type);
         entAmt++;
 
-        allPoints = pd->system->realloc(allPoints, (sizeof(allPoints) + entArray[type].count) * sizeof(worldTris));
+        allPoints = pd->system->realloc(allPoints, (allPointsCount + entArray[type].count) * sizeof(worldTris));
     } else {
         pd->system->logToConsole("Max entities reached!");
     }
@@ -293,133 +283,87 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
     }
 }
 
-static void addPlayer(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos){
-    if (player.type < 0 || player.type >= maxEntStored) return;
-    
-    int triCount = entArray[player.type].count;
-    if (triCount <= 0) return;
-    
-    Vect3f pos = {FROM_FIXED32(player.position.x), FROM_FIXED32(player.position.y), FROM_FIXED32(player.position.z)};
-    Vect3f rot = {FROM_FIXED32(player.rotation.x), FROM_FIXED32(player.rotation.y), FROM_FIXED32(player.rotation.z)};
-    Vect3f size = {FROM_FIXED32(player.size.x), FROM_FIXED32(player.size.y), FROM_FIXED32(player.size.z)};
-    
+static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, int type, int triCount, Vect3m* data, int* colorArray, int posDist) {
     float rotMat[3][3];
-    computeRotScaleMatrix(
-        rotMat,
-        rot.x, rot.y, rot.z,
-        size.x, size.y, size.z
-    );
-    
-    for (int i = 0; i < triCount; i++) {
-        float v[3][3];
-        for (int j = 0; j < 3; j++) {
-            v[j][0] = entArray[player.type].data[i*3 + j].x;
-            v[j][1] = entArray[player.type].data[i*3 + j].y;
-            v[j][2] = entArray[player.type].data[i*3 + j].z;
+    computeRotScaleMatrix(rotMat, rot.x, rot.y, rot.z, size.x, size.y, size.z);
 
-            float rotated[3];
-            rotateVertex(v[j][0], v[j][1], v[j][2], rotMat, rotated);
-            
-            v[j][0] = rotated[0] + pos.x;
-            v[j][1] = rotated[1] + pos.y;
-            v[j][2] = rotated[2] + pos.z;
-        }
-        
-        float dx = pos.x - FROM_FIXED32(cam.position.x);
-        float dy = pos.y - FROM_FIXED32(cam.position.y);
-        float dz = pos.z - FROM_FIXED32(cam.position.z);
-        float dist = dx*dx + dy*dy + dz*dz;
+    float camX = FROM_FIXED32(cam.position.x);
+    float camY = FROM_FIXED32(cam.position.y);
+    float camZ = FROM_FIXED32(cam.position.z);
+
+    float dist;
+    if (posDist){
+        float dx = pos.x - camX;
+        float dy = pos.y - camY;
+        float dz = pos.z - camZ;
+        dist = dx*dx + dy*dy + dz*dz;
+        if (renderRadius && dist > renderRadius * renderRadius) return;
+    }
+
+    for (int i = 0; i < triCount; i++) {
+        float cx = (data[i*3].x + data[i*3 + 1].x + data[i*3 + 2].x) / 3.0f;
+        float cy = (data[i*3].y + data[i*3 + 1].y + data[i*3 + 2].y) / 3.0f;
+        float cz = (data[i*3].z + data[i*3 + 1].z + data[i*3 + 2].z) / 3.0f;
+
+        dist = (cx - camX)*(cx - camX) + (cy - camY)*(cy - camY) + (cz - camZ)*(cz - camZ);
         if (renderRadius && dist > renderRadius * renderRadius) continue;
+
+        worldTris tri;
+        for (int j = 0; j < 3; j++) {
+            float rotated[3];
+            rotateVertex(data[i*3 + j].x, data[i*3 + j].y, data[i*3 + j].z, rotMat, rotated);
+            tri.verts[j][0] = rotated[0] + pos.x;
+            tri.verts[j][1] = rotated[1] + pos.y;
+            tri.verts[j][2] = rotated[2] + pos.z;
+        }
+        tri.objType = colorArray[i];
         
-        allPoints[allAmt++] = (worldTris){
-            .verts = {{v[0][0], v[0][1], v[0][2]},
-                      {v[1][0], v[1][1], v[1][2]},
-                      {v[2][0], v[2][1], v[2][2]}},
-            .objType = entArray[player.type].color[i],
-            .dist = dist
-        };
+        tri.dist = dist;
+        allPoints[allAmt++] = tri;
     }
 }
 
-static void addEntities(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos){
+static void addPlayer() {
+    if (player.type < 0 || player.type >= maxEntStored) return;
+    addObjectToWorld(
+        (Vect3f){FROM_FIXED32(player.position.x), FROM_FIXED32(player.position.y), FROM_FIXED32(player.position.z)},
+        (Vect3f){FROM_FIXED32(player.rotation.x), FROM_FIXED32(player.rotation.y), FROM_FIXED32(player.rotation.z)},
+        (Vect3f){FROM_FIXED32(player.size.x), FROM_FIXED32(player.size.y), FROM_FIXED32(player.size.z)},
+        player.type,
+        entArray[player.type].count,
+        entArray[player.type].data,
+        entArray[player.type].color,
+        true
+    );
+}
+
+static void addEntities() {
     for (int i = 0; i < entAmt; i++) {
         if (allEnts[i].type < 0 || allEnts[i].type >= maxEntStored) continue;
-
-        int entRendered = 0;
-        int triCount = entArray[allEnts[i].type].count;
-        entModels = pd->system->realloc(entModels, sizeof(worldTris) * triCount);
-
-        Vect3f pos = {FROM_FIXED32(allEnts[i].position.x), FROM_FIXED32(allEnts[i].position.y), FROM_FIXED32(allEnts[i].position.z)};
-        Vect3f rot = {FROM_FIXED32(allEnts[i].rotation.x), FROM_FIXED32(allEnts[i].rotation.y), FROM_FIXED32(allEnts[i].rotation.z)};
-        Vect3f size = {FROM_FIXED32(allEnts[i].size.x), FROM_FIXED32(allEnts[i].size.y), FROM_FIXED32(allEnts[i].size.z)};
-        
-        float rotMat[3][3];
-        computeRotScaleMatrix(
-            rotMat,
-            rot.x, rot.y, rot.z,
-            size.x, size.y, size.z
+        addObjectToWorld(
+            (Vect3f){FROM_FIXED32(allEnts[i].position.x), FROM_FIXED32(allEnts[i].position.y), FROM_FIXED32(allEnts[i].position.z)},
+            (Vect3f){FROM_FIXED32(allEnts[i].rotation.x), FROM_FIXED32(allEnts[i].rotation.y), FROM_FIXED32(allEnts[i].rotation.z)},
+            (Vect3f){FROM_FIXED32(allEnts[i].size.x), FROM_FIXED32(allEnts[i].size.y), FROM_FIXED32(allEnts[i].size.z)},
+            allEnts[i].type,
+            entArray[allEnts[i].type].count,
+            entArray[allEnts[i].type].data,
+            entArray[allEnts[i].type].color,
+            true
         );
-        
-        float dx = pos.x - FROM_FIXED32(cam.position.x);
-        float dy = pos.y - FROM_FIXED32(cam.position.y);
-        float dz = pos.z - FROM_FIXED32(cam.position.z);
-        float dist = dx*dx + dy*dy + dz*dz;
-        if (renderRadius && dist > renderRadius * renderRadius) continue;
-        
-        for (int z = 0; z < triCount; z++) {
-            int idx[3] = { z*3, z*3+1, z*3+2 };
-
-            float verts[3][3];
-            for (int v = 0; v < 3; v++) {
-                float x = entArray[allEnts[i].type].data[idx[v]].x;
-                float y = entArray[allEnts[i].type].data[idx[v]].y;
-                float z_ = entArray[allEnts[i].type].data[idx[v]].z;
-
-                float rotated[3];
-                rotateVertex(x, y, z_, rotMat, rotated);
-
-                verts[v][0] = rotated[0] + pos.x;
-                verts[v][1] = rotated[1] + pos.y;
-                verts[v][2] = rotated[2] + pos.z;
-            }
-            
-            entModels[entRendered++] = (worldTris){
-                .verts = { {verts[0][0], verts[0][1], verts[0][2]},
-                           {verts[1][0], verts[1][1], verts[1][2]},
-                           {verts[2][0], verts[2][1], verts[2][2]} },
-                .objType = entArray[allEnts[i].type].color[z],
-                .dist = dist
-            };
-            
-            allPoints[allAmt++] = entModels[z];
-        }
     }
 }
 
 static void addMap(){
-    allPoints = pd->system->realloc(allPoints, (allAmt + rendAmt) * sizeof(worldTris));
-    for (int i = 0; i < rendAmt; i++) {
-        float* v0 = mapPoints[i].verts[0];
-        float* v1 = mapPoints[i].verts[1];
-        float* v2 = mapPoints[i].verts[2];
-        
-        float dx = v0[0] - FROM_FIXED32(cam.position.x);
-        float dy = v0[1] - FROM_FIXED32(cam.position.y);
-        float dz = v0[2] - FROM_FIXED32(cam.position.z);
-
-        float dist = dx*dx + dy*dy + dz*dz;
-        if (renderRadius && dist > renderRadius * renderRadius) continue;
-
-        allPoints[allAmt++] = (worldTris){
-            .verts = {
-                {mapPoints[i].verts[0][0], mapPoints[i].verts[0][1], mapPoints[i].verts[0][2]},
-                {mapPoints[i].verts[1][0], mapPoints[i].verts[1][1], mapPoints[i].verts[1][2]},
-                {mapPoints[i].verts[2][0], mapPoints[i].verts[2][1], mapPoints[i].verts[2][2]}
-            },
-            .objType = mapPoints[i].objType,
-            .dist = dist
-        };
-    }
+    addObjectToWorld(
+        (Vect3f){0.0f, 0.0f, 0.0f},
+        (Vect3f){0.0f, 0.0f, 0.0f},
+        (Vect3f){1.0f, 1.0f, 1.0f},
+        modelIndex,
+        mapArray[modelIndex].count,
+        mapArray[modelIndex].data,
+        mapArray[modelIndex].color,
+        false
+    );
 }
 
 static int cLib_render(lua_State* L) {

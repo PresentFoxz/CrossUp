@@ -38,6 +38,8 @@ int modelIndex = 0;
 int allPointsCount = 0;
 const int lengthJoints = 3;
 
+Vect3f camForward;
+
 static int cLib_init(lua_State* L);
 static int cLib_render(lua_State* L);
 static int cLib_playerAction(lua_State* L);
@@ -235,7 +237,6 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
 
     for (int index = 0; index < allAmt; index++){
         int color = allPoints[index].objType;
-        int out = 0;
         for (int v = 0; v < 3; v++) {
             verts[v].x = allPoints[index].verts[v][0] - camPos.x;
             verts[v].y = allPoints[index].verts[v][1] - camPos.y;
@@ -253,13 +254,9 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
             verts[v].x = rot[0];
             verts[v].y = rot[1];
             verts[v].z = rot[2];
-            if (viewFrustrum3D(verts[v].x, verts[v].y, verts[v].z, nearPlane, farPlane)){
-                out++;
-            }
             project2D(&check[v][0], (float[]){verts[v].x, verts[v].y, verts[v].z}, fov, nearPlane);
         }
 
-        if (out >= 3) { continue; }
         if (!windingOrder(check[0], check[1], check[2])) { continue; }
         if (verts[0].z <= 0.0f && verts[1].z <= 0.0f && verts[2].z <= 0.0f) { continue; }
 
@@ -288,6 +285,7 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
 }
 
 static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, int type, int triCount, Vect3m* data, int* colorArray, int posDist) {
+    Vect3f dirNorm;
     float rotMat[3][3];
     computeRotScaleMatrix(rotMat, rot.x, rot.y, rot.z, size.x, size.y, size.z);
 
@@ -298,11 +296,12 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, int type, int 
     float near = FROM_FIXED32(cam.nearPlane);
     float far = FROM_FIXED32(cam.farPlane);
 
+    float dx = pos.x - camX;
+    float dy = pos.y - camY;
+    float dz = pos.z - camZ;
+
     float dist;
     if (posDist){
-        float dx = pos.x - camX;
-        float dy = pos.y - camY;
-        float dz = pos.z - camZ;
         dist = dx*dx + dy*dy + dz*dz;
         if (renderRadius && dist > renderRadius * renderRadius) return;
     }
@@ -314,19 +313,30 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, int type, int 
 
         dist = (cx - camX)*(cx - camX) + (cy - camY)*(cy - camY) + (cz - camZ)*(cz - camZ);
         if (renderRadius && dist > renderRadius * renderRadius) continue;
-        
-        worldTris tri;
-        for (int j = 0; j < 3; j++) {
-            float rotated[3];
-            rotateVertex(data[i*3 + j].x, data[i*3 + j].y, data[i*3 + j].z, rotMat, rotated);
-            tri.verts[j][0] = rotated[0] + pos.x;
-            tri.verts[j][1] = rotated[1] + pos.y;
-            tri.verts[j][2] = rotated[2] + pos.z;
-        }
 
-        tri.objType = colorArray[i];
-        tri.dist = dist;
-        allPoints[allAmt++] = tri;
+        if (dist > 1e-8f) {
+            float invLen = 1.0f / sqrtf(dist);
+            dirNorm.x = (cx - camX) * invLen;
+            dirNorm.y = (cy - camY) * invLen;
+            dirNorm.z = (cz - camZ) * invLen;
+        } else {
+            continue;
+        }
+        
+        if (dot(dirNorm, camForward) > -0.867f) {
+            worldTris tri;
+            for (int j = 0; j < 3; j++) {
+                float rotated[3];
+                rotateVertex(data[i*3 + j].x, data[i*3 + j].y, data[i*3 + j].z, rotMat, rotated);
+                tri.verts[j][0] = rotated[0] + pos.x;
+                tri.verts[j][1] = rotated[1] + pos.y;
+                tri.verts[j][2] = rotated[2] + pos.z;
+            }
+
+            tri.objType = colorArray[i];
+            tri.dist = dist;
+            allPoints[allAmt++] = tri;
+        }
     }
 }
 
@@ -424,6 +434,20 @@ static int cLib_playerAction(lua_State* L) {
     updateCamera(&cam, &player, 7.0f);
 
     for(int i=0; i < entAmt; i++){ moveEntObj(&allEnts[i], &player); }
+
+    camForward.x = cosf(FROM_FIXED32(cam.rotation.x)) * sinf(FROM_FIXED32(cam.rotation.y));
+    camForward.y = sinf(FROM_FIXED32(cam.rotation.x));
+    camForward.z = cosf(FROM_FIXED32(cam.rotation.x)) * cosf(FROM_FIXED32(cam.rotation.y));
+
+    uint64_t currentTime = pd->system->getCurrentTimeMilliseconds();
+
+    if (lastTime != 0) {
+        deltaTime = (currentTime - lastTime) / 1000000.0f;
+    } else {
+        deltaTime = 0.0f;
+    }
+
+    lastTime = currentTime;
 
     return 0;
 }

@@ -6,6 +6,9 @@ static int perm[PERMUTATION_SIZE * 2];
 const float fovX = 2.44346f;
 const float fovY = 1.41435f;
 
+float deltaTime = 1.0f;
+uint64_t lastTime = 0;
+
 int inside(int x, int y) { return x >= sX && x < sX + sW && y >= sY && y < sY + sH; }
 
 int randomInt(int a, int b) { return a + rand() % (b - a + 1); }
@@ -22,18 +25,6 @@ void setPixelRaw(uint x, uint8_t* row, int color){
         row[x / 8] |= mask;
     else
         row[x / 8] &= ~mask;
-}
-
-int viewFrustrum3D(float x, float y, float z, float nearPlane, float farPlane) {
-    if (z < nearPlane || z > farPlane) return 1;
-
-    float halfWidth  = z * tanf(fovX * 0.5f);
-    float halfHeight = z * tanf(fovY * 0.5f);
-
-    if (x < -halfWidth || x > halfWidth) return 1;
-    if (y < -halfHeight || y > halfHeight) return 1;
-
-    return 0;
 }
 
 void swapInt(int* a, int* b) {
@@ -61,3 +52,5 @@ void swapFloat2(float* a, float* b) {
     b[0] = tmp0;
     b[1] = tmp1;
 }
+
+float dot(Vect3f a, Vect3f b) { return a.x*b.x + a.y*b.y + a.z*b.z; }

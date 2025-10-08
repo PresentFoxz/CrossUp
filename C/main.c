@@ -155,7 +155,10 @@ static int cLib_addEnt(lua_State* L){
         allEnts[entAmt] = createEntity(xPos, yPos, zPos, xRot, yRot, zRot, xSize, ySize, zSize, radius, height, frict, fallFrict, type);
         entAmt++;
 
-        allPoints = pd->system->realloc(allPoints, (allPointsCount + entArray[type].count) * sizeof(worldTris));
+        int newPoint = (allPointsCount + entArray[type].count);
+        if (newPoint > allPointsCount) {
+            allPoints = pd->system->realloc(allPoints, newPoint * sizeof(worldTris));
+        }
     } else {
         pd->system->logToConsole("Max entities reached!");
     }
@@ -269,7 +272,7 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
             clip1.t1.z = (clip1.t1.z - nearPlane) / (farPlane - nearPlane);
             clip1.t2.z = (clip1.t2.z - nearPlane) / (farPlane - nearPlane);
             clip1.t3.z = (clip1.t3.z - nearPlane) / (farPlane - nearPlane);
-            drawFilledTrisZ(tri1, clip1, color, zBuffer);
+            drawFilledTrisZ(tri1, clip1, color, zBuffer, 1);
             if (output == 2){
                 project2D(&tri2[0][0], (float[3]){clip2.t1.x, clip2.t1.y, clip2.t1.z}, fov, nearPlane); 
                 project2D(&tri2[1][0], (float[3]){clip2.t2.x, clip2.t2.y, clip2.t2.z}, fov, nearPlane);
@@ -278,7 +281,7 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
                 clip2.t1.z = (clip2.t1.z - nearPlane) / (farPlane - nearPlane);
                 clip2.t2.z = (clip2.t2.z - nearPlane) / (farPlane - nearPlane);
                 clip2.t3.z = (clip2.t3.z - nearPlane) / (farPlane - nearPlane);
-                drawFilledTrisZ(tri2, clip2, color, zBuffer);
+                drawFilledTrisZ(tri2, clip2, color, zBuffer, 1);
             }
         }
     }

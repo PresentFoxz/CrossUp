@@ -11,15 +11,12 @@ file(REMOVE_RECURSE
   "CMakeFiles/CrossUp.dir/C/main.c.obj.d"
   "CMakeFiles/CrossUp.dir/C/movement.c.obj"
   "CMakeFiles/CrossUp.dir/C/movement.c.obj.d"
-  "CMakeFiles/CrossUp.dir/C/syscall.c.obj"
-  "CMakeFiles/CrossUp.dir/C/syscall.c.obj.d"
-  "CMakeFiles/CrossUp.dir/E_/PlaydateSDK/C_API/buildsupport/setup.c.obj"
-  "CMakeFiles/CrossUp.dir/E_/PlaydateSDK/C_API/buildsupport/setup.c.obj.d"
-  "CrossUp.elf"
-  "CrossUp.elf.manifest"
-  "CrossUp.elf.pdb"
+  "CrossUp.dll"
+  "CrossUp.dll.manifest"
+  "CrossUp.lib"
+  "CrossUp.pdb"
   "E:/PlaydateSDK/C_API/CrossUp/CrossUp.pdx"
-  "E:/PlaydateSDK/C_API/CrossUp/Source/pdex.elf"
+  "E:/PlaydateSDK/C_API/CrossUp/Source/pdex.dll"
 )
 
 # Per-language clean rules from dependency scanning.

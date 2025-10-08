@@ -5,7 +5,7 @@
 void project2D(int point[2], float verts[3], float fov, float nearPlane);
 void drawTri(int tris[3][2]);
 int windingOrder(int p0[2], int p1[2], int p2[2]);
-void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_t* zBuffer);
+void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_t* zBuffer, int outline);
 int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, float nearPlane, float farPlane);
 void enforceCCW(float tri[3][3]);
 

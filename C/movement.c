@@ -22,32 +22,27 @@ static void wrapPositionFloat(float* x, float* y, float* z) {
 }
 
 static void moveEnt(EntStruct* p, float mainYaw, float secondaryYaw, float secondaryStrength, float frict, float groundDelta, float airDelta, int type) {
-    float dt = deltaTime;
-    if (dt < 0.01f) dt = 0.01f;
-    float frameScale = dt * BASE_FPS;
-
     if (type == 0){
         if (p->grounded) {
-            p->velocity.x += (groundDelta * frameScale) * sinf(mainYaw);
-            p->velocity.z += (groundDelta * frameScale) * cosf(mainYaw);
+            p->velocity.x += groundDelta * sinf(mainYaw);
+            p->velocity.z += groundDelta * cosf(mainYaw);
         } else {
-            p->velocity.x += (airDelta * frameScale) * sinf(secondaryYaw);
-            p->velocity.z += (airDelta * frameScale) * cosf(secondaryYaw);
+            p->velocity.x += airDelta * sinf(secondaryYaw);
+            p->velocity.z += airDelta * cosf(secondaryYaw);
         }
     } else {
         if (p->grounded){
-            float frictionFactor = powf(frict, frameScale);
-            p->velocity.x *= frictionFactor;
-            p->velocity.z *= frictionFactor;
+            p->velocity.x *= frict;
+            p->velocity.z *= frict;
         } else {
             float forwardX = sinf(mainYaw);
             float forwardZ = cosf(mainYaw);
-
+    
             float forwardVel = p->velocity.x * forwardX + p->velocity.z * forwardZ;
-
+    
             if (forwardVel != 0.0f) {
-                float damping = (airDelta * frameScale) * secondaryStrength;
-
+                float damping = airDelta * secondaryStrength;
+            
                 if (forwardVel > 0.0f) {
                     forwardVel -= damping;
                     if (forwardVel < 0.0f) forwardVel = 0.0f;
@@ -55,7 +50,7 @@ static void moveEnt(EntStruct* p, float mainYaw, float secondaryYaw, float secon
                     forwardVel += damping;
                     if (forwardVel > 0.0f) forwardVel = 0.0f;
                 }
-
+                
                 p->velocity.x = forwardVel * forwardX;
                 p->velocity.z = forwardVel * forwardZ;
             }
@@ -64,11 +59,7 @@ static void moveEnt(EntStruct* p, float mainYaw, float secondaryYaw, float secon
 }
 
 static void rotateTowards(EntStruct* p, float rot, float current){
-    float dt = deltaTime;
-    if (dt < 0.01f) dt = 0.01f;
-    float frameScale = dt * BASE_FPS;
-
-    float step = 0.5f * frameScale;
+    float step = 0.23f;
     if (p->grounded == 1){
         if (current != rot){
             float delta = rot - current;

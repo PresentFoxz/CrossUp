@@ -45,7 +45,7 @@ set(SOURCES
 	../C/movement.c
 	../C/draw.c
 	../C/collisions.c
-	../C/syscall.c
+	#../C/syscall.c
 )
 
 if (TOOLCHAIN STREQUAL "armgcc")

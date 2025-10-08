@@ -1,20 +1,76 @@
 #include "draw.h"
 
-const int pattern[4][2][2] = {
-    {{0,1},{0,0}},
-    {{1,0},{0,1}},
-    {{1,1},{1,0}},
-    {{1,1},{1,1}}
-};
+static inline void blockCol(uint x, uint y, int shade, uint8_t* row) {
+    uint bit = 0;
+    uint px = x & 1;
+    uint py = y & 1;
 
-static void blockCol(uint x, uint y, int shade, uint8_t* row) {
-    uint px = x % 2;
-    uint py = y % 2;
+    switch (shade) {
+        case 0:
+            bit = (py == 0 && px == 1);
+            break;
+        case 1:
+            bit = (px ^ py);
+            break;
+        case 2:
+            bit = (py == 1 && px == 0) || (py == 1 && px == 1);
+            break;
+        case 3:
+            bit = 1;
+            break;
+        default:
+            return;
+    }
 
-    if (pattern[shade][py][px])
-        setPixelRaw(x, row, 1);
-    else
-        setPixelRaw(x, row, 0);
+    setPixelRaw(x, row, bit);
+}
+
+static void drawCustomLine(int x1, int y1, int x2, int y2, int sizeMin, int sizeMax, int type, qfixed16_t* zBuffer, float z1, float z2) {
+    int dx = x2 > x1 ? x2 - x1 : x1 - x2;
+    int sx = x1 < x2 ? 1 : -1;
+    int dy = y2 > y1 ? y2 - y1 : y1 - y2;
+    int sy = y1 < y2 ? 1 : -1;
+
+    int err = dx - dy;
+
+    int newX = x1;
+    int newY = y1;
+
+    int length = dx > dy ? dx : dy;
+    qfixed16_t zStep = TO_FIXED1_15((length > 0) ? (z2 - z1) / length : 0);
+    qfixed16_t currZ = TO_FIXED1_15(z1);
+
+    while (1) {
+        for (int oy = sizeMin; oy <= sizeMax; oy++) {
+            for (int ox = sizeMin; ox <= sizeMax; ox++) {
+                int px = newX + ox;
+                int py = newY + oy;
+
+                if (px < 0 || px >= SCREEN_W || py < 0 || py >= SCREEN_H) continue;
+
+                int index = py * SCREEN_W + px;
+
+                if (currZ < zBuffer[index]) {
+                    zBuffer[index] = currZ;
+                    setPixelRaw(px, buf + py * 52, type ? 1 : 0);
+                }
+            }
+        }
+
+        if (newX == x2 && newY == y2) break;
+
+        int e2 = 2 * err;
+        if (e2 > -dy) {
+            err -= dy;
+            newX += sx;
+        }
+        if (e2 < dx) {
+            err += dx;
+            newY += sy;
+        }
+
+        currZ += zStep;
+    }
 }
 
 void project2D(int point[2], float verts[3], float fov, float nearPlane) {
@@ -73,7 +129,7 @@ static inline int32_t edge_A(const int v0[2], const int v1[2]) { return v0[1] - 
 static inline int32_t edge_B(const int v0[2], const int v1[2]) { return v1[0] - v0[0]; }
 static inline int32_t edge_C(const int v0[2], const int v1[2]) { return v0[0]*v1[1] - v0[1]*v1[0]; }
 
-void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_t* zBuffer) {
+void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_t* zBuffer, int outline) {
     int area = (tris[1][0]-tris[0][0])*(tris[2][1]-tris[0][1]) - (tris[2][0]-tris[0][0])*(tris[1][1]-tris[0][1]);
     int flip = (area < 0) ? -1 : 1;
 
@@ -141,8 +197,13 @@ void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_
         w2_row += B01;
         invZ_row += invZStepY;
     }
-}
 
+    if (outline) {
+        drawCustomLine(tris[0][0], tris[0][1], tris[1][0], tris[1][1], 0, 1, 1, zBuffer, fullTri.t1.z + 0.01f, fullTri.t2.z + 0.01f);
+        drawCustomLine(tris[0][0], tris[0][1], tris[2][0], tris[2][1], 0, 1, 1, zBuffer, fullTri.t1.z + 0.01f, fullTri.t3.z + 0.01f);
+        drawCustomLine(tris[1][0], tris[1][1], tris[2][0], tris[2][1], 0, 1, 1, zBuffer, fullTri.t2.z + 0.01f, fullTri.t3.z + 0.01f);
+    }
+}
 
 int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, float nearPlane, float farPlane) {
     int inScreen[3], outScreen[3];
@@ -237,45 +298,4 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
     }
 
     return 0;
-}
-
-void staticLineDrawing(int p0[2], int p1[2], int color){
-    const int rand = randomInt(3, 15);
-    int new[2] = {p0[0], p0[1]};
-    int old[2] = {p0[0], p0[1]};
-
-    for (int i=0; i <= rand; i++){
-        int end = randomInt(3, 20);
-        old[0] = new[0];
-        old[1] = new[1];
-
-        int dx = new[0] - p1[0];
-        int dy = new[1] - p1[1];
-        
-        int dist = ((dx*dx)+(dy*dy)/2);
-        if (dist < 1) { dist = 1; } else if (dist > end) { dist = end; }
-        int xRand = randomInt(0, dist);
-        int yRand = randomInt(0, dist);
-
-        if (new[0] > p1[0]){
-            new[0] += -xRand;
-        } else {
-            new[0] += xRand;
-        }
-        
-        if (new[1] > p1[1]){
-            new[1] += -yRand;
-        } else {
-            new[1] += yRand;
-        }
-
-        int size = randomInt(1, 4);
-        LCDBitmapDrawMode colIDX = (color) ? kColorWhite : kColorBlack;
-
-        if (i != rand){
-            pd->graphics->drawLine(old[0], old[1], new[0], new[1], size, colIDX);
-        } else {
-            pd->graphics->drawLine(new[0], new[1], p1[0], p1[1], size, colIDX);
-        }
-    }
 }

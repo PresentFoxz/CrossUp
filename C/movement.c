@@ -228,7 +228,7 @@ void movePlayerObj(EntStruct* p, Camera* c){
 
     if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
 
-    runColl(p, 0);
+    runColl(p, 1);
 
     p->coyote++;
     if (p->grounded == 1) {

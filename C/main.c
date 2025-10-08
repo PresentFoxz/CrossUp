@@ -23,7 +23,7 @@ int allAmt = 0;
 int staticAmt = 0;
 
 const int debug = 0;
-const int colRend = 0;
+const int colRend = 1;
 const int renderRadius = 85;
 
 EntStruct* allEnts;

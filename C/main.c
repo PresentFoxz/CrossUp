@@ -235,7 +235,7 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
 
     for (int index = 0; index < allAmt; index++){
         int color = allPoints[index].objType;
-        
+        int out = 0;
         for (int v = 0; v < 3; v++) {
             verts[v].x = allPoints[index].verts[v][0] - camPos.x;
             verts[v].y = allPoints[index].verts[v][1] - camPos.y;
@@ -253,9 +253,13 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
             verts[v].x = rot[0];
             verts[v].y = rot[1];
             verts[v].z = rot[2];
+            if (viewFrustrum3D(verts[v].x, verts[v].y, verts[v].z, nearPlane, farPlane)){
+                out++;
+            }
             project2D(&check[v][0], (float[]){verts[v].x, verts[v].y, verts[v].z}, fov, nearPlane);
         }
 
+        if (out >= 3) { continue; }
         if (!windingOrder(check[0], check[1], check[2])) { continue; }
         if (verts[0].z <= 0.0f && verts[1].z <= 0.0f && verts[2].z <= 0.0f) { continue; }
 
@@ -291,6 +295,9 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, int type, int 
     float camY = FROM_FIXED32(cam.position.y);
     float camZ = FROM_FIXED32(cam.position.z);
 
+    float near = FROM_FIXED32(cam.nearPlane);
+    float far = FROM_FIXED32(cam.farPlane);
+
     float dist;
     if (posDist){
         float dx = pos.x - camX;
@@ -307,7 +314,7 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, int type, int 
 
         dist = (cx - camX)*(cx - camX) + (cy - camY)*(cy - camY) + (cz - camZ)*(cz - camZ);
         if (renderRadius && dist > renderRadius * renderRadius) continue;
-
+        
         worldTris tri;
         for (int j = 0; j < 3; j++) {
             float rotated[3];
@@ -316,8 +323,8 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, int type, int 
             tri.verts[j][1] = rotated[1] + pos.y;
             tri.verts[j][2] = rotated[2] + pos.z;
         }
+
         tri.objType = colorArray[i];
-        
         tri.dist = dist;
         allPoints[allAmt++] = tri;
     }

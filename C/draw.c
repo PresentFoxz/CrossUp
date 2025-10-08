@@ -21,13 +21,11 @@ void project2D(int point[2], float verts[3], float fov, float nearPlane) {
     float z = verts[2];
     if (z < nearPlane) z = nearPlane;
 
-    float half = (fov / z);
-    
-    float projected_x = verts[0] * half;
-    float projected_y = verts[1] * half;
-    
-    point[0] = (int)(projected_x + (sW_H + sX));
-    point[1] = (int)(-projected_y + (sH_H + sY));
+    float invZ = 1.0f / z;
+    float scale = fov * invZ;
+
+    point[0] = (int)(verts[0] * scale + (sW_H + sX));
+    point[1] = (int)(-verts[1] * scale + (sH_H + sY));
 }
 
 void RotationMatrix(float x, float y, float z, float sin1, float cos1, float sin2, float cos2, float sin3, float cos3, float* rot){
@@ -45,82 +43,106 @@ void RotationMatrix(float x, float y, float z, float sin1, float cos1, float sin
     rot[2] = finalZ;
 }
 
-void RotateVertexObject(float x, float y, float z, float sinx, float cosx, float siny, float cosy, float sinz, float cosz, float sx, float sy, float sz, float out[3]) {
-    float X = x * sx;
-    float Y = y * sy;
-    float Z = z * sz;
-    
-    float y1 = Y * cosx - Z * sinx;
-    float z1 = Y * sinx + Z * cosx;
-    
-    float x2 = X * cosy + z1 * siny;
-    float z2 = -X * siny + z1 * cosy;
-    
-    float x3 = x2 * cosz - y1 * sinz;
-    float y3 = x2 * sinz + y1 * cosz;
+void rotateVertex(float x, float y, float z, float rotMat[3][3], float out[3]) {
+    out[0] = x * rotMat[0][0] + y * rotMat[0][1] + z * rotMat[0][2];
+    out[1] = x * rotMat[1][0] + y * rotMat[1][1] + z * rotMat[1][2];
+    out[2] = x * rotMat[2][0] + y * rotMat[2][1] + z * rotMat[2][2];
+}
 
-    out[0] = x3;
-    out[1] = y3;
-    out[2] = z2;
+void computeRotScaleMatrix(float rotMat[3][3], float angleX, float angleY, float angleZ, float sx, float sy, float sz) {
+    float sinX = sinf(angleX), cosX = cosf(angleX);
+    float sinY = sinf(angleY), cosY = cosf(angleY);
+    float sinZ = sinf(angleZ), cosZ = cosf(angleZ);
+
+    rotMat[0][0] = (cosY * cosZ) * sx;
+    rotMat[0][1] = (-cosY * sinZ) * sx;
+    rotMat[0][2] = (sinY) * sx;
+
+    rotMat[1][0] = (sinX * sinY * cosZ + cosX * sinZ) * sy;
+    rotMat[1][1] = (-sinX * sinY * sinZ + cosX * cosZ) * sy;
+    rotMat[1][2] = (-sinX * cosY) * sy;
+
+    rotMat[2][0] = (-cosX * sinY * cosZ + sinX * sinZ) * sz;
+    rotMat[2][1] = (cosX * sinY * sinZ + sinX * cosZ) * sz;
+    rotMat[2][2] = (cosX * cosY) * sz;
 }
 
 int windingOrder(int *p0, int *p1, int *p2) { return (p0[0]*p1[1] - p0[1]*p1[0] + p1[0]*p2[1] - p1[1]*p2[0] + p2[0]*p0[1] - p2[1]*p0[0] > 0); }
 
+static inline int32_t edge_A(const int v0[2], const int v1[2]) { return v0[1] - v1[1]; }
+static inline int32_t edge_B(const int v0[2], const int v1[2]) { return v1[0] - v0[0]; }
+static inline int32_t edge_C(const int v0[2], const int v1[2]) { return v0[0]*v1[1] - v0[1]*v1[0]; }
+
 void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_t* zBuffer) {
-    float v0x = (float)(tris[0][0]), v0y = (float)(tris[0][1]), v0z = fullTri.t1.z;
-    float v1x = (float)(tris[1][0]), v1y = (float)(tris[1][1]), v1z = fullTri.t2.z;
-    float v2x = (float)(tris[2][0]), v2y = (float)(tris[2][1]), v2z = fullTri.t3.z;
+    int area = (tris[1][0]-tris[0][0])*(tris[2][1]-tris[0][1]) - (tris[2][0]-tris[0][0])*(tris[1][1]-tris[0][1]);
+    int flip = (area < 0) ? -1 : 1;
 
-    int minX = (int)fmaxf(0.0f, (float)fminf(fminf((float)v0x, (float)v1x), (float)v2x));
-    int maxX = (int)fminf((float)(SCREEN_W-1), (float)fmaxf(fmaxf((float)v0x, (float)v1x), (float)v2x));
-    int minY = (int)fmaxf(0.0f, (float)fminf(fminf((float)v0y, (float)v1y), (float)v2y));
-    int maxY = (int)fminf((float)(SCREEN_H-1), (float)fmaxf(fmaxf((float)v0y, (float)v1y), (float)v2y));
+    float x0 = (float)tris[0][0], y0 = (float)tris[0][1], z0 = fullTri.t1.z;
+    float x1 = (float)tris[1][0], y1 = (float)tris[1][1], z1 = fullTri.t2.z;
+    float x2 = (float)tris[2][0], y2 = (float)tris[2][1], z2 = fullTri.t3.z;
 
-    float denom = (v1y - v2y)*(v0x - v2x) + (v2x - v1x)*(v0y - v2y);
-    float invDenom = 1.0f / denom;
+    int minX = (int)fmaxf(0.0f, fminf(fminf(x0, x1), x2));
+    int maxX = (int)fminf((float)(SCREEN_W-1), fmaxf(fmaxf(x0, x1), x2));
+    int minY = (int)fmaxf(0.0f, fminf(fminf(y0, y1), y2));
+    int maxY = (int)fminf((float)(SCREEN_H-1), fmaxf(fmaxf(y0, y1), y2));
 
-    float aStepX = (v1y - v2y) * invDenom;
-    float bStepX = (v2y - v0y) * invDenom;
-    float aStepY = (v2x - v1x) * invDenom;
-    float bStepY = (v0x - v2x) * invDenom;
+    if (minX > maxX || minY > maxY) return;
+
+    int32_t A01 = edge_A(tris[0], tris[1]), B01 = edge_B(tris[0], tris[1]), C01 = edge_C(tris[0], tris[1]);
+    int32_t A12 = edge_A(tris[1], tris[2]), B12 = edge_B(tris[1], tris[2]), C12 = edge_C(tris[1], tris[2]);
+    int32_t A20 = edge_A(tris[2], tris[0]), B20 = edge_B(tris[2], tris[0]), C20 = edge_C(tris[2], tris[0]);
+
+    long long px = minX;
+    long long py = minY;
+
+    long long w0_row = (long long)A12 * px + (long long)B12 * py + (long long)C12;
+    long long w1_row = (long long)A20 * px + (long long)B20 * py + (long long)C20;
+    long long w2_row = (long long)A01 * px + (long long)B01 * py + (long long)C01;
+
+    float det = (x0*(y1 - y2) + x1*(y2 - y0) + x2*(y0 - y1));
+    if (det == 0.0f) return;
+    float invDet = 1.0f / det;
+    
+    float A = (z0*(y1 - y2) + z1*(y2 - y0) + z2*(y0 - y1)) * invDet;
+    float B = (z0*(x2 - x1) + z1*(x0 - x2) + z2*(x1 - x0)) * invDet;
+    float C = z0 - A*x0 - B*y0;
+
+    qfixed16_t invZStepX = TO_FIXED1_15(A);
+    qfixed16_t invZStepY = TO_FIXED1_15(B);
+    qfixed16_t invZ_row   = TO_FIXED1_15(A * minX + B * minY + C);
 
     const int rowStride = 52;
 
-    float startX = (float)minX + 0.5f;
-    float startY = (float)minY + 0.5f;
-    float aStart = ((v1y - v2y)*(startX - v2x) + (v2x - v1x)*(startY - v2y)) * invDenom;
-    float bStart = ((v2y - v0y)*(startX - v2x) + (v0x - v2x)*(startY - v2y)) * invDenom;
-
-    qfixed16_t invZStepX = TO_FIXED1_15(aStepX * v0z + bStepX * v1z + (-aStepX - bStepX) * v2z);
-
-    for (int y = minY; y <= maxY; y++) {
+    for (int y = minY; y <= maxY; ++y) {
         int idx = y * SCREEN_W;
+
+        long long w0 = w0_row;
+        long long w1 = w1_row;
+        long long w2 = w2_row;
+
         uint8_t* row = buf + y * rowStride;
-        
-        float a = aStart;
-        float b = bStart;
-        float c = 1.0f - a - b;
 
-        qfixed16_t invZ = TO_FIXED1_15(a * v0z + b * v1z + c * v2z);
-
-        for (int x = minX; x <= maxX; x++) {
-            if (((int)(a * 4096.0f) | (int)(b * 4096.0f) | (int)(c * 4096.0f)) >= 0) {
-                int index = idx+x;
+        qfixed16_t invZ = invZ_row;
+        for (int x = minX; x <= maxX; ++x) {
+            if ((w0*flip >= 0) && (w1*flip >= 0) && (w2*flip >= 0)) {
+                int index = idx + x;
                 if (invZ < zBuffer[index]) {
                     zBuffer[index] = invZ;
                     blockCol(x, y, triColor, row);
                 }
             }
-            
-            a += aStepX;
-            b += bStepX;
-            c = 1.0f - a - b;
+            w0 += A12;
+            w1 += A20;
+            w2 += A01;
             invZ += invZStepX;
         }
-        aStart += aStepY;
-        bStart += bStepY;
+        w0_row += B12;
+        w1_row += B20;
+        w2_row += B01;
+        invZ_row += invZStepY;
     }
 }
+
 
 int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, float nearPlane, float farPlane) {
     int inScreen[3], outScreen[3];

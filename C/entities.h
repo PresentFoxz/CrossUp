@@ -3,8 +3,8 @@
 #include "library.h"
 
 Camera createCamera(float x, float y, float z, float rotX, float rotY, float rotZ, float fov, float near, float far);
-EntStruct createPlayer(float x, float y, float z, float rotX, float rotY, float rotZ, float radius, float height, float frict, float fallFrict, int type);
-EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float rotZ, float radius, float height, float frict, float fallFrict, int type);
+EntStruct createPlayer(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, float radius, float height, float frict, float fallFrict, int type);
+EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, float radius, float height, float frict, float fallFrict, int type);
 
 void moveCamera(Camera* cam, float dx, float dy, float dz);
 void rotateCamera(Camera* cam, float rx, float ry, float rz);

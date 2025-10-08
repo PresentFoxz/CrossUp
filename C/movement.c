@@ -148,7 +148,7 @@ static void runColl(EntStruct* p, int colRend){
     }
 }
 
-void movePlayerObj(EntStruct* p, Camera* c){
+void movePlayerObj(EntStruct* p, Camera* c, int col){
     PDButtons tapped, held;
     pd->system->getButtonState(&held, &tapped, NULL);
 
@@ -228,7 +228,7 @@ void movePlayerObj(EntStruct* p, Camera* c){
 
     if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
 
-    runColl(p, 1);
+    runColl(p, col);
 
     p->coyote++;
     if (p->grounded == 1) {

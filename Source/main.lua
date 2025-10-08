@@ -7,7 +7,7 @@ local engine = cLib
 local seed = pd.getCurrentTimeMilliseconds()
 engine:init(seed)
 
-engine:addEnt(0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.5, 1.8, 0.56, 0.08, 0)
+engine:addEnt(0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.5, 1.8, 0.56, 0.08, 0)
 
 function pd.update()
     engine:player()

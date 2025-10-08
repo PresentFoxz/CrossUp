@@ -68,121 +68,113 @@ CMakeFiles\CrossUp.dir\C\main.c.obj: CMakeFiles\CrossUp.dir\flags.make
 CMakeFiles\CrossUp.dir\C\main.c.obj: E:\PlaydateSDK\C_API\CrossUp\C\main.c
 CMakeFiles\CrossUp.dir\C\main.c.obj: CMakeFiles\CrossUp.dir\compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\PlaydateSDK\C_API\CrossUp\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/CrossUp.dir/C/main.c.obj"
-	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\CrossUp.dir\C\main.c.obj.d --working-dir=E:\PlaydateSDK\C_API\CrossUp\build --filter-prefix="Note: including file: " -- C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) /showIncludes /FoCMakeFiles\CrossUp.dir\C\main.c.obj /FdCMakeFiles\CrossUp.dir\ /FS -c E:\PlaydateSDK\C_API\CrossUp\C\main.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles\CrossUp.dir\C\main.c.obj -MF CMakeFiles\CrossUp.dir\C\main.c.obj.d -o CMakeFiles\CrossUp.dir\C\main.c.obj -c E:\PlaydateSDK\C_API\CrossUp\C\main.c
 
 CMakeFiles\CrossUp.dir\C\main.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/CrossUp.dir/C/main.c.i"
-	C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe > CMakeFiles\CrossUp.dir\C\main.c.i @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\main.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\main.c > CMakeFiles\CrossUp.dir\C\main.c.i
 
 CMakeFiles\CrossUp.dir\C\main.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/CrossUp.dir/C/main.c.s"
-	C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) /FoNUL /FAs /FaCMakeFiles\CrossUp.dir\C\main.c.s /c E:\PlaydateSDK\C_API\CrossUp\C\main.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S E:\PlaydateSDK\C_API\CrossUp\C\main.c -o CMakeFiles\CrossUp.dir\C\main.c.s
 
 CMakeFiles\CrossUp.dir\C\library.c.obj: CMakeFiles\CrossUp.dir\flags.make
 CMakeFiles\CrossUp.dir\C\library.c.obj: E:\PlaydateSDK\C_API\CrossUp\C\library.c
 CMakeFiles\CrossUp.dir\C\library.c.obj: CMakeFiles\CrossUp.dir\compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\PlaydateSDK\C_API\CrossUp\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/CrossUp.dir/C/library.c.obj"
-	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\CrossUp.dir\C\library.c.obj.d --working-dir=E:\PlaydateSDK\C_API\CrossUp\build --filter-prefix="Note: including file: " -- C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) /showIncludes /FoCMakeFiles\CrossUp.dir\C\library.c.obj /FdCMakeFiles\CrossUp.dir\ /FS -c E:\PlaydateSDK\C_API\CrossUp\C\library.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles\CrossUp.dir\C\library.c.obj -MF CMakeFiles\CrossUp.dir\C\library.c.obj.d -o CMakeFiles\CrossUp.dir\C\library.c.obj -c E:\PlaydateSDK\C_API\CrossUp\C\library.c
 
 CMakeFiles\CrossUp.dir\C\library.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/CrossUp.dir/C/library.c.i"
-	C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe > CMakeFiles\CrossUp.dir\C\library.c.i @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\library.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\library.c > CMakeFiles\CrossUp.dir\C\library.c.i
 
 CMakeFiles\CrossUp.dir\C\library.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/CrossUp.dir/C/library.c.s"
-	C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) /FoNUL /FAs /FaCMakeFiles\CrossUp.dir\C\library.c.s /c E:\PlaydateSDK\C_API\CrossUp\C\library.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S E:\PlaydateSDK\C_API\CrossUp\C\library.c -o CMakeFiles\CrossUp.dir\C\library.c.s
 
 CMakeFiles\CrossUp.dir\C\entities.c.obj: CMakeFiles\CrossUp.dir\flags.make
 CMakeFiles\CrossUp.dir\C\entities.c.obj: E:\PlaydateSDK\C_API\CrossUp\C\entities.c
 CMakeFiles\CrossUp.dir\C\entities.c.obj: CMakeFiles\CrossUp.dir\compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\PlaydateSDK\C_API\CrossUp\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/CrossUp.dir/C/entities.c.obj"
-	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\CrossUp.dir\C\entities.c.obj.d --working-dir=E:\PlaydateSDK\C_API\CrossUp\build --filter-prefix="Note: including file: " -- C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) /showIncludes /FoCMakeFiles\CrossUp.dir\C\entities.c.obj /FdCMakeFiles\CrossUp.dir\ /FS -c E:\PlaydateSDK\C_API\CrossUp\C\entities.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles\CrossUp.dir\C\entities.c.obj -MF CMakeFiles\CrossUp.dir\C\entities.c.obj.d -o CMakeFiles\CrossUp.dir\C\entities.c.obj -c E:\PlaydateSDK\C_API\CrossUp\C\entities.c
 
 CMakeFiles\CrossUp.dir\C\entities.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/CrossUp.dir/C/entities.c.i"
-	C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe > CMakeFiles\CrossUp.dir\C\entities.c.i @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\entities.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\entities.c > CMakeFiles\CrossUp.dir\C\entities.c.i
 
 CMakeFiles\CrossUp.dir\C\entities.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/CrossUp.dir/C/entities.c.s"
-	C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) /FoNUL /FAs /FaCMakeFiles\CrossUp.dir\C\entities.c.s /c E:\PlaydateSDK\C_API\CrossUp\C\entities.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S E:\PlaydateSDK\C_API\CrossUp\C\entities.c -o CMakeFiles\CrossUp.dir\C\entities.c.s
 
 CMakeFiles\CrossUp.dir\C\movement.c.obj: CMakeFiles\CrossUp.dir\flags.make
 CMakeFiles\CrossUp.dir\C\movement.c.obj: E:\PlaydateSDK\C_API\CrossUp\C\movement.c
 CMakeFiles\CrossUp.dir\C\movement.c.obj: CMakeFiles\CrossUp.dir\compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\PlaydateSDK\C_API\CrossUp\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/CrossUp.dir/C/movement.c.obj"
-	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\CrossUp.dir\C\movement.c.obj.d --working-dir=E:\PlaydateSDK\C_API\CrossUp\build --filter-prefix="Note: including file: " -- C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) /showIncludes /FoCMakeFiles\CrossUp.dir\C\movement.c.obj /FdCMakeFiles\CrossUp.dir\ /FS -c E:\PlaydateSDK\C_API\CrossUp\C\movement.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles\CrossUp.dir\C\movement.c.obj -MF CMakeFiles\CrossUp.dir\C\movement.c.obj.d -o CMakeFiles\CrossUp.dir\C\movement.c.obj -c E:\PlaydateSDK\C_API\CrossUp\C\movement.c
 
 CMakeFiles\CrossUp.dir\C\movement.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/CrossUp.dir/C/movement.c.i"
-	C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe > CMakeFiles\CrossUp.dir\C\movement.c.i @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\movement.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\movement.c > CMakeFiles\CrossUp.dir\C\movement.c.i
 
 CMakeFiles\CrossUp.dir\C\movement.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/CrossUp.dir/C/movement.c.s"
-	C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) /FoNUL /FAs /FaCMakeFiles\CrossUp.dir\C\movement.c.s /c E:\PlaydateSDK\C_API\CrossUp\C\movement.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S E:\PlaydateSDK\C_API\CrossUp\C\movement.c -o CMakeFiles\CrossUp.dir\C\movement.c.s
 
 CMakeFiles\CrossUp.dir\C\draw.c.obj: CMakeFiles\CrossUp.dir\flags.make
 CMakeFiles\CrossUp.dir\C\draw.c.obj: E:\PlaydateSDK\C_API\CrossUp\C\draw.c
 CMakeFiles\CrossUp.dir\C\draw.c.obj: CMakeFiles\CrossUp.dir\compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\PlaydateSDK\C_API\CrossUp\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/CrossUp.dir/C/draw.c.obj"
-	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\CrossUp.dir\C\draw.c.obj.d --working-dir=E:\PlaydateSDK\C_API\CrossUp\build --filter-prefix="Note: including file: " -- C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) /showIncludes /FoCMakeFiles\CrossUp.dir\C\draw.c.obj /FdCMakeFiles\CrossUp.dir\ /FS -c E:\PlaydateSDK\C_API\CrossUp\C\draw.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles\CrossUp.dir\C\draw.c.obj -MF CMakeFiles\CrossUp.dir\C\draw.c.obj.d -o CMakeFiles\CrossUp.dir\C\draw.c.obj -c E:\PlaydateSDK\C_API\CrossUp\C\draw.c
 
 CMakeFiles\CrossUp.dir\C\draw.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/CrossUp.dir/C/draw.c.i"
-	C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe > CMakeFiles\CrossUp.dir\C\draw.c.i @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\draw.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\draw.c > CMakeFiles\CrossUp.dir\C\draw.c.i
 
 CMakeFiles\CrossUp.dir\C\draw.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/CrossUp.dir/C/draw.c.s"
-	C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) /FoNUL /FAs /FaCMakeFiles\CrossUp.dir\C\draw.c.s /c E:\PlaydateSDK\C_API\CrossUp\C\draw.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S E:\PlaydateSDK\C_API\CrossUp\C\draw.c -o CMakeFiles\CrossUp.dir\C\draw.c.s
 
 CMakeFiles\CrossUp.dir\C\collisions.c.obj: CMakeFiles\CrossUp.dir\flags.make
 CMakeFiles\CrossUp.dir\C\collisions.c.obj: E:\PlaydateSDK\C_API\CrossUp\C\collisions.c
 CMakeFiles\CrossUp.dir\C\collisions.c.obj: CMakeFiles\CrossUp.dir\compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\PlaydateSDK\C_API\CrossUp\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/CrossUp.dir/C/collisions.c.obj"
-	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\CrossUp.dir\C\collisions.c.obj.d --working-dir=E:\PlaydateSDK\C_API\CrossUp\build --filter-prefix="Note: including file: " -- C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) /showIncludes /FoCMakeFiles\CrossUp.dir\C\collisions.c.obj /FdCMakeFiles\CrossUp.dir\ /FS -c E:\PlaydateSDK\C_API\CrossUp\C\collisions.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles\CrossUp.dir\C\collisions.c.obj -MF CMakeFiles\CrossUp.dir\C\collisions.c.obj.d -o CMakeFiles\CrossUp.dir\C\collisions.c.obj -c E:\PlaydateSDK\C_API\CrossUp\C\collisions.c
 
 CMakeFiles\CrossUp.dir\C\collisions.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/CrossUp.dir/C/collisions.c.i"
-	C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe > CMakeFiles\CrossUp.dir\C\collisions.c.i @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\collisions.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\collisions.c > CMakeFiles\CrossUp.dir\C\collisions.c.i
 
 CMakeFiles\CrossUp.dir\C\collisions.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/CrossUp.dir/C/collisions.c.s"
-	C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\cl.exe @<<
- /nologo $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) /FoNUL /FAs /FaCMakeFiles\CrossUp.dir\C\collisions.c.s /c E:\PlaydateSDK\C_API\CrossUp\C\collisions.c
-<<
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S E:\PlaydateSDK\C_API\CrossUp\C\collisions.c -o CMakeFiles\CrossUp.dir\C\collisions.c.s
+
+CMakeFiles\CrossUp.dir\C\syscall.c.obj: CMakeFiles\CrossUp.dir\flags.make
+CMakeFiles\CrossUp.dir\C\syscall.c.obj: E:\PlaydateSDK\C_API\CrossUp\C\syscall.c
+CMakeFiles\CrossUp.dir\C\syscall.c.obj: CMakeFiles\CrossUp.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\PlaydateSDK\C_API\CrossUp\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/CrossUp.dir/C/syscall.c.obj"
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles\CrossUp.dir\C\syscall.c.obj -MF CMakeFiles\CrossUp.dir\C\syscall.c.obj.d -o CMakeFiles\CrossUp.dir\C\syscall.c.obj -c E:\PlaydateSDK\C_API\CrossUp\C\syscall.c
+
+CMakeFiles\CrossUp.dir\C\syscall.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/CrossUp.dir/C/syscall.c.i"
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\CrossUp\C\syscall.c > CMakeFiles\CrossUp.dir\C\syscall.c.i
+
+CMakeFiles\CrossUp.dir\C\syscall.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/CrossUp.dir/C/syscall.c.s"
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S E:\PlaydateSDK\C_API\CrossUp\C\syscall.c -o CMakeFiles\CrossUp.dir\C\syscall.c.s
+
+CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj: CMakeFiles\CrossUp.dir\flags.make
+CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj: E:\PlaydateSDK\C_API\buildsupport\setup.c
+CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj: CMakeFiles\CrossUp.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\PlaydateSDK\C_API\CrossUp\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/CrossUp.dir/E_/PlaydateSDK/C_API/buildsupport/setup.c.obj"
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj -MF CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj.d -o CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj -c E:\PlaydateSDK\C_API\buildsupport\setup.c
+
+CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/CrossUp.dir/E_/PlaydateSDK/C_API/buildsupport/setup.c.i"
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E E:\PlaydateSDK\C_API\buildsupport\setup.c > CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.i
+
+CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/CrossUp.dir/E_/PlaydateSDK/C_API/buildsupport/setup.c.s"
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S E:\PlaydateSDK\C_API\buildsupport\setup.c -o CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.s
 
 # Object files for target CrossUp
 CrossUp_OBJECTS = \
@@ -191,29 +183,32 @@ CrossUp_OBJECTS = \
 "CMakeFiles\CrossUp.dir\C\entities.c.obj" \
 "CMakeFiles\CrossUp.dir\C\movement.c.obj" \
 "CMakeFiles\CrossUp.dir\C\draw.c.obj" \
-"CMakeFiles\CrossUp.dir\C\collisions.c.obj"
+"CMakeFiles\CrossUp.dir\C\collisions.c.obj" \
+"CMakeFiles\CrossUp.dir\C\syscall.c.obj" \
+"CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj"
 
 # External object files for target CrossUp
 CrossUp_EXTERNAL_OBJECTS =
 
-CrossUp.dll: CMakeFiles\CrossUp.dir\C\main.c.obj
-CrossUp.dll: CMakeFiles\CrossUp.dir\C\library.c.obj
-CrossUp.dll: CMakeFiles\CrossUp.dir\C\entities.c.obj
-CrossUp.dll: CMakeFiles\CrossUp.dir\C\movement.c.obj
-CrossUp.dll: CMakeFiles\CrossUp.dir\C\draw.c.obj
-CrossUp.dll: CMakeFiles\CrossUp.dir\C\collisions.c.obj
-CrossUp.dll: CMakeFiles\CrossUp.dir\build.make
-CrossUp.dll: CMakeFiles\CrossUp.dir\objects1.rsp
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=E:\PlaydateSDK\C_API\CrossUp\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking C shared library CrossUp.dll"
+CrossUp.elf: CMakeFiles\CrossUp.dir\C\main.c.obj
+CrossUp.elf: CMakeFiles\CrossUp.dir\C\library.c.obj
+CrossUp.elf: CMakeFiles\CrossUp.dir\C\entities.c.obj
+CrossUp.elf: CMakeFiles\CrossUp.dir\C\movement.c.obj
+CrossUp.elf: CMakeFiles\CrossUp.dir\C\draw.c.obj
+CrossUp.elf: CMakeFiles\CrossUp.dir\C\collisions.c.obj
+CrossUp.elf: CMakeFiles\CrossUp.dir\C\syscall.c.obj
+CrossUp.elf: CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+CrossUp.elf: CMakeFiles\CrossUp.dir\build.make
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=E:\PlaydateSDK\C_API\CrossUp\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking C executable CrossUp.elf"
 	echo >nul && "C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/PlaydateSDK/C_API/CrossUp
-	"C:\Program Files\CMake\bin\cmake.exe" -E vs_link_dll --msvc-ver=1944 --intdir=CMakeFiles\CrossUp.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100261~1.0\x64\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100261~1.0\x64\mt.exe --manifests -- C:\PROGRA~2\MICROS~3\2022\BUILDT~1\VC\Tools\MSVC\1444~1.352\bin\Hostx64\x64\link.exe /nologo @CMakeFiles\CrossUp.dir\objects1.rsp @<<
- /out:CrossUp.dll /implib:CrossUp.lib /pdb:E:\PlaydateSDK\C_API\CrossUp\build\CrossUp.pdb /dll /version:0.0 /machine:x64 /debug /INCREMENTAL  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib  
-<<
-	echo >nul && "C:\Program Files\CMake\bin\cmake.exe" -E copy E:/PlaydateSDK/C_API/CrossUp/build/CrossUp.dll E:/PlaydateSDK/C_API/CrossUp/Source/pdex.dll
-	E:\PlaydateSDK\bin\pdc -sdkpath E:/PlaydateSDK E:/PlaydateSDK/C_API/CrossUp/Source E:/PlaydateSDK/C_API/CrossUp/CrossUp.pdx
+	C:\PROGRA~2\ARMGNU~1\14EFD8~1.2RE\bin\AR19DD~1.EXE -O3 -DNDEBUG -mcpu=cortex-m7 -mfpu=fpv5-sp-d16 -mfloat-abi=hard -ffast-math -nostartfiles -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -D__FPU_USED=1 -TE:/PlaydateSDK/C_API/buildsupport/link_map.ld -Wl,-Map=game.map,--cref,--gc-sections,--no-warn-mismatch,--emit-relocs --entry eventHandlerShim $(CrossUp_OBJECTS) $(CrossUp_EXTERNAL_OBJECTS) -o CrossUp.elf
+	echo >nul && "C:\Program Files (x86)\Arm GNU Toolchain arm-none-eabi\14.2 rel1\bin\arm-none-eabi-strip.exe" --strip-unneeded -R .comment -g CrossUp.elf -o E:/PlaydateSDK/C_API/CrossUp/Source/pdex.elf
+	cd E:\PlaydateSDK\C_API\CrossUp
+	E:\PlaydateSDK\bin\pdc -sdkpath E:/PlaydateSDK Source E:/PlaydateSDK/C_API/CrossUp/CrossUp.pdx
+	cd E:\PlaydateSDK\C_API\CrossUp\build
 
 # Rule to build all files generated by this target.
-CMakeFiles\CrossUp.dir\build: CrossUp.dll
+CMakeFiles\CrossUp.dir\build: CrossUp.elf
 .PHONY : CMakeFiles\CrossUp.dir\build
 
 CMakeFiles\CrossUp.dir\clean:

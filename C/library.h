@@ -17,11 +17,6 @@ extern PlaydateAPI* pd;
 #define SCREEN_W 400
 #define SCREEN_H 240
 
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-#define MIN3(a,b,c) (MIN(MIN((a),(b)),(c)))
-#define MAX3(a,b,c) (MAX(MAX((a),(b)),(c)))
-
 #define FIXED_POINT_FRACTIONAL_BITS8 8
 #define FP8_ONE (1 << FIXED_POINT_FRACTIONAL_BITS8)
 #define TO_FIXED8(x) ((qfixed8_t)((x) * FP8_ONE))
@@ -62,6 +57,9 @@ static inline int allNonNegative(float a, float b, float c) {
 #define sW_H  (sW / 2)
 #define sH_H  (sH / 2)
 
+extern const float fovX;
+extern const float fovY;
+
 extern uint8_t* buf;
 extern const int blockVerts[8][3];
 extern const int blockTris[12][4];
@@ -69,19 +67,12 @@ extern float pCollisionPos[3];
 extern float pColPoints[4][3];
 extern int substeps;
 
-int pointsOnScreen(int tri[3][2]);
-
 int randomInt(int a, int b);
 float randomFloat(float a, float b);
 float degToRad(float deg);
 float lerp(float t, float a, float b);
 void setPixelRaw(uint x, uint8_t* row, int color);
-int viewFrustrum3D(float x, float y, float z, float fovX, float fovY, float nearPlane, float farPlane);
-float mfminf(float a, float b);
-float mfmaxf(float a, float b);
-void drawCustomLine(int x1, int y1, int x2, int y2, int size, int type);
-void closestPointOnTriangle3(const float p[3], const float a[3], const float b[3], const float c[3], float out[3]);
-float dot(Vect3f a, Vect3f b);
+int viewFrustrum3D(float x, float y, float z, float nearPlane, float farPlane);
 
 void swapInt(int* a, int* b);
 void swapInt2(int* a, int* b);

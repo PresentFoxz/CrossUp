@@ -1,40 +1,50 @@
-E:/PlaydateSDK/C_API/CrossUp/C/collisions.h
-E:/PlaydateSDK/C_API/CrossUp/C/library.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stdio.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt.h
-C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime.h
-C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/include/sal.h
-C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/include/concurrencysal.h
-C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/include/vadefs.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wstdio.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_stdio_config.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stdlib.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_malloc.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_search.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stddef.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wstdlib.h
-C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/include/limits.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/string.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_memory.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_memcpy_s.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/errno.h
-C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_string.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wstring.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_math.h
-E:/PlaydateSDK/C_API/pd_api.h
-C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdint.h
-E:/PlaydateSDK/C_API/pd_api/pd_api_file.h
-E:/PlaydateSDK/C_API/pd_api/pd_api_gfx.h
-C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdbool.h
-E:/PlaydateSDK/C_API/pd_api/pd_api_sys.h
-C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdarg.h
-E:/PlaydateSDK/C_API/pd_api/pd_api_lua.h
-E:/PlaydateSDK/C_API/pd_api/pd_api_json.h
-E:/PlaydateSDK/C_API/pd_api/pd_api_sprite.h
-E:/PlaydateSDK/C_API/pd_api/pd_api_sound.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
-E:/PlaydateSDK/C_API/pd_api/pd_api_display.h
-E:/PlaydateSDK/C_API/pd_api/pd_api_scoreboards.h
-E:/PlaydateSDK/C_API/pd_api/pd_api_network.h
-E:/PlaydateSDK/C_API/CrossUp/C/structs.h
+CMakeFiles\CrossUp.dir\C\collisions.c.obj: \
+ E:\PlaydateSDK\C_API\CrossUp\C\collisions.c \
+ E:\PlaydateSDK\C_API\CrossUp\C\collisions.h \
+ E:\PlaydateSDK\C_API\CrossUp\C\library.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/stdio.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/_ansi.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/newlib.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/_newlib_version.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/config.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/machine/ieeefp.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/features.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/cdefs.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/machine/_default_types.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/lib/gcc/arm-none-eabi/14.2.1/include/stddef.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/lib/gcc/arm-none-eabi/14.2.1/include/stdarg.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/reent.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/_ansi.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/_types.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/machine/_types.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/lock.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/stdio.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/stdlib.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/machine/stdlib.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/alloca.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/string.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/_locale.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/strings.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/string.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/errno.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/errno.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/math.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/machine/fastmath.h \
+ E:\PlaydateSDK\C_API/pd_api.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/lib/gcc/arm-none-eabi/14.2.1/include/stdint.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/stdint.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/_intsup.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/_stdint.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_file.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_gfx.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/lib/gcc/arm-none-eabi/14.2.1/include/stdbool.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_sys.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_lua.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_json.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_sprite.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_sound.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_display.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_scoreboards.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_network.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_sys.h \
+ E:\PlaydateSDK\C_API\CrossUp\C\structs.h

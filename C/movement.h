@@ -14,7 +14,7 @@
 #define MAXCOLY 2000
 #define MAXCOLZ 2000
 
-void movePlayerObj(EntStruct* p, Camera* c);
+void movePlayerObj(EntStruct* p, Camera* c, int col);
 void moveEntObj(EntStruct* e, EntStruct* p);
 
 void handleCameraInput(Camera* cam);

@@ -1,7 +1,7 @@
-name=Foxgine
+name=CrossUp
 author=PresentFox
-description=Foxgine
-bundleID=com.panic.Foxgine
+description=CrossUp
+bundleID=com.panic.CrossUp
 imagePath=
 pdxversion=30000
-buildtime=813164023
+buildtime=813254792

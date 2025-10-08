@@ -55,6 +55,7 @@ typedef struct {
 typedef struct {
     Vect3i position;
     Vect3i rotation;
+    Vect3i size;
     Vect3f velocity;
     qfixed32_t surfRot;
     qfixed32_t radius, height;

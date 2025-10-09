@@ -38,6 +38,8 @@ int modelIndex = 0;
 int allPointsCount = 0;
 const int lengthJoints = 3;
 
+float rotModel = 0.0f;
+
 Vect3f camForward;
 
 static int cLib_init(lua_State* L);
@@ -51,7 +53,7 @@ static const lua_reg cLibs[] ={
     { "render", cLib_render },
     { "player", cLib_playerAction },
     { "addEnt", cLib_addEnt },
-    { "newSettings", cLib_SettingsChange}
+    { "newSettings", cLib_SettingsChange},
     { NULL, NULL }
 };
 
@@ -160,6 +162,7 @@ static int cLib_addEnt(lua_State* L){
         int newPoint = (allPointsCount + entArray[type].count);
         if (newPoint > allPointsCount) {
             allPoints = pd->system->realloc(allPoints, newPoint * sizeof(worldTris));
+            allPointsCount = newPoint;
         }
     } else {
         pd->system->logToConsole("Max entities reached!");
@@ -228,19 +231,11 @@ static void renderLines(float CamYDirSin, float CamYDirCos, float CamXDirSin, fl
     }
 }
 
-static int cLib_SettingsChange(lua_State* L){
-    renderRadius = pd->lua->getArgInt(2);
-    pixSizeX = pd->lua->getArgInt(3);
-    pixSizeY = pd->lua->getArgInt(4);
-
-    return 0;
-}
-
-static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos){
-    float fov = FROM_FIXED32(cam.fov);
-    float nearPlane = FROM_FIXED32(cam.nearPlane);
-    float farPlane = FROM_FIXED32(cam.farPlane);
-    Vect3f camPos = {FROM_FIXED32(cam.position.x), FROM_FIXED32(cam.position.y), FROM_FIXED32(cam.position.z)};
+static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos, Camera usedCam){
+    float fov = FROM_FIXED32(usedCam.fov);
+    float nearPlane = FROM_FIXED32(usedCam.nearPlane);
+    float farPlane = FROM_FIXED32(usedCam.farPlane);
+    Vect3f camPos = {FROM_FIXED32(usedCam.position.x), FROM_FIXED32(usedCam.position.y), FROM_FIXED32(usedCam.position.z)};
 
     int tri1[3][2];
     int tri2[3][2];
@@ -285,17 +280,17 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
     }
 }
 
-static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, int type, int triCount, Vect3m* data, int* colorArray, int posDist) {
+static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera cCam, int type, int triCount, Vect3m* data, int* colorArray, int posDist) {
     Vect3f dirNorm;
     float rotMat[3][3];
     computeRotScaleMatrix(rotMat, rot.x, rot.y, rot.z, size.x, size.y, size.z);
 
-    float camX = FROM_FIXED32(cam.position.x);
-    float camY = FROM_FIXED32(cam.position.y);
-    float camZ = FROM_FIXED32(cam.position.z);
+    float camX = FROM_FIXED32(cCam.position.x);
+    float camY = FROM_FIXED32(cCam.position.y);
+    float camZ = FROM_FIXED32(cCam.position.z);
 
-    float near = FROM_FIXED32(cam.nearPlane);
-    float far = FROM_FIXED32(cam.farPlane);
+    float near = FROM_FIXED32(cCam.nearPlane);
+    float far = FROM_FIXED32(cCam.farPlane);
 
     float dx = pos.x - camX;
     float dy = pos.y - camY;
@@ -347,6 +342,7 @@ static void addPlayer() {
         (Vect3f){FROM_FIXED32(player.position.x), FROM_FIXED32(player.position.y), FROM_FIXED32(player.position.z)},
         (Vect3f){FROM_FIXED32(player.rotation.x), FROM_FIXED32(player.rotation.y), FROM_FIXED32(player.rotation.z)},
         (Vect3f){FROM_FIXED32(player.size.x), FROM_FIXED32(player.size.y), FROM_FIXED32(player.size.z)},
+        cam,
         player.type,
         entArray[player.type].count,
         entArray[player.type].data,
@@ -362,6 +358,7 @@ static void addEntities() {
             (Vect3f){FROM_FIXED32(allEnts[i].position.x), FROM_FIXED32(allEnts[i].position.y), FROM_FIXED32(allEnts[i].position.z)},
             (Vect3f){FROM_FIXED32(allEnts[i].rotation.x), FROM_FIXED32(allEnts[i].rotation.y), FROM_FIXED32(allEnts[i].rotation.z)},
             (Vect3f){FROM_FIXED32(allEnts[i].size.x), FROM_FIXED32(allEnts[i].size.y), FROM_FIXED32(allEnts[i].size.z)},
+            cam,
             allEnts[i].type,
             entArray[allEnts[i].type].count,
             entArray[allEnts[i].type].data,
@@ -376,6 +373,7 @@ static void addMap(){
         (Vect3f){0.0f, 0.0f, 0.0f},
         (Vect3f){0.0f, 0.0f, 0.0f},
         (Vect3f){1.0f, 1.0f, 1.0f},
+        cam,
         modelIndex,
         mapArray[modelIndex].count,
         mapArray[modelIndex].data,
@@ -397,7 +395,7 @@ static int cLib_render(lua_State* L) {
     addPlayer(CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos);
     // qsort(allPoints, allAmt, sizeof(worldTris), compareRenderTris);
     
-    renderTris(CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos);
+    renderTris(CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos, cam);
 
     if (debug == 1) {
         // pd->system->logToConsole( "All allocation: %d", (sizeof(worldTris) * mapArray[modelIndex].count) + (sizeof(EntStruct) * entAmt) + (sizeof(worldTris) * allAmt) + (sizeof(staticPoints) * lengthJoints) );
@@ -428,8 +426,6 @@ static int cLib_playerAction(lua_State* L) {
     for (int i=0; i < (SCREEN_W * SCREEN_H); i++){ zBuffer[i] = FLT_MAX16; }
     allAmt = 0;
 
-    entModels = pd->system->realloc(entModels, sizeof(worldTris) * 0);
-
     movePlayerObj(&player, &cam, colRend);
     handleCameraInput(&cam);
     updateCamera(&cam, &player, 7.0f);
@@ -439,6 +435,56 @@ static int cLib_playerAction(lua_State* L) {
     camForward.x = cosf(FROM_FIXED32(cam.rotation.x)) * sinf(FROM_FIXED32(cam.rotation.y));
     camForward.y = sinf(FROM_FIXED32(cam.rotation.x));
     camForward.z = cosf(FROM_FIXED32(cam.rotation.x)) * cosf(FROM_FIXED32(cam.rotation.y));
+
+    return 0;
+}
+
+static void addModel(int type, Camera newCam){
+    addObjectToWorld(
+        (Vect3f){5.0f, 0.0f, 5.0f},
+        (Vect3f){0.0f, rotModel, 0.0f},
+        (Vect3f){1.0f, 1.0f, 1.0f},
+        newCam,
+        type,
+        entArray[modelIndex].count,
+        entArray[modelIndex].data,
+        entArray[modelIndex].color,
+        false
+    );
+
+    rotModel += degToRad(2.0f);
+
+    if (rotModel > degToRad(360.0f)) rotModel = degToRad(0.0f);
+    if (rotModel < degToRad(0.0f)) rotModel = degToRad(360.0f);
+}
+
+static void settingsModel(int type) {
+    const float CamXDirSin = -sinf(0.0f);
+    const float CamXDirCos = cosf(0.0f);
+    const float CamYDirSin = -sinf(0.0f);
+    const float CamYDirCos = cosf(0.0f);
+    const float CamZDirSin = -sinf(0.0f);
+    const float CamZDirCos = cosf(0.0f);
+
+    Camera newCam = createCamera(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 90.0f, 0.1f, 100.0f);
+
+    addModel(type, newCam);
+    // qsort(allPoints, allAmt, sizeof(worldTris), compareRenderTris);
+    
+    renderTris(CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos, newCam);
+}
+
+static int cLib_SettingsChange(lua_State* L){
+    pd->graphics->clear(kColorBlack);
+    buf = pd->graphics->getFrame();
+    for (int i=0; i < (SCREEN_W * SCREEN_H); i++){ zBuffer[i] = FLT_MAX16; }
+    allAmt = 0;
+
+    settingsModel(pd->lua->getArgInt(2));
+    
+    renderRadius = pd->lua->getArgInt(3);
+    pixSizeX = pd->lua->getArgInt(4);
+    pixSizeY = pd->lua->getArgInt(5);
 
     return 0;
 }

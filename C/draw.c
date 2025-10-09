@@ -7,14 +7,12 @@ static const uint8_t shadeLUT[4][2][2] = {
     {{1,1},{1,1}}
 };
 
-static inline void blockCol(uint x, uint y, int shade, uint8_t* row) {
-    uint gridX = (x / pixSizeX) * pixSizeX;
-    uint gridY = (y / pixSizeY) * pixSizeY;
-    
+static inline void blockCol(uint gridX, uint gridY, int shade, uint8_t* row) {
     for (int dy = 0; dy < pixSizeY; dy++) {
         uint rowY = gridY + dy;
         if (rowY >= SCREEN_H) break;
 
+        uint py = rowY & 1;
         uint8_t* rowPtr = buf + rowY * rowStride;
 
         for (int dx = 0; dx < pixSizeX; dx++) {
@@ -22,8 +20,6 @@ static inline void blockCol(uint x, uint y, int shade, uint8_t* row) {
             if (colX >= SCREEN_W) break;
 
             uint px = colX & 1;
-            uint py = rowY & 1;
-
             setPixelRaw(colX, rowPtr, shadeLUT[shade][py][px]);
         }
     }
@@ -159,7 +155,7 @@ int windingOrder(int *p0, int *p1, int *p2) { return (p0[0]*p1[1] - p0[1]*p1[0] 
 
 static inline int32_t edge_A(const int v0[2], const int v1[2]) { return v0[1] - v1[1]; }
 static inline int32_t edge_B(const int v0[2], const int v1[2]) { return v1[0] - v0[0]; }
-static inline int32_t edge_C(const int v0[2], const int v1[2]) { return v0[0]*v1[1] - v0[1]*v1[0]; }
+static inline int32_t edge_C(const int v0[2], const int v1[2]) { return v0[0]*v1[1] - v1[0]*v0[1]; }
 
 void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_t* zBuffer, int outline) {
     int area = (tris[1][0]-tris[0][0])*(tris[2][1]-tris[0][1]) - (tris[2][0]-tris[0][0])*(tris[1][1]-tris[0][1]);
@@ -175,6 +171,16 @@ void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_
     int maxX = (int)fminf((float)(SCREEN_W-1), fmaxf(fmaxf(x0, x1), x2));
     int minY = (int)fmaxf(0.0f, fminf(fminf(y0, y1), y2));
     int maxY = (int)fminf((float)(SCREEN_H-1), fmaxf(fmaxf(y0, y1), y2));
+
+    minX = (minX / pixSizeX) * pixSizeX;
+    minY = (minY / pixSizeY) * pixSizeY;
+    maxX = ((maxX + pixSizeX - 1) / pixSizeX) * pixSizeX;
+    maxY = ((maxY + pixSizeY - 1) / pixSizeY) * pixSizeY;
+    
+    if (minX < 0) minX = 0;
+    if (minY < 0) minY = 0;
+    if (maxX >= SCREEN_W) maxX = SCREEN_W - 1;
+    if (maxY >= SCREEN_H) maxY = SCREEN_H - 1;
 
     if (minX > maxX || minY > maxY) return;
 
@@ -201,33 +207,36 @@ void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_
     qfixed16_t invZStepY = TO_FIXED1_15(B);
     qfixed16_t invZ_row   = TO_FIXED1_15(A * minX + B * minY + C);
 
-    for (int y = minY; y <= maxY; y++) {
-        int idx = y * SCREEN_W;
+    for (int y = minY; y <= maxY; y+=pixSizeY) {
+        uint gridY = y & ~(pixSizeY - 1);
+        int idx = gridY * SCREEN_W;
 
         int32_t w0 = w0_row;
         int32_t w1 = w1_row;
         int32_t w2 = w2_row;
 
-        uint8_t* row = buf + y * rowStride;
+        uint8_t* row = buf + gridY * rowStride;
 
         qfixed16_t invZ = invZ_row;
-        for (int x = minX; x <= maxX; x++) {
-            if ((w0*flip | w1*flip | w2*flip) >= 0) {
-                int index = idx+x;
+        for (int x = minX; x <= maxX; x+=pixSizeX) {
+            if ((w0*flip + 1 | w1*flip + 1 | w2*flip + 1) >= 0) {
+                uint gridX = x & ~(pixSizeX - 1);
+
+                int index = idx+gridX;
                 if (invZ < zBuffer[index]) {
                     zBuffer[index] = invZ;
-                    blockCol(x, y, triColor, row);
+                    blockCol(gridX, gridY, triColor, row);
                 }
             }
-            w0 += A12;
-            w1 += A20;
-            w2 += A01;
-            invZ += invZStepX;
+            w0 += (A12 * pixSizeX);
+            w1 += (A20 * pixSizeX);
+            w2 += (A01 * pixSizeX);
+            invZ += (invZStepX * pixSizeX);
         }
-        w0_row += B12;
-        w1_row += B20;
-        w2_row += B01;
-        invZ_row += invZStepY;
+        w0_row += (B12 * pixSizeY);
+        w1_row += (B20 * pixSizeY);
+        w2_row += (B01 * pixSizeY);
+        invZ_row += (invZStepY * pixSizeY);
     }
 
     if (outline) {

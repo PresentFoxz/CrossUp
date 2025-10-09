@@ -1,0 +1,44 @@
+CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj: \
+ E:\PlaydateSDK\C_API\buildsupport\setup.c E:\PlaydateSDK\C_API/pd_api.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/lib/gcc/arm-none-eabi/14.2.1/include/stdint.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/stdint.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/machine/_default_types.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/features.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/_newlib_version.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/_intsup.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/_stdint.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/stdlib.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/machine/ieeefp.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/_ansi.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/newlib.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/config.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/lib/gcc/arm-none-eabi/14.2.1/include/stddef.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/reent.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/_ansi.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/cdefs.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/_types.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/machine/_types.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/lock.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/machine/stdlib.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/alloca.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_file.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_gfx.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/lib/gcc/arm-none-eabi/14.2.1/include/stdbool.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_sys.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/lib/gcc/arm-none-eabi/14.2.1/include/stdarg.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_lua.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_json.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/string.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/_locale.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/strings.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/string.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_sprite.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_sound.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/math.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/machine/fastmath.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_display.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_scoreboards.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_network.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/stdio.h \
+ C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/arm-none-eabi/include/sys/stdio.h \
+ E:\PlaydateSDK\C_API/pd_api/pd_api_sys.h

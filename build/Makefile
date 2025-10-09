@@ -265,6 +265,30 @@ C\movement.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\CrossUp.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\CrossUp.dir\C\movement.c.s
 .PHONY : C\movement.c.s
 
+E_\PlaydateSDK\C_API\buildsupport\setup.obj: E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+.PHONY : E_\PlaydateSDK\C_API\buildsupport\setup.obj
+
+# target to build an object file
+E_\PlaydateSDK\C_API\buildsupport\setup.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\CrossUp.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+.PHONY : E_\PlaydateSDK\C_API\buildsupport\setup.c.obj
+
+E_\PlaydateSDK\C_API\buildsupport\setup.i: E_\PlaydateSDK\C_API\buildsupport\setup.c.i
+.PHONY : E_\PlaydateSDK\C_API\buildsupport\setup.i
+
+# target to preprocess a source file
+E_\PlaydateSDK\C_API\buildsupport\setup.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\CrossUp.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.i
+.PHONY : E_\PlaydateSDK\C_API\buildsupport\setup.c.i
+
+E_\PlaydateSDK\C_API\buildsupport\setup.s: E_\PlaydateSDK\C_API\buildsupport\setup.c.s
+.PHONY : E_\PlaydateSDK\C_API\buildsupport\setup.s
+
+# target to generate assembly for a file
+E_\PlaydateSDK\C_API\buildsupport\setup.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\CrossUp.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\CrossUp.dir\E_\PlaydateSDK\C_API\buildsupport\setup.c.s
+.PHONY : E_\PlaydateSDK\C_API\buildsupport\setup.c.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -292,6 +316,9 @@ help:
 	@echo ... C/movement.obj
 	@echo ... C/movement.i
 	@echo ... C/movement.s
+	@echo ... E_/PlaydateSDK/C_API/buildsupport/setup.obj
+	@echo ... E_/PlaydateSDK/C_API/buildsupport/setup.i
+	@echo ... E_/PlaydateSDK/C_API/buildsupport/setup.s
 .PHONY : help
 
 

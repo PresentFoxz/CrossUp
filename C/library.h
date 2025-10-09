@@ -73,6 +73,8 @@ extern int substeps;
 extern int pixSizeX;
 extern int pixSizeY;
 
+extern int zBufSize;
+
 int randomInt(int a, int b);
 float randomFloat(float a, float b);
 float degToRad(float deg);

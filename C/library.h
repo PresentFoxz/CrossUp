@@ -69,14 +69,17 @@ extern float pCollisionPos[3];
 extern float pColPoints[4][3];
 extern int substeps;
 
-extern float deltaTime;
-extern uint64_t lastTime;
+#define rowStride 52
+extern int pixSizeX;
+extern int pixSizeY;
 
 int randomInt(int a, int b);
 float randomFloat(float a, float b);
 float degToRad(float deg);
 float lerp(float t, float a, float b);
+
 void setPixelRaw(uint x, uint8_t* row, int color);
+void setBlock2x2(uint x, uint y, uint8_t* row, int color);
 
 void swapInt(int* a, int* b);
 void swapInt2(int* a, int* b);

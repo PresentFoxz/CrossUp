@@ -6,8 +6,8 @@ static int perm[PERMUTATION_SIZE * 2];
 const float fovX = 2.44346f;
 const float fovY = 1.41435f;
 
-float deltaTime = 1.0f;
-uint64_t lastTime = 0;
+int pixSizeX = 4;
+int pixSizeY = 4;
 
 int inside(int x, int y) { return x >= sX && x < sX + sW && y >= sY && y < sY + sH; }
 

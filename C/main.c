@@ -23,7 +23,7 @@ int staticAmt = 0;
 
 const int debug = 0;
 const int colRend = 0;
-const int renderRadius = 85;
+int renderRadius = 85;
 
 EntStruct* allEnts;
 EntStruct player;
@@ -44,12 +44,14 @@ static int cLib_init(lua_State* L);
 static int cLib_render(lua_State* L);
 static int cLib_playerAction(lua_State* L);
 static int cLib_addEnt(lua_State* L);
+static int cLib_SettingsChange(lua_State* L);
 
 static const lua_reg cLibs[] ={
     { "init", cLib_init },
     { "render", cLib_render },
     { "player", cLib_playerAction },
     { "addEnt", cLib_addEnt },
+    { "newSettings", cLib_SettingsChange}
     { NULL, NULL }
 };
 
@@ -226,6 +228,14 @@ static void renderLines(float CamYDirSin, float CamYDirCos, float CamXDirSin, fl
     }
 }
 
+static int cLib_SettingsChange(lua_State* L){
+    renderRadius = pd->lua->getArgInt(2);
+    pixSizeX = pd->lua->getArgInt(3);
+    pixSizeY = pd->lua->getArgInt(4);
+
+    return 0;
+}
+
 static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos){
     float fov = FROM_FIXED32(cam.fov);
     float nearPlane = FROM_FIXED32(cam.nearPlane);
@@ -238,25 +248,18 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
     Vertex verts[3];
     clippedTri clip1, clip2;
 
+    float camMatrix[3][3];
+    computeCamMatrix(camMatrix, CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos);
+
     for (int index = 0; index < allAmt; index++){
         int color = allPoints[index].objType;
+        
         for (int v = 0; v < 3; v++) {
-            verts[v].x = allPoints[index].verts[v][0] - camPos.x;
-            verts[v].y = allPoints[index].verts[v][1] - camPos.y;
-            verts[v].z = allPoints[index].verts[v][2] - camPos.z;
-
-            float rot[3];
-            RotationMatrix(
-                verts[v].x, verts[v].y, verts[v].z,
-                CamYDirSin, CamYDirCos,
-                CamXDirSin, CamXDirCos,
-                CamZDirSin, CamZDirCos,
-                &rot[0]
-            );
-
-            verts[v].x = rot[0];
-            verts[v].y = rot[1];
-            verts[v].z = rot[2];
+            verts[v].x = allPoints[index].verts[v][0];
+            verts[v].y = allPoints[index].verts[v][1];
+            verts[v].z = allPoints[index].verts[v][2];
+            
+            rotateVertexInPlace(&verts[v], camPos, camMatrix);
             project2D(&check[v][0], (float[]){verts[v].x, verts[v].y, verts[v].z}, fov, nearPlane);
         }
 
@@ -268,20 +271,15 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
             project2D(&tri1[0][0], (float[3]){clip1.t1.x, clip1.t1.y, clip1.t1.z}, fov, nearPlane);
             project2D(&tri1[1][0], (float[3]){clip1.t2.x, clip1.t2.y, clip1.t2.z}, fov, nearPlane);
             project2D(&tri1[2][0], (float[3]){clip1.t3.x, clip1.t3.y, clip1.t3.z}, fov, nearPlane);
-
-            clip1.t1.z = (clip1.t1.z - nearPlane) / (farPlane - nearPlane);
-            clip1.t2.z = (clip1.t2.z - nearPlane) / (farPlane - nearPlane);
-            clip1.t3.z = (clip1.t3.z - nearPlane) / (farPlane - nearPlane);
-            drawFilledTrisZ(tri1, clip1, color, zBuffer, 1);
+            
+            drawFilledTrisZ(tri1, clip1, color, zBuffer, 0);
+            
             if (output == 2){
                 project2D(&tri2[0][0], (float[3]){clip2.t1.x, clip2.t1.y, clip2.t1.z}, fov, nearPlane); 
                 project2D(&tri2[1][0], (float[3]){clip2.t2.x, clip2.t2.y, clip2.t2.z}, fov, nearPlane);
                 project2D(&tri2[2][0], (float[3]){clip2.t3.x, clip2.t3.y, clip2.t3.z}, fov, nearPlane);
-
-                clip2.t1.z = (clip2.t1.z - nearPlane) / (farPlane - nearPlane);
-                clip2.t2.z = (clip2.t2.z - nearPlane) / (farPlane - nearPlane);
-                clip2.t3.z = (clip2.t3.z - nearPlane) / (farPlane - nearPlane);
-                drawFilledTrisZ(tri2, clip2, color, zBuffer, 1);
+                
+                drawFilledTrisZ(tri2, clip2, color, zBuffer, 0);
             }
         }
     }
@@ -441,16 +439,6 @@ static int cLib_playerAction(lua_State* L) {
     camForward.x = cosf(FROM_FIXED32(cam.rotation.x)) * sinf(FROM_FIXED32(cam.rotation.y));
     camForward.y = sinf(FROM_FIXED32(cam.rotation.x));
     camForward.z = cosf(FROM_FIXED32(cam.rotation.x)) * cosf(FROM_FIXED32(cam.rotation.y));
-
-    uint64_t currentTime = pd->system->getCurrentTimeMilliseconds();
-
-    if (lastTime != 0) {
-        deltaTime = (currentTime - lastTime) / 1000000.0f;
-    } else {
-        deltaTime = 0.0f;
-    }
-
-    lastTime = currentTime;
 
     return 0;
 }

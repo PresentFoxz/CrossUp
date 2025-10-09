@@ -157,7 +157,7 @@ void movePlayerObj(EntStruct* p, Camera* c, int col){
 
     float rotation[3] = {0.0f, 0.0f, 0.0f};
 
-    float yawCam = FROM_FIXED32(c->rotation.y);
+    float yawCam = -FROM_FIXED32(c->rotation.y);
     float mainYaw = FROM_FIXED32(p->rotation.y);
     float secondaryStrength = 0.5f;
 
@@ -245,7 +245,7 @@ void movePlayerObj(EntStruct* p, Camera* c, int col){
 
 void updateCamera(Camera* cam, EntStruct* ent, float radius) {
     float pitch = FROM_FIXED32(cam->rotation.x);
-    float yaw   = FROM_FIXED32(cam->rotation.y);
+    float yaw   = -FROM_FIXED32(cam->rotation.y);
     float smoothOrbit = 0.1f;
 
     float offsetX = cosf(pitch) * sinf(yaw) * radius;

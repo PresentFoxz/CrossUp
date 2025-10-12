@@ -3,35 +3,34 @@ CollisionSurface* collisionSurfaces;
 int collisionCount = 0;
 
 void resetCollisionSurface() {
+    free(collisionSurfaces);
+    collisionSurfaces = NULL;
     collisionCount = 0;
-    collisionSurfaces = pd->system->realloc(NULL, collisionCount);
 }
 
-void addCollisionSurface(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3, SurfaceType type) {
+void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, SurfaceType type) {
     collisionSurfaces = pd->system->realloc(collisionSurfaces, (collisionCount + 1) * sizeof(CollisionSurface));
 
     CollisionSurface *surf = &collisionSurfaces[collisionCount++];
-    surf->x1 = x1; surf->y1 = y1; surf->z1 = z1;
-    surf->x2 = x2; surf->y2 = y2; surf->z2 = z2;
-    surf->x3 = x3; surf->y3 = y3; surf->z3 = z3;
+    surf->v0 = v0; surf->v1 = v1; surf->v2 = v2;
     surf->type = type;
     
-    float ux = x2 - x1, uy = y2 - y1, uz = z2 - z1;
-    float vx = x3 - x1, vy = y3 - y1, vz = z3 - z1;
+    float ux = v1.x - v0.x, uy = v1.y - v0.y, uz = v1.z - v0.z;
+    float vx = v2.x - v0.x, vy = v2.y - v0.y, vz = v2.z - v0.z;
 
-    surf->normalX = uy * vz - uz * vy;
-    surf->normalY = uz * vx - ux * vz;
-    surf->normalZ = ux * vy - uy * vx;
+    surf->normal.x = uy * vz - uz * vy;
+    surf->normal.y = uz * vx - ux * vz;
+    surf->normal.z = ux * vy - uy * vx;
 
-    float len = sqrtf(surf->normalX*surf->normalX + surf->normalY*surf->normalY + surf->normalZ*surf->normalZ);
+    float len = sqrtf(surf->normal.x*surf->normal.x + surf->normal.y*surf->normal.y + surf->normal.z*surf->normal.z);
     if (len > 0.0f) {
-        surf->normalX /= len;
-        surf->normalY /= len;
-        surf->normalZ /= len;
+        surf->normal.x /= len;
+        surf->normal.y /= len;
+        surf->normal.z /= len;
     }
 
     if (type == SURFACE_NONE) {
-        float ny = surf->normalY;
+        float ny = surf->normal.y;
 
         if (ny > 0.7f) {
             surf->type = SURFACE_FLOOR;
@@ -47,25 +46,25 @@ void addCollisionSurface(float x1, float y1, float z1, float x2, float y2, float
     }
 }
 
-VectMf cylinderInTriangle(float cx, float cy, float cz, float radius, float height) {
+VectMf cylinderInTriangle(Vect3f pos, float radius, float height) {
     VectMf pushPlayer = {0.0f, 0.0f, 0.0f, 0, 0, 0};
     float radius2 = radius * radius;
 
     for (int i = 0; i < collisionCount; i++) {
         CollisionSurface tri = collisionSurfaces[i];
 
-        float minX = tri.x1 < tri.x2 ? (tri.x1 < tri.x3 ? tri.x1 : tri.x3) : (tri.x2 < tri.x3 ? tri.x2 : tri.x3);
-        float maxX = tri.x1 > tri.x2 ? (tri.x1 > tri.x3 ? tri.x1 : tri.x3) : (tri.x2 > tri.x3 ? tri.x2 : tri.x3);
-        float minZ = tri.z1 < tri.z2 ? (tri.z1 < tri.z3 ? tri.z1 : tri.z3) : (tri.z2 < tri.z3 ? tri.z2 : tri.z3);
-        float maxZ = tri.z1 > tri.z2 ? (tri.z1 > tri.z3 ? tri.z1 : tri.z3) : (tri.z2 > tri.z3 ? tri.z2 : tri.z3);
+        float minX = tri.v0.x < tri.v1.x ? (tri.v0.x < tri.v2.x ? tri.v0.x : tri.v2.x) : (tri.v1.x < tri.v2.x ? tri.v1.x : tri.v2.x);
+        float maxX = tri.v0.x > tri.v1.x ? (tri.v0.x > tri.v2.x ? tri.v0.x : tri.v2.x) : (tri.v1.x > tri.v2.x ? tri.v1.x : tri.v2.x);
+        float minZ = tri.v0.z < tri.v1.z ? (tri.v0.z < tri.v2.z ? tri.v0.z : tri.v2.z) : (tri.v1.z < tri.v2.z ? tri.v1.z : tri.v2.z);
+        float maxZ = tri.v0.z > tri.v1.z ? (tri.v0.z > tri.v2.z ? tri.v0.z : tri.v2.z) : (tri.v1.z > tri.v2.z ? tri.v1.z : tri.v2.z);
         
-        if (cx + radius < minX || cx - radius > maxX || cz + radius < minZ || cz - radius > maxZ) continue;
+        if (pos.x + radius < minX || pos.x - radius > maxX || pos.z + radius < minZ || pos.z - radius > maxZ) continue;
         
-        float dx = cx - tri.x1;
-        float dz = cz - tri.z1;
+        float dx = pos.x - tri.v0.x;
+        float dz = pos.z - tri.v0.z;
 
-        float bottomDist = dx * tri.normalX + (cy - tri.y1) * tri.normalY + dz * tri.normalZ;
-        float topDist    = dx * tri.normalX + (cy + height - tri.y1) * tri.normalY + dz * tri.normalZ;
+        float bottomDist = dx * tri.normal.x + (pos.y - tri.v0.y) * tri.normal.y + dz * tri.normal.z;
+        float topDist    = dx * tri.normal.x + (pos.y + height - tri.v0.y) * tri.normal.y + dz * tri.normal.z;
         
         if (bottomDist > radius && topDist > radius) continue;
         if (bottomDist < -radius && topDist < -radius) continue;
@@ -74,20 +73,20 @@ VectMf cylinderInTriangle(float cx, float cy, float cz, float radius, float heig
         if (bottomDist * topDist < 0.0f) t = bottomDist / (bottomDist - topDist);
         else if (fabsf(bottomDist) >= radius) t = 1.0f;
 
-        float py = cy + t * height;
-        float px = cx;
-        float pz = cz;
+        float py = pos.y + t * height;
+        float px = pos.x;
+        float pz = pos.z;
 
-        float dist = (px - tri.x1) * tri.normalX + (py - tri.y1) * tri.normalY + (pz - tri.z1) * tri.normalZ;
+        float dist = (px - tri.v0.x) * tri.normal.x + (py - tri.v0.y) * tri.normal.y + (pz - tri.v0.z) * tri.normal.z;
         if (dist * dist > radius2) continue;
         
-        float projX = px - dist * tri.normalX;
-        float projY = py - dist * tri.normalY;
-        float projZ = pz - dist * tri.normalZ;
+        float projX = px - dist * tri.normal.x;
+        float projY = py - dist * tri.normal.y;
+        float projZ = pz - dist * tri.normal.z;
         
-        float v0x = tri.x3 - tri.x1, v0y = tri.y3 - tri.y1, v0z = tri.z3 - tri.z1;
-        float v1x = tri.x2 - tri.x1, v1y = tri.y2 - tri.y1, v1z = tri.z2 - tri.z1;
-        float v2x = projX - tri.x1, v2y = projY - tri.y1, v2z = projZ - tri.z1;
+        float v0x = tri.v2.x - tri.v0.x, v0y = tri.v2.y - tri.v0.y, v0z = tri.v2.z - tri.v0.z;
+        float v1x = tri.v1.x - tri.v0.x, v1y = tri.v1.y - tri.v0.y, v1z = tri.v1.z - tri.v0.z;
+        float v2x = projX - tri.v0.x, v2y = projY - tri.v0.y, v2z = projZ - tri.v0.z;
 
         float dot00 = v0x*v0x + v0y*v0y + v0z*v0z;
         float dot01 = v0x*v1x + v0y*v1y + v0z*v1z;
@@ -108,16 +107,16 @@ VectMf cylinderInTriangle(float cx, float cy, float cz, float radius, float heig
 
             switch(tri.type) {
                 case SURFACE_FLOOR:
-                    pushPlayer.pos.y += penetration * tri.normalY;
+                    pushPlayer.pos.y += penetration * tri.normal.y;
                     pushPlayer.floor = 1;
                     break;
                 case SURFACE_CEILING:
-                    pushPlayer.pos.y += penetration * tri.normalY;
-                    pushPlayer.cieling = 1;
+                    pushPlayer.pos.y += penetration * tri.normal.y;
+                    pushPlayer.ceiling = 1;
                     break;
                 case SURFACE_WALL:
-                    pushPlayer.pos.x += penetration * tri.normalX;
-                    pushPlayer.pos.z += penetration * tri.normalZ;
+                    pushPlayer.pos.x += penetration * tri.normal.x;
+                    pushPlayer.pos.z += penetration * tri.normal.z;
                     pushPlayer.wall = 1;
                     break;
             }

@@ -14,9 +14,6 @@ extern PlaydateAPI* pd;
 #define M_PI 3.14159265358979323846f
 #define TWO_PI 6.2831853f
 
-#define SCREEN_W 400
-#define SCREEN_H 240
-
 #define FIXED_POINT_FRACTIONAL_BITS8 8
 #define FP8_ONE (1 << FIXED_POINT_FRACTIONAL_BITS8)
 #define TO_FIXED8(x) ((qfixed8_t)((x) * FP8_ONE))
@@ -79,7 +76,6 @@ float degToRad(float deg);
 float lerp(float t, float a, float b);
 
 void setPixelRaw(uint x, uint8_t* row, int color);
-void setBlock2x2(uint x, uint y, uint8_t* row, int color);
 
 void swapInt(int* a, int* b);
 void swapInt2(int* a, int* b);

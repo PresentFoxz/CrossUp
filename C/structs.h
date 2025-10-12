@@ -1,5 +1,5 @@
-#ifndef LIST_MAKER_H
-#define LIST_MAKER_H
+#ifndef STRUCTS_H
+#define STRUCTS_H
 
 typedef int16_t qfixed8_t;
 typedef int32_t qfixed16_t;
@@ -22,12 +22,12 @@ typedef struct {
 
 typedef struct {
     Vect3f pos;
-    int floor, cieling, wall;
+    int floor, ceiling, wall;
 } VectMf;
 
 typedef struct {
     float verts[3][3];
-    int objType;
+    int color;
     float dist;
 } worldTris;
 
@@ -63,5 +63,20 @@ typedef struct {
     int countdown, rotDir;
     float frict, fallFrict;
 } EntStruct;
+
+typedef struct {
+    int x0, y0, x1, y1, x2, y2;
+    float z0, z1, z2;
+    
+    int32_t A01, B01, C01;
+    int32_t A12, B12, C12;
+    int32_t A20, B20, C20;
+
+    int minX, maxX, minY, maxY;
+    int flip;
+
+    float invZStepX, invZStepY;
+    float invZ_row;
+} RasterTri;
 
 #endif

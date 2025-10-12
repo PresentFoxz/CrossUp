@@ -7,26 +7,27 @@ static const uint8_t shadeLUT[4][2][2] = {
     {{1,1},{1,1}}
 };
 
-static inline void blockCol(uint x, uint y, int shade, uint8_t* row) {
-    uint gridX = (x / pixSizeX) * pixSizeX;
-    uint gridY = (y / pixSizeY) * pixSizeY;
-    
-    for (int dy = 0; dy < pixSizeY; dy++) {
-        uint rowY = gridY + dy;
-        if (rowY >= SCREEN_H) break;
+static inline void multiPixl(uint gridX, uint gridY, int shade, uint8_t* row) {
+    if (gridX + 1 >= sW || gridY + 1 >= sH) return;
 
-        uint8_t* rowPtr = buf + rowY * rowStride;
+    const uint8_t* lut0 = shadeLUT[shade][gridY & 1];
+    const uint8_t* lut1 = shadeLUT[shade][(gridY + 1) & 1];
 
-        for (int dx = 0; dx < pixSizeX; dx++) {
-            uint colX = gridX + dx;
-            if (colX >= SCREEN_W) break;
+    uint8_t* row0 = buf + (gridY) * rowStride;
+    uint8_t* row1 = buf + (gridY + 1) * rowStride;
 
-            uint px = colX & 1;
-            uint py = rowY & 1;
+    uint8_t px = gridX & 1;
+    setPixelRaw(gridX,     row0, lut0[px]);
+    setPixelRaw(gridX + 1, row0, lut0[px ^ 1]);
+    setPixelRaw(gridX,     row1, lut1[px]);
+    setPixelRaw(gridX + 1, row1, lut1[px ^ 1]);
+}
 
-            setPixelRaw(colX, rowPtr, shadeLUT[shade][py][px]);
-        }
-    }
+static inline void singlePixl(uint x, uint y, int shade, uint8_t* row) {
+    uint px = x % 2;
+    uint py = y % 2;
+
+    setPixelRaw(x, row, shadeLUT[shade][py][px]);
 }
 
 static void drawCustomLine(int x1, int y1, int x2, int y2, int sizeMin, int sizeMax, int type, qfixed16_t* zBuffer, float z1, float z2) {
@@ -50,9 +51,9 @@ static void drawCustomLine(int x1, int y1, int x2, int y2, int sizeMin, int size
                 int px = newX + ox;
                 int py = newY + oy;
 
-                if (px < 0 || px >= SCREEN_W || py < 0 || py >= SCREEN_H) continue;
+                if (px < 0 || px >= sW || py < 0 || py >= sH) continue;
 
-                int index = py * SCREEN_W + px;
+                int index = py * sW + px;
 
                 if (currZ < zBuffer[index]) {
                     zBuffer[index] = currZ;
@@ -157,83 +158,163 @@ void computeRotScaleMatrix(float rotMat[3][3], float angleX, float angleY, float
 
 int windingOrder(int *p0, int *p1, int *p2) { return (p0[0]*p1[1] - p0[1]*p1[0] + p1[0]*p2[1] - p1[1]*p2[0] + p2[0]*p0[1] - p2[1]*p0[0] > 0); }
 
-static inline int32_t edge_A(const int v0[2], const int v1[2]) { return v0[1] - v1[1]; }
-static inline int32_t edge_B(const int v0[2], const int v1[2]) { return v1[0] - v0[0]; }
-static inline int32_t edge_C(const int v0[2], const int v1[2]) { return v0[0]*v1[1] - v0[1]*v1[0]; }
+static inline int32_t edgeA(int y0, int y1) { return y0 - y1; }
+static inline int32_t edgeB(int x0, int x1) { return x1 - x0; }
+static inline int32_t edgeC(int x0, int y0, int x1, int y1) { return x0*y1 - x1*y0; }
 
-void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_t* zBuffer, int outline) {
-    int area = (tris[1][0]-tris[0][0])*(tris[2][1]-tris[0][1]) - (tris[2][0]-tris[0][0])*(tris[1][1]-tris[0][1]);
-    int flip = (area < 0) ? -1 : 1;
+void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_t* zBuffer) {
+    int x0 = tris[0][0], y0 = tris[0][1];
+    int x1 = tris[1][0], y1 = tris[1][1];
+    int x2 = tris[2][0], y2 = tris[2][1];
 
-    int SIMD = 2;
+    float z0 = fullTri.t1.z;
+    float z1 = fullTri.t2.z;
+    float z2 = fullTri.t3.z;
+    
+    int minX = x0 < x1 ? (x0 < x2 ? x0 : x2) : (x1 < x2 ? x1 : x2);
+    int maxX = x0 > x1 ? (x0 > x2 ? x0 : x2) : (x1 > x2 ? x1 : x2);
+    int minY = y0 < y1 ? (y0 < y2 ? y0 : y2) : (y1 < y2 ? y1 : y2);
+    int maxY = y0 > y1 ? (y0 > y2 ? y0 : y2) : (y1 > y2 ? y1 : y2);
+    
+    if (minX < 0) minX = 0;
+    if (minY < 0) minY = 0;
+    if (maxX >= sW) maxX = sW - 1;
+    if (maxY >= sH) maxY = sH - 1;
+    
+    minX = (minX / pixSizeX) * pixSizeX;
+    minY = (minY / pixSizeY) * pixSizeY;
+    maxX = ((maxX + pixSizeX - 1) / pixSizeX) * pixSizeX;
+    maxY = ((maxY + pixSizeY - 1) / pixSizeY) * pixSizeY;
+    
+    int32_t A01 = edgeA(y0, y1), B01 = edgeB(x0, x1), C01 = edgeC(x0, y0, x1, y1);
+    int32_t A12 = edgeA(y1, y2), B12 = edgeB(x1, x2), C12 = edgeC(x1, y1, x2, y2);
+    int32_t A20 = edgeA(y2, y0), B20 = edgeB(x2, x0), C20 = edgeC(x2, y2, x0, y0);
 
-    float x0 = (float)tris[0][0], y0 = (float)tris[0][1], z0 = fullTri.t1.z;
-    float x1 = (float)tris[1][0], y1 = (float)tris[1][1], z1 = fullTri.t2.z;
-    float x2 = (float)tris[2][0], y2 = (float)tris[2][1], z2 = fullTri.t3.z;
-
-    int minX = (int)fmaxf(0.0f, fminf(fminf(x0, x1), x2));
-    int maxX = (int)fminf((float)(SCREEN_W-1), fmaxf(fmaxf(x0, x1), x2));
-    int minY = (int)fmaxf(0.0f, fminf(fminf(y0, y1), y2));
-    int maxY = (int)fminf((float)(SCREEN_H-1), fmaxf(fmaxf(y0, y1), y2));
-
-    if (minX > maxX || minY > maxY) return;
-
-    int32_t A01 = edge_A(tris[0], tris[1]), B01 = edge_B(tris[0], tris[1]), C01 = edge_C(tris[0], tris[1]);
-    int32_t A12 = edge_A(tris[1], tris[2]), B12 = edge_B(tris[1], tris[2]), C12 = edge_C(tris[1], tris[2]);
-    int32_t A20 = edge_A(tris[2], tris[0]), B20 = edge_B(tris[2], tris[0]), C20 = edge_C(tris[2], tris[0]);
-
-    int32_t px = minX;
-    int32_t py = minY;
-
-    int32_t w0_row = (int32_t)A12 * px + (int32_t)B12 * py + (int32_t)C12;
-    int32_t w1_row = (int32_t)A20 * px + (int32_t)B20 * py + (int32_t)C20;
-    int32_t w2_row = (int32_t)A01 * px + (int32_t)B01 * py + (int32_t)C01;
-
+    int flip = ((x1 - x0)*(y2 - y0) - (x2 - x0)*(y1 - y0)) < 0 ? -1 : 1;
+    
+    int32_t w0_row = A12*minX + B12*minY + C12;
+    int32_t w1_row = A20*minX + B20*minY + C20;
+    int32_t w2_row = A01*minX + B01*minY + C01;
+    
     float det = (x0*(y1 - y2) + x1*(y2 - y0) + x2*(y0 - y1));
     if (det == 0.0f) return;
     float invDet = 1.0f / det;
-    
-    float A = (z0*(y1 - y2) + z1*(y2 - y0) + z2*(y0 - y1)) * invDet;
-    float B = (z0*(x2 - x1) + z1*(x0 - x2) + z2*(x1 - x0)) * invDet;
-    float C = z0 - A*x0 - B*y0;
+    float stepX = (z0*(y1 - y2) + z1*(y2 - y0) + z2*(y0 - y1)) * invDet;
+    float stepY = (z0*(x2 - x1) + z1*(x0 - x2) + z2*(x1 - x0)) * invDet;
+    float zC = z0 - stepX*x0 - stepY*y0;
 
-    qfixed16_t invZStepX = TO_FIXED1_15(A);
-    qfixed16_t invZStepY = TO_FIXED1_15(B);
-    qfixed16_t invZ_row   = TO_FIXED1_15(A * minX + B * minY + C);
+    qfixed16_t invZStepX = TO_FIXED1_15(stepX);
+    qfixed16_t invZStepY = TO_FIXED1_15(stepY);
+    qfixed16_t invZ_row = TO_FIXED1_15(stepX*minX + stepY*minY + zC);
 
-    for (int y = minY; y <= maxY; y++) {
-        int idx = y * SCREEN_W;
+    for (int y = minY; y < sH && y <= maxY; y += pixSizeY) {
+        uint gridY = y & ~(pixSizeY - 1);
+        if (gridY >= sH) gridY = sH - 1;
+        int idx = gridY * sW;
 
         int32_t w0 = w0_row;
         int32_t w1 = w1_row;
         int32_t w2 = w2_row;
 
-        uint8_t* row = buf + y * rowStride;
-
+        uint8_t* row = buf + gridY * rowStride;
         qfixed16_t invZ = invZ_row;
-        for (int x = minX; x <= maxX; x++) {
-            if ((w0*flip | w1*flip | w2*flip) >= 0) {
-                int index = idx+x;
+
+        for (int x = minX; x < sW && x <= maxX; x += pixSizeX) {
+            uint gridX = x & ~(pixSizeX - 1);
+            if (gridX >= sW) gridX = sW - 1;
+            
+            if ((w0*flip >= 0) && (w1*flip >= 0) && (w2*flip >= 0)) {
+                int index = idx + gridX;
+
                 if (invZ < zBuffer[index]) {
                     zBuffer[index] = invZ;
-                    blockCol(x, y, triColor, row);
+                    multiPixl(gridX, gridY, triColor, row);
                 }
             }
+
+            w0 += A12 * pixSizeX;
+            w1 += A20 * pixSizeX;
+            w2 += A01 * pixSizeX;
+            invZ += invZStepX * pixSizeX;
+        }
+
+        w0_row += B12 * pixSizeY;
+        w1_row += B20 * pixSizeY;
+        w2_row += B01 * pixSizeY;
+        invZ_row += invZStepY * pixSizeY;
+    }
+}
+
+static inline int edgeFunc(int x0, int y0, int x1, int y1, int px, int py) { return (py - y0) * (x1 - x0) - (px - x0) * (y1 - y0); }
+
+void drawFilledTrisNoZ(int tris[3][2], int triColor) {
+    int x0 = tris[0][0], y0 = tris[0][1];
+    int x1 = tris[1][0], y1 = tris[1][1];
+    int x2 = tris[2][0], y2 = tris[2][1];
+    
+    int minX = x0 < x1 ? (x0 < x2 ? x0 : x2) : (x1 < x2 ? x1 : x2);
+    int maxX = x0 > x1 ? (x0 > x2 ? x0 : x2) : (x1 > x2 ? x1 : x2);
+    int minY = y0 < y1 ? (y0 < y2 ? y0 : y2) : (y1 < y2 ? y1 : y2);
+    int maxY = y0 > y1 ? (y0 > y2 ? y0 : y2) : (y1 > y2 ? y1 : y2);
+    
+    if (minX < 0) minX = 0;
+    if (minY < 0) minY = 0;
+    if (maxX >= sW) maxX = sW - 1;
+    if (maxY >= sH) maxY = sH - 1;
+    
+    minX = (minX / pixSizeX) * pixSizeX;
+    minY = (minY / pixSizeY) * pixSizeY;
+    maxX = ((maxX + pixSizeX - 1) / pixSizeX) * pixSizeX;
+    maxY = ((maxY + pixSizeY - 1) / pixSizeY) * pixSizeY;
+
+    int A01 = (y0 - y1) * pixSizeX, B01 = (x1 - x0) * pixSizeY;
+    int A12 = (y1 - y2) * pixSizeX, B12 = (x2 - x1) * pixSizeY;
+    int A20 = (y2 - y0) * pixSizeX, B20 = (x0 - x2) * pixSizeY;
+    
+    int yStart = minY;
+    int xStart = minX;
+
+    int w0_row = edgeFunc(x1, y1, x2, y2, xStart, yStart);
+    int w1_row = edgeFunc(x2, y2, x0, y0, xStart, yStart);
+    int w2_row = edgeFunc(x0, y0, x1, y1, xStart, yStart);
+
+    int area = edgeFunc(x0, y0, x1, y1, x2, y2);
+    if (area < 0) {
+        int tmp;
+        tmp = A01; A01 = -A01; B01 = -B01;
+        tmp = A12; A12 = -A12; B12 = -B12;
+        tmp = A20; A20 = -A20; B20 = -B20;
+        w0_row = -w0_row;
+        w1_row = -w1_row;
+        w2_row = -w2_row;
+    }
+
+    for (int y = minY; y <= maxY && y < sH; y += pixSizeY) {
+        uint gridY = y & ~(pixSizeY - 1);
+        if (gridY >= sH) gridY = sH - 1;
+
+        uint8_t* row = buf + gridY * rowStride;
+
+        int w0 = w0_row;
+        int w1 = w1_row;
+        int w2 = w2_row;
+
+        for (int x = minX; x <= maxX && x < sW; x += pixSizeX) {
+            uint gridX = x & ~(pixSizeX - 1);
+            if (gridX >= sW) gridX = sW - 1;
+
+            if ((w0 | w1 | w2) >= 0) {
+                multiPixl(gridX, gridY, triColor, row);
+            }
+
             w0 += A12;
             w1 += A20;
             w2 += A01;
-            invZ += invZStepX;
         }
+
         w0_row += B12;
         w1_row += B20;
         w2_row += B01;
-        invZ_row += invZStepY;
-    }
-
-    if (outline) {
-        drawCustomLine(tris[0][0], tris[0][1], tris[1][0], tris[1][1], 0, 1, 1, zBuffer, fullTri.t1.z + 0.01f, fullTri.t2.z + 0.01f);
-        drawCustomLine(tris[0][0], tris[0][1], tris[2][0], tris[2][1], 0, 1, 1, zBuffer, fullTri.t1.z + 0.01f, fullTri.t3.z + 0.01f);
-        drawCustomLine(tris[1][0], tris[1][1], tris[2][0], tris[2][1], 0, 1, 1, zBuffer, fullTri.t2.z + 0.01f, fullTri.t3.z + 0.01f);
     }
 }
 

@@ -16,11 +16,9 @@ typedef enum {
 } SurfaceType;
 
 typedef struct {
-    float x1, y1, z1;
-    float x2, y2, z2;
-    float x3, y3, z3;
+    Vect3f v0, v1, v2;
     SurfaceType type;
-    float normalX, normalY, normalZ;
+    Vect3f normal;
 } CollisionSurface;
 
 typedef struct {
@@ -35,7 +33,7 @@ typedef struct {
 } CollisionResult;
 
 void resetCollisionSurface();
-void addCollisionSurface(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3, SurfaceType type);
-VectMf cylinderInTriangle(float cx, float cy, float cz, float radius, float height);
+void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, SurfaceType type);
+VectMf cylinderInTriangle(Vect3f pos, float radius, float height);
 
 #endif

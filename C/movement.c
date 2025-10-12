@@ -96,9 +96,9 @@ static void runColl(EntStruct* p, int colRend){
         pCollisionPos[2] = FROM_FIXED32(p->position.z) + stepZ;
 
         wrapPositionFloat( &pCollisionPos[0], &pCollisionPos[1], &pCollisionPos[2] );
-        VectMf movePlr = cylinderInTriangle(pCollisionPos[0], pCollisionPos[1], pCollisionPos[2], FROM_FIXED32(p->radius), FROM_FIXED32(p->height));
-        if (movePlr.floor == -1 && movePlr.cieling == -1 && movePlr.wall == -1) { continue; }
-        if (movePlr.floor == 1 && movePlr.cieling == 1) {
+        VectMf movePlr = cylinderInTriangle((Vect3f){pCollisionPos[0], pCollisionPos[1], pCollisionPos[2]}, FROM_FIXED32(p->radius), FROM_FIXED32(p->height));
+        if (movePlr.floor == -1 && movePlr.ceiling == -1 && movePlr.wall == -1) { break; }
+        if (movePlr.floor == 1 && movePlr.ceiling == 1) {
             p->velocity.y = 0.0f;
             p->grounded = 0;
             p->coyote = 20;
@@ -108,7 +108,7 @@ static void runColl(EntStruct* p, int colRend){
 
         movePlayer(p, pCollisionPos[0], pCollisionPos[1] + 0.5f, pCollisionPos[2]);
 
-        if (movePlr.floor == 0 && movePlr.cieling == 0 && movePlr.wall == 0) { continue; }
+        if (movePlr.floor == 0 && movePlr.ceiling == 0 && movePlr.wall == 0) { continue; }
         if (movePlr.floor == 1) {
             p->grounded = 1;
             p->coyote = 0;
@@ -116,7 +116,7 @@ static void runColl(EntStruct* p, int colRend){
             p->position.y += TO_FIXED32(movePlr.pos.y);
             stepY = p->velocity.y / substeps;
         }
-        if (movePlr.cieling == 1) {
+        if (movePlr.ceiling == 1) {
             if (p->velocity.y < 0.0f) p->velocity.y = -0.5f;
             p->grounded = 0;
             p->coyote = 20;

@@ -17,6 +17,9 @@ float degToRad(float deg) { return deg * (M_PI / 180.0f); }
 float fade(float t) { return t * t * t * (t * (t * 6 - 15) + 10); }
 float lerp(float t, float a, float b) { return a + t * (b - a); }
 
+float unitToMeter(float x) { return x / worldUnit; }
+float meterToUnit(float x) { return x * worldUnit; }
+
 void setPixelRaw(uint x, uint8_t* row, int color){
     int bitIndex = 7 - (x % 8);
     uint8_t mask = 1 << bitIndex;
@@ -54,3 +57,52 @@ void swapFloat2(float* a, float* b) {
 }
 
 float dot(Vect3f a, Vect3f b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
+
+float fastInvSqrt(float x) {
+    union { float f; uint32_t i; } conv = { x };
+    conv.i = 0x5f3759df - (conv.i >> 1);
+    float y = conv.f;
+    return y * (1.5f - 0.5f * x * y * y);
+}
+
+void staticLineDrawing(int p0[2], int p1[2], int color) {
+    const int rand = randomInt(3, 15);
+    int new[2] = {p0[0], p0[1]};
+    int old[2] = {p0[0], p0[1]};
+
+    LCDSolidColor colIDX = (color) ? kColorWhite : kColorBlack;
+
+    for (int i=0; i <= rand; i++){
+        int end = randomInt(3, 20);
+        old[0] = new[0];
+        old[1] = new[1];
+
+        int dx = new[0] - p1[0];
+        int dy = new[1] - p1[1];
+        
+        int dist = ((dx*dx)+(dy*dy)/2);
+        if (dist < 1) { dist = 1; } else if (dist > end) { dist = end; }
+        int xRand = randomInt(0, dist);
+        int yRand = randomInt(0, dist);
+
+        if (new[0] > p1[0]){
+            new[0] += -xRand;
+        } else {
+            new[0] += xRand;
+        }
+        
+        if (new[1] > p1[1]){
+            new[1] += -yRand;
+        } else {
+            new[1] += yRand;
+        }
+
+        int size = randomInt(1, 4);
+
+        if (i != rand){
+            pd->graphics->drawLine(old[0], old[1], new[0], new[1], size, colIDX);
+        } else {
+            pd->graphics->drawLine(new[0], new[1], p1[0], p1[1], size, colIDX);
+        }
+    }
+}

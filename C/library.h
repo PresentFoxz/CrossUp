@@ -59,12 +59,17 @@ static inline int allNonNegative(float a, float b, float c) {
 extern const float fovX;
 extern const float fovY;
 
+#define substeps 4
+#define worldUnit 16.0f
+
+float unitToMeter(float x);
+float meterToUnit(float x);
+
 extern uint8_t* buf;
 extern const int blockVerts[8][3];
 extern const int blockTris[12][4];
 extern float pCollisionPos[3];
-extern float pColPoints[4][3];
-extern int substeps;
+extern float pColPoints[substeps][3];
 
 #define rowStride 52
 extern int pixSizeX;
@@ -83,5 +88,7 @@ void swapFloat(float* a, float* b);
 void swapFloat2(float* a, float* b);
 
 float dot(Vect3f a, Vect3f b);
+float fastInvSqrt(float x);
+void staticLineDrawing(int p0[2], int p1[2], int color);
 
 #endif

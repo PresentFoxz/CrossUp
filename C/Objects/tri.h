@@ -12,6 +12,9 @@ static const Mesh tri = {
         {0.0f, 1.0f, 0.0f}, 
         {1.0f, 1.0f, 0.0f}
     },
+    .bones = (VectB[]) {
+        {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}
+    },
     .color = (int[]) {1, 2},
     .count = (int) 2,
 };

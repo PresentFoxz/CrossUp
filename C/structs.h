@@ -21,9 +21,21 @@ typedef struct {
 } Vect3f;
 
 typedef struct {
+    float x, y;
+} Vect2f;
+
+typedef struct {
     Vect3f pos;
     int floor, ceiling, wall;
 } VectMf;
+
+typedef struct {
+    Vect3f min, max;
+} MinMax3f;
+
+typedef struct {
+    Vect2f min, max;
+} MinMax2f;
 
 typedef struct {
     float verts[3][3];
@@ -59,7 +71,8 @@ typedef struct {
     Vect3f velocity;
     qfixed32_t surfRot;
     qfixed32_t radius, height;
-    int type, grounded, coyote, ifMove, crouch;
+    int type, grounded, groundTimer;
+    int coyote, ifMove, state;
     int countdown, rotDir;
     float frict, fallFrict;
 } EntStruct;

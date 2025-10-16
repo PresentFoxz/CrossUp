@@ -32,6 +32,11 @@ typedef struct {
     int hasWall;
 } CollisionResult;
 
+typedef struct {
+    MinMax2f* lineMinMax;
+    MinMax3f* BoxMinMax;
+} OOBArea;
+
 void resetCollisionSurface();
 void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, SurfaceType type);
 VectMf cylinderInTriangle(Vect3f pos, float radius, float height);

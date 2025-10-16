@@ -452,8 +452,8 @@ events:
     checks:
       - "Detecting C compiler ABI info"
     directories:
-      source: "E:/PlaydateSDK/C_API/CrossUp/build/CMakeFiles/CMakeScratch/TryCompile-kbzruk"
-      binary: "E:/PlaydateSDK/C_API/CrossUp/build/CMakeFiles/CMakeScratch/TryCompile-kbzruk"
+      source: "E:/PlaydateSDK/C_API/CrossUp/build/CMakeFiles/CMakeScratch/TryCompile-cofewa"
+      binary: "E:/PlaydateSDK/C_API/CrossUp/build/CMakeFiles/CMakeScratch/TryCompile-cofewa"
     cmakeVariables:
       CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
       CMAKE_C_FLAGS_DEBUG: "/MDd /Zi /Ob0 /Od /RTC1"
@@ -462,28 +462,28 @@ events:
       variable: "CMAKE_C_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'E:/PlaydateSDK/C_API/CrossUp/build/CMakeFiles/CMakeScratch/TryCompile-kbzruk'
+        Change Dir: 'E:/PlaydateSDK/C_API/CrossUp/build/CMakeFiles/CMakeScratch/TryCompile-cofewa'
         
-        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_19863\\fast
-        	"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe"  -f CMakeFiles\\cmTC_19863.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_19863.dir\\build
-        Building C object CMakeFiles/cmTC_19863.dir/CMakeCCompilerABI.c.obj
-        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_19863.dir\\CMakeCCompilerABI.c.obj.d --working-dir=E:\\PlaydateSDK\\C_API\\CrossUp\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kbzruk --filter-prefix="Note: including file: " -- C:\\PROGRA~2\\MICROS~3\\2022\\BUILDT~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\cl.exe @C:\\Users\\PRESEN~1\\AppData\\Local\\Temp\\nm2563.tmp
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_343c0\\fast
+        	"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe"  -f CMakeFiles\\cmTC_343c0.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_343c0.dir\\build
+        Building C object CMakeFiles/cmTC_343c0.dir/CMakeCCompilerABI.c.obj
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_343c0.dir\\CMakeCCompilerABI.c.obj.d --working-dir=E:\\PlaydateSDK\\C_API\\CrossUp\\build\\CMakeFiles\\CMakeScratch\\TryCompile-cofewa --filter-prefix="Note: including file: " -- C:\\PROGRA~2\\MICROS~3\\2022\\BUILDT~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\cl.exe @C:\\Users\\PRESEN~1\\AppData\\Local\\Temp\\nm151A.tmp
         CMakeCCompilerABI.c
-        Linking C executable cmTC_19863.exe
-        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_19863.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests -- C:\\PROGRA~2\\MICROS~3\\2022\\BUILDT~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_19863.dir\\objects1.rsp @C:\\Users\\PRESEN~1\\AppData\\Local\\Temp\\nm25B2.tmp
+        Linking C executable cmTC_343c0.exe
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_343c0.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests -- C:\\PROGRA~2\\MICROS~3\\2022\\BUILDT~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_343c0.dir\\objects1.rsp @C:\\Users\\PRESEN~1\\AppData\\Local\\Temp\\nm1578.tmp
         Visual Studio Incremental Link with embedded manifests
-        Create CMakeFiles\\cmTC_19863.dir/manifest.rc
-        Create empty: CMakeFiles\\cmTC_19863.dir/embed.manifest
+        Create CMakeFiles\\cmTC_343c0.dir/manifest.rc
+        Create empty: CMakeFiles\\cmTC_343c0.dir/embed.manifest
         RC Pass 1:
-        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe /fo CMakeFiles\\cmTC_19863.dir/manifest.res CMakeFiles\\cmTC_19863.dir/manifest.rc
+        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe /fo CMakeFiles\\cmTC_343c0.dir/manifest.res CMakeFiles\\cmTC_343c0.dir/manifest.rc
         LINK Pass 1:
-        C:\\PROGRA~2\\MICROS~3\\2022\\BUILDT~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_19863.dir\\objects1.rsp /out:cmTC_19863.exe /implib:cmTC_19863.lib /pdb:E:\\PlaydateSDK\\C_API\\CrossUp\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kbzruk\\cmTC_19863.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_19863.dir/intermediate.manifest CMakeFiles\\cmTC_19863.dir/manifest.res
+        C:\\PROGRA~2\\MICROS~3\\2022\\BUILDT~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_343c0.dir\\objects1.rsp /out:cmTC_343c0.exe /implib:cmTC_343c0.lib /pdb:E:\\PlaydateSDK\\C_API\\CrossUp\\build\\CMakeFiles\\CMakeScratch\\TryCompile-cofewa\\cmTC_343c0.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_343c0.dir/intermediate.manifest CMakeFiles\\cmTC_343c0.dir/manifest.res
         MT:
-        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe /nologo /manifest CMakeFiles\\cmTC_19863.dir/intermediate.manifest /out:CMakeFiles\\cmTC_19863.dir/embed.manifest /notify_update
+        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe /nologo /manifest CMakeFiles\\cmTC_343c0.dir/intermediate.manifest /out:CMakeFiles\\cmTC_343c0.dir/embed.manifest /notify_update
         RC Pass 2:
-        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe /fo CMakeFiles\\cmTC_19863.dir/manifest.res CMakeFiles\\cmTC_19863.dir/manifest.rc
+        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe /fo CMakeFiles\\cmTC_343c0.dir/manifest.res CMakeFiles\\cmTC_343c0.dir/manifest.rc
         FINAL LINK:
-        C:\\PROGRA~2\\MICROS~3\\2022\\BUILDT~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_19863.dir\\objects1.rsp /out:cmTC_19863.exe /implib:cmTC_19863.lib /pdb:E:\\PlaydateSDK\\C_API\\CrossUp\\build\\CMakeFiles\\CMakeScratch\\TryCompile-kbzruk\\cmTC_19863.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_19863.dir/intermediate.manifest CMakeFiles\\cmTC_19863.dir/manifest.res
+        C:\\PROGRA~2\\MICROS~3\\2022\\BUILDT~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_343c0.dir\\objects1.rsp /out:cmTC_343c0.exe /implib:cmTC_343c0.lib /pdb:E:\\PlaydateSDK\\C_API\\CrossUp\\build\\CMakeFiles\\CMakeScratch\\TryCompile-cofewa\\cmTC_343c0.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_343c0.dir/intermediate.manifest CMakeFiles\\cmTC_343c0.dir/manifest.res
         
       exitCode: 0
   -

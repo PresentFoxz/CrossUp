@@ -22,7 +22,7 @@ int allAmt = 0;
 int staticAmt = 0;
 
 const int debug = 0;
-const int colRend = 0;
+const int colRend = 1;
 int renderRadius = 85;
 
 EntStruct* allEnts;
@@ -176,60 +176,65 @@ static int cLib_addEnt(lua_State* L){
     return 0;
 }
 
-static void renderCollision(float x, float y, float z, float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos){
+static void renderCollision(float pCol[substeps][3], float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos, Camera usedCam){
     int size = 10;
     int half = size / 2;
 
+    float fov = FROM_FIXED32(usedCam.fov);
+    float nearPlane = FROM_FIXED32(usedCam.nearPlane);
+    Vect3f camPos = {FROM_FIXED32(usedCam.position.x), FROM_FIXED32(usedCam.position.y), FROM_FIXED32(usedCam.position.z)};
+
+    Vertex verts;
+    int point[2];
     float heightMod[2] = {0.0f, FROM_FIXED32(player.height)};
-    for (int i = 0; i < 2; i++) {
-        int point[2];
-        float rot[3];
-        RotationMatrix(
-            x - FROM_FIXED32(cam.position.x),
-            (y + heightMod[i]) - FROM_FIXED32(cam.position.y),
-            z - FROM_FIXED32(cam.position.z),
-            CamYDirSin, CamYDirCos,
-            CamXDirSin, CamXDirCos,
-            CamZDirSin, CamZDirCos,
-            &rot[0]
-        );
 
-        if (rot[2] <= 0.0f) continue;
-        project2D(&point[0], rot, FROM_FIXED32(cam.fov), FROM_FIXED32(cam.nearPlane));
+    float camMatrix[3][3];
+    computeCamMatrix(camMatrix, CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos);
 
-        pd->graphics->fillRect((int)(point[0] - (half+1)), (int)(point[1] - (half+1)), size+2, size+2, kColorBlack);
-        pd->graphics->fillRect((int)(point[0] - half), (int)(point[1] - half), size, size, kColorWhite);
+    for (int z=0; z < substeps; z++){
+        verts.x = pCol[z][0];
+        verts.y = pCol[z][1];
+        verts.z = pCol[z][2];
+
+        for (int i = 0; i < 2; i++) {
+            Vertex vertsEdit = {verts.x, (verts.y + heightMod[i]), verts.z};
+            rotateVertexInPlace(&vertsEdit, camPos, camMatrix);
+            project2D(&point[0], (float[]){vertsEdit.x, vertsEdit.y, vertsEdit.z}, fov, nearPlane);
+    
+            pd->graphics->fillRect((int)(point[0] - (half+1)), (int)(point[1] - (half+1)), size+2, size+2, kColorBlack);
+            pd->graphics->fillRect((int)(point[0] - half), (int)(point[1] - half), size, size, kColorWhite);
+        }
     }
 }
 
-static void renderLines(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos){
+static void renderLines(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos, Camera usedCam){
     int point[2][2];
+
+    float fov = FROM_FIXED32(usedCam.fov);
+    float nearPlane = FROM_FIXED32(usedCam.nearPlane);
+    Vect3f camPos = {FROM_FIXED32(usedCam.position.x), FROM_FIXED32(usedCam.position.y), FROM_FIXED32(usedCam.position.z)};
+
+    Vertex verts[2];
+    float camMatrix[3][3];
+    computeCamMatrix(camMatrix, CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos);
 
     for (int index=0; index < staticAmt; index++){
         int x = (int)static3D[index].pos.x;
         int y = (int)static3D[index].pos.y;
         int z = (int)static3D[index].pos.z;
-        int verts[3][3];
         int color = (int)static3D[index].color;
 
         for (int i=0; i < 2; i++){
-            for (int z=0; z < 3; z++){
-                verts[i][z] = static3D[index].joint[i][z];
-            }
+            verts[i].x = static3D[index].joint[i][0];
+            verts[i].y = static3D[index].joint[i][1];
+            verts[i].z = static3D[index].joint[i][2];
         }
 
-        for (int v=0; v < 2; v++){
-            float rot[3] = {0.0f, 0.0f, 0.0f};
-            RotationMatrix(
-                (float)(x + verts[v][0]) - FROM_FIXED32(cam.position.x),
-                (float)(y + verts[v][1]) - FROM_FIXED32(cam.position.y),
-                (float)(z + verts[v][2]) - FROM_FIXED32(cam.position.z),
-                CamYDirSin, CamYDirCos,
-                CamXDirSin, CamXDirCos,
-                CamZDirSin, CamZDirCos,
-                &rot[0]
-            );
-            project2D(&point[v][0], rot, FROM_FIXED32(cam.fov), FROM_FIXED32(cam.nearPlane));
+        if (verts[0].z <= 0.0f && verts[1].z <= 0.0f) { continue; }
+
+        for (int v = 0; v < 2; v++) {
+            rotateVertexInPlace(&verts[v], camPos, camMatrix);
+            project2D(&point[v][0], (float[]){verts[v].x, verts[v].y, verts[v].z}, fov, nearPlane);
         }
 
         staticLineDrawing(point[0], point[1], color);
@@ -287,15 +292,8 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
     }
 }
 
-static inline float fastInvSqrt(float x) {
-    union { float f; uint32_t i; } conv = { x };
-    conv.i = 0x5f3759df - (conv.i >> 1);
-    float y = conv.f;
-    return y * (1.5f - 0.5f * x * y * y);
-}
-
 static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera cCam, int type, int triCount, Vect3m* data, int* colorArray, int posDist) {
-    Vect3f dirNorm;
+    // Vect3f dirNorm;
     worldTris tri;
     float rotMat[3][3];
     computeRotScaleMatrix(rotMat, rot.x, rot.y, rot.z, size.x, size.y, size.z);
@@ -340,17 +338,16 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera cCam, i
         float dist = dx*dx + dy*dy + dz*dz;
 
         if (renderRadius && dist > renderRadiusSq) continue;
-
         if (dist <= 1e-8f) continue;
-
-        float invLen = fastInvSqrt(dist);
-        dirNorm.x = dx * invLen;
-        dirNorm.y = dy * invLen;
-        dirNorm.z = dz * invLen;
 
         tri.color = colorArray[i];
         tri.dist = dist;
         allPoints[allAmt++] = tri;
+
+        // float invLen = fastInvSqrt(dist);
+        // dirNorm.x = dx * invLen;
+        // dirNorm.y = dy * invLen;
+        // dirNorm.z = dz * invLen;
 
         // float d = dirNorm.x * camForward.x + dirNorm.y * camForward.y + dirNorm.z * camForward.z;
         // if (d > -0.867f) {
@@ -423,7 +420,13 @@ static int cLib_render(lua_State* L) {
     qsort(allPoints, allAmt, sizeof(worldTris), compareRenderTris);
     
     renderTris(CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos, cam);
+    renderLines(CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos, cam);
 
+    if (colRend){ renderCollision(pColPoints, CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos, cam); }
+
+    // pd->system->logToConsole( "State: %d", player.state );
+    // pd->system->logToConsole( "Velocity: [ %f | %f | %f ]", meterToUnit(player.velocity.x), meterToUnit(player.velocity.y), meterToUnit(player.velocity.z) );
+    
     if (debug == 1) {
         // pd->system->logToConsole( "All allocation: %d", (sizeof(worldTris) * mapArray[modelIndex].count) + (sizeof(EntStruct) * entAmt) + (sizeof(worldTris) * allAmt) + (sizeof(staticPoints) * lengthJoints) );
         // pd->system->logToConsole( "Map Array: %d", (sizeof(worldTris) * mapArray[modelIndex].count) );
@@ -436,12 +439,6 @@ static int cLib_render(lua_State* L) {
         pd->graphics->drawText(text, strlen(text), kASCIIEncoding, 2, 20);
         snprintf(text, sizeof(text), "Camera: %d %d %d", (int)(FROM_FIXED32(cam.position.x)), (int)(FROM_FIXED32(cam.position.y)), (int)(FROM_FIXED32(cam.position.z)));
         pd->graphics->drawText(text, strlen(text), kASCIIEncoding, 2, 42);
-    }
-
-    if (colRend){
-        for (int i=0; i < substeps; i++){ 
-            renderCollision(pColPoints[i][0], pColPoints[i][1], pColPoints[i][2], CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos);
-        }
     }
 
     return 0;

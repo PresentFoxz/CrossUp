@@ -2,8 +2,7 @@
 #include "collisions.h"
 
 float pCollisionPos[3];
-float pColPoints[4][3];
-int substeps = 4;
+float pColPoints[substeps][3];
 const int detectDist = 15;
 
 static float wrapFloat(float value, float min, float max) {
@@ -31,29 +30,45 @@ static void moveEnt(EntStruct* p, float mainYaw, float secondaryYaw, float secon
             p->velocity.z += airDelta * cosf(secondaryYaw);
         }
     } else {
-        if (p->grounded){
-            p->velocity.x *= frict;
-            p->velocity.z *= frict;
+        if (p->grounded) {
+            if (p->groundTimer < 3){
+                float landFrict = (frict + 1.0f) * 0.5f;
+                p->velocity.x *= landFrict;
+                p->velocity.z *= landFrict;
+            } else {
+                p->velocity.x *= frict;
+                p->velocity.z *= frict;
+            }
+
+            if (p->velocity.x >= -0.00001f && p->velocity.x <= 0.00001f) { p->velocity.x = 0.0f; }
+            if (p->velocity.z >= -0.00001f && p->velocity.z <= 0.00001f) { p->velocity.z = 0.0f; }
         } else {
             float forwardX = sinf(mainYaw);
             float forwardZ = cosf(mainYaw);
-    
+
             float forwardVel = p->velocity.x * forwardX + p->velocity.z * forwardZ;
-    
+
             if (forwardVel != 0.0f) {
-                float damping = airDelta * secondaryStrength;
-            
-                if (forwardVel > 0.0f) {
-                    forwardVel -= damping;
-                    if (forwardVel < 0.0f) forwardVel = 0.0f;
-                } else {
-                    forwardVel += damping;
-                    if (forwardVel > 0.0f) forwardVel = 0.0f;
-                }
+                float absVel = fabsf(forwardVel);
                 
-                p->velocity.x = forwardVel * forwardX;
-                p->velocity.z = forwardVel * forwardZ;
+                float dampingTotal = airDelta * secondaryStrength * 0.3f;
+                if (absVel > 0.8f)       dampingTotal += airDelta * secondaryStrength * 1.6f;
+                else if (absVel > 0.5f)  dampingTotal += airDelta * secondaryStrength * 1.0f;
+                else if (absVel > 0.2f)  dampingTotal += airDelta * secondaryStrength * 0.5f;
+                
+                if (absVel <= dampingTotal) {
+                    forwardVel = 0.0f;
+                } else {
+                    forwardVel -= (forwardVel / absVel) * dampingTotal;
+                }
             }
+
+            if (p->state == 2) {
+                if (forwardVel > 1.2f) { forwardVel = 1.2f; }
+            }
+
+            p->velocity.x = forwardVel * forwardX;
+            p->velocity.z = forwardVel * forwardZ;
         }
     }
 }
@@ -161,18 +176,20 @@ void movePlayerObj(EntStruct* p, Camera* c, int col){
     float mainYaw = FROM_FIXED32(p->rotation.y);
     float secondaryStrength = 0.5f;
 
+    if (p->grounded == 1) { p->state = 0; }
+
     // === Movement ===
-    if (held & kButtonB && p->grounded == 1) { p->crouch = 1; } else { p->crouch = 0; }
+    if (held & kButtonB && p->grounded == 1) { p->state = 1; }
     if (held & kButtonA && (p->grounded == 1 || p->coyote <= 10)) {
         p->grounded = 0;
 
-        if (p->crouch) {
-            p->velocity.x *= 1.5f;
-            p->velocity.z *= 1.5f;
+        if (p->state == 1) {
+            p->velocity.x *= 2.5f;
+            p->velocity.z *= 2.5f;
             p->velocity.y = 0.7f;
 
             p->coyote = 11;
-            p->crouch = 0;
+            p->state = 2;
 
             p->fallFrict = 0.04f;
 
@@ -188,6 +205,8 @@ void movePlayerObj(EntStruct* p, Camera* c, int col){
                 p->velocity.x = forwardVel * forwardX;
                 p->velocity.z = forwardVel * forwardZ;
             }
+
+            pd->system->logToConsole("Forward: %f", forwardVel);
         } else {
             p->velocity.y = 0.54f;
         }
@@ -230,17 +249,25 @@ void movePlayerObj(EntStruct* p, Camera* c, int col){
 
     runColl(p, col);
 
+    moveEnt(p, FROM_FIXED32(p->rotation.y), FROM_FIXED32(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 1);
+
     p->coyote++;
     if (p->grounded == 1) {
         p->coyote = 0;
+        p->groundTimer++;
 
-        if (p->velocity.x >= -0.05f && p->velocity.x <= 0.05f) { p->velocity.x = 0.0f; }
-        if (p->velocity.z >= -0.05f && p->velocity.z <= 0.05f) { p->velocity.z = 0.0f; }
+        if (p->fallFrict != 0.08f) { p->fallFrict = 0.08f; }
 
-        p->fallFrict = 0.08f;
+        if (inputX != 0.0f || inputZ != 0.0f){
+            p->groundTimer = 10;
+        }
+    } else {
+        if (inputX != 0.0f || inputZ != 0.0f){
+            p->groundTimer = 10;
+        } else {
+            p->groundTimer = 0;
+        }
     }
-
-    moveEnt(p, FROM_FIXED32(p->rotation.y), FROM_FIXED32(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 1);
 }
 
 void updateCamera(Camera* cam, EntStruct* ent, float radius) {

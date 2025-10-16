@@ -12,6 +12,7 @@
         "mesh.h": "c",
         "collisions.h": "c",
         "stdlib.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "tri.h": "c"
     }
 }

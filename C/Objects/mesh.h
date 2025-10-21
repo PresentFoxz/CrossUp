@@ -1,20 +1,34 @@
 #ifndef MESH_H
 #define MESH_H
-
 typedef struct {
     float x, y, z;
-    int boneIDX;
 } Vect3m;
 
 typedef struct {
-    Vect3f pos, rot;
+    Vect3m* data;
+    int* color;
+    int* bfc;
+    int count;
+} Mesh;
+
+typedef struct {
+    Vect3f pos, rot, size;
+    int frameCount, modelUsed;
 } VectB;
 
 typedef struct {
-    Vect3m* data;
-    VectB* bones;
-    int* color;
-    int count;
-} Mesh;
+    const Mesh** meshModel;
+    VectB* animOrientation;
+} AnimMesh;
+
+typedef struct { 
+    const AnimMesh** animations;
+} ModelAnimations;
+
+typedef struct {
+    const ModelAnimations** animations;
+    const int** maxFrames;
+    int joints;
+} PlayerModel_t;
 
 #endif

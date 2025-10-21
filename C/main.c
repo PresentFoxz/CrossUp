@@ -4,7 +4,6 @@
 #include "movement.h"
 #include "collisions.h"
 #include "Objects/allMeshes.h"
-#include "Objects/mesh.h"
 
 PlaydateAPI* pd;
 Camera cam;
@@ -22,7 +21,7 @@ int allAmt = 0;
 int staticAmt = 0;
 
 const int debug = 0;
-const int colRend = 1;
+const int colRend = 0;
 int renderRadius = 85;
 
 EntStruct* allEnts;
@@ -133,7 +132,10 @@ static int cLib_init(lua_State* L) {
     generateMap(mapArray[modelIndex].count);
     generatePoints(lengthJoints);
 
-    player = createPlayer(10.0f, 3.0f, 41.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.56f, 0.08f, 0);
+    int jointCount = 2;
+    int* jointData = pd->system->realloc(NULL, sizeof(int) * jointCount);
+    for (int i = 0; i < jointCount; i++) { jointData[i] = 0; }
+    player = createPlayer(10.0f, 3.0f, 41.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.56f, 0.08f, 0, jointData, jointCount);
 
     return 0;
 }
@@ -160,8 +162,12 @@ static int cLib_addEnt(lua_State* L){
     int type = pd->lua->getArgInt(12);
 
     if (entAmt < maxEntities){
+        int jointCount = 2;
+        int* jointData = pd->system->realloc(NULL, sizeof(int) * jointCount);
+        for (int i = 0; i < jointCount; i++) { jointData[i] = 0; }
+
         allEnts = pd->system->realloc(allEnts, sizeof(EntStruct) * (entAmt + 1));
-        allEnts[entAmt] = createEntity(xPos, yPos, zPos, xRot, yRot, zRot, xSize, ySize, zSize, radius, height, frict, fallFrict, type);
+        allEnts[entAmt] = createEntity(xPos, yPos, zPos, xRot, yRot, zRot, xSize, ySize, zSize, radius, height, frict, fallFrict, type, jointData, jointData);
         entAmt++;
 
         int newPoint = (allPointsCount + entArray[type].count);
@@ -268,7 +274,7 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
             project2D(&check[v][0], (float[]){verts[v].x, verts[v].y, verts[v].z}, fov, nearPlane);
         }
 
-        if (!windingOrder(check[0], check[1], check[2])) { continue; }
+        if (allPoints[index].bfc == 1 && !windingOrder(check[0], check[1], check[2])) { continue; }
         if (verts[0].z <= 0.0f && verts[1].z <= 0.0f && verts[2].z <= 0.0f) { continue; }
 
         int output = TriangleClipping(verts, &clip1, &clip2, nearPlane, farPlane);
@@ -292,7 +298,7 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
     }
 }
 
-static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera cCam, int type, int triCount, Vect3m* data, int* colorArray, int posDist) {
+static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera cCam, int type, int triCount, Vect3m* data, int* backFace, int* colorArray, int posDist) {
     // Vect3f dirNorm;
     worldTris tri;
     float rotMat[3][3];
@@ -342,6 +348,7 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera cCam, i
 
         tri.color = colorArray[i];
         tri.dist = dist;
+        tri.bfc = backFace[i];
         allPoints[allAmt++] = tri;
 
         // float invLen = fastInvSqrt(dist);
@@ -362,15 +369,67 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera cCam, i
 
 static void addPlayer() {
     if (player.type < 0 || player.type >= maxEntStored) return;
+    if (testox.joints != player.jointCount) return;
+
+    if (player.currentAnim != player.lastAnim) { 
+        for (int i=0; i < player.jointCount; i++) { player.frameCount[i] = 0; player.currentFrame[i] = 0; }
+    }
+
+    for (int i=0; i < player.jointCount; i++){
+        AnimMesh* anim = testox.animations[i]->animations[player.currentAnim];
+        int frameCount = anim->animOrientation[player.currentFrame[i]].frameCount;
+
+        player.frameCount[i]++;
+        if (player.frameCount[i] >= frameCount) {
+            player.frameCount[i] = 0;
+            player.currentFrame[i]++;
+        }
+
+        if (player.currentFrame[i] >= testox.maxFrames[player.currentAnim][i]) { player.frameCount[i] = 0; player.currentFrame[i] = 0; }
+
+        VectB bone = anim->animOrientation[player.currentFrame[i]];
+        Vect3f objectPos = {
+            FROM_FIXED32(player.position.x) + bone.pos.x,
+            FROM_FIXED32(player.position.y) + bone.pos.y,
+            FROM_FIXED32(player.position.z) + bone.pos.z
+        };
+
+        Vect3f objectSize = {
+            FROM_FIXED32(player.size.x) + bone.size.x,
+            FROM_FIXED32(player.size.y) + bone.size.y,
+            FROM_FIXED32(player.size.z) + bone.size.z
+        };
+        
+        addObjectToWorld(
+            objectPos,
+            (Vect3f){FROM_FIXED32(player.rotation.x), FROM_FIXED32(player.rotation.y), FROM_FIXED32(player.rotation.z)},
+            objectSize,
+            cam,
+            i,
+            anim->meshModel[anim->animOrientation->modelUsed]->count,
+            anim->meshModel[anim->animOrientation->modelUsed]->data,
+            anim->meshModel[anim->animOrientation->modelUsed]->bfc,
+            anim->meshModel[anim->animOrientation->modelUsed]->color,
+            true
+        );
+    }
+
+    player.lastAnim = player.currentAnim;
+
+    pd->system->logToConsole("Animation: %d", player.currentAnim);
+}
+
+static void addTestModel(Vect3f pos, Vect3f rot, Vect3f size, int type) {
     addObjectToWorld(
-        (Vect3f){FROM_FIXED32(player.position.x), FROM_FIXED32(player.position.y), FROM_FIXED32(player.position.z)},
-        (Vect3f){FROM_FIXED32(player.rotation.x), FROM_FIXED32(player.rotation.y), FROM_FIXED32(player.rotation.z)},
-        (Vect3f){FROM_FIXED32(player.size.x), FROM_FIXED32(player.size.y), FROM_FIXED32(player.size.z)},
+        pos,
+        rot,
+        size,
         cam,
-        player.type,
-        entArray[player.type].count,
-        entArray[player.type].data,
-        entArray[player.type].color,
+        type,
+        entArray[type].count,
+        entArray[type].data,
+        entArray[type].bfc,
+        entArray[type].color,
         true
     );
 }
@@ -386,6 +445,7 @@ static void addEntities() {
             allEnts[i].type,
             entArray[allEnts[i].type].count,
             entArray[allEnts[i].type].data,
+            entArray[allEnts[i].type].bfc,
             entArray[allEnts[i].type].color,
             false
         );
@@ -401,6 +461,7 @@ static void addMap(){
         modelIndex,
         mapArray[modelIndex].count,
         mapArray[modelIndex].data,
+        mapArray[modelIndex].bfc,
         mapArray[modelIndex].color,
         false
     );
@@ -417,7 +478,8 @@ static int cLib_render(lua_State* L) {
     addMap();
     addEntities();
     addPlayer();
-    qsort(allPoints, allAmt, sizeof(worldTris), compareRenderTris);
+    // addTestModel((Vect3f){0.0f, 3.0f, 0.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f}, 2);
+    // qsort(allPoints, allAmt, sizeof(worldTris), compareRenderTris);
     
     renderTris(CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos, cam);
     renderLines(CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos, cam);
@@ -472,6 +534,7 @@ static void addModel(int type){
         type,
         entArray[type].count,
         entArray[type].data,
+        entArray[type].bfc,
         entArray[type].color,
         true
     );

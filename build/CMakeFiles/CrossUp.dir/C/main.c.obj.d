@@ -43,7 +43,7 @@ E:/PlaydateSDK/C_API/CrossUp/C/movement.h
 E:/PlaydateSDK/C_API/CrossUp/C/collisions.h
 E:/PlaydateSDK/C_API/CrossUp/C/Objects/allMeshes.h
 E:/PlaydateSDK/C_API/CrossUp/C/Objects/mesh.h
-E:/PlaydateSDK/C_API/CrossUp/C/Objects/cube.h
-E:/PlaydateSDK/C_API/CrossUp/C/Objects/arm.h
-E:/PlaydateSDK/C_API/CrossUp/C/Objects/map.h
-E:/PlaydateSDK/C_API/CrossUp/C/Objects/tri.h
+E:/PlaydateSDK/C_API/CrossUp/C/Objects/models/cube.h
+E:/PlaydateSDK/C_API/CrossUp/C/Objects/models/arm.h
+E:/PlaydateSDK/C_API/CrossUp/C/Objects/maps/map.h
+E:/PlaydateSDK/C_API/CrossUp/C/Objects/models/test.h

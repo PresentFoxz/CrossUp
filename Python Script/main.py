@@ -110,6 +110,7 @@ def exportModelDataH():
         os.remove("model.h")
     
     flatVerts = [v for tri in orderedTris for v in tri]
+    bfc = [1 for v in flatVerts]
     
     def to_c_array(lst, is_float=False):
         items = []
@@ -117,10 +118,16 @@ def exportModelDataH():
             if isinstance(item, list) or isinstance(item, tuple):
                 items.append(to_c_array(item, is_float))
             else:
-                items.append(f"{item}f" if is_float else str(item))
+                if is_float and isinstance(item, float) and not item.is_integer():
+                    items.append(f"{item}f")
+                elif is_float and isinstance(item, float):
+                    items.append(f"{int(item)}.0f")
+                else:
+                    items.append(str(item))
         return "{" + ", ".join(items) + "}"
     
     data_str = to_c_array(flatVerts, is_float=True)
+    bfc_str = to_c_array(bfc)
     color_str = to_c_array(color)
 
     with open("model.h", "w") as file:
@@ -129,6 +136,7 @@ def exportModelDataH():
         file.write('#include "mesh.h"\n\n')
         file.write("static const Mesh model = {\n")
         file.write(f"    .data = (Vect3m[]) {data_str},\n")
+        file.write(f"    .bfc = (Vect3m[]) {bfc_str},\n")
         file.write(f"    .color = (int[]) {color_str},\n")
         file.write(f"    .count = (int) {len(tris)},\n")
         file.write("};\n\n")

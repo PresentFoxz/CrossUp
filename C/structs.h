@@ -41,6 +41,7 @@ typedef struct {
     float verts[3][3];
     int color;
     float dist;
+    int bfc;
 } worldTris;
 
 typedef struct {
@@ -75,6 +76,10 @@ typedef struct {
     int coyote, ifMove, state;
     int countdown, rotDir;
     float frict, fallFrict;
+
+    int* frameCount;
+    int* currentFrame;
+    int currentAnim, lastAnim, jointCount;
 } EntStruct;
 
 typedef struct {

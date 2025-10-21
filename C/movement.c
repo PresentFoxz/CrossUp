@@ -268,6 +268,8 @@ void movePlayerObj(EntStruct* p, Camera* c, int col){
             p->groundTimer = 0;
         }
     }
+
+    if (p->grounded == 1 && (p->velocity.x != 0.0f || p->velocity.y != 0.0f)) { p->currentAnim = 1; } else { p->currentAnim = 0; }
 }
 
 void updateCamera(Camera* cam, EntStruct* ent, float radius) {

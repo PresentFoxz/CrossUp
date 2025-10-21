@@ -13,6 +13,7 @@
         "collisions.h": "c",
         "stdlib.h": "c",
         "string.h": "c",
-        "tri.h": "c"
+        "tri.h": "c",
+        "map.h": "c"
     }
 }

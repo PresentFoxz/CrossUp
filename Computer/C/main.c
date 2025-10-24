@@ -18,7 +18,7 @@ int entAmt = 0;
 int allAmt = 0;
 int staticAmt = 0;
 
-const int colRend = 1;
+const int colRend = 0;
 int renderRadius = 85;
 
 EntStruct* allEnts;

@@ -32,29 +32,29 @@ static const Mesh test2 = {
 };
 
 static const AnimMesh idleTri = {
-    .meshModel = (Mesh*[]) { &test2 },
+    .meshModel = (const Mesh*[]) { &test2 },
     .animOrientation = (VectB[]) {
-        {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 2, 0},
-        {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 4, 0}
+        {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 6, 0},
+        {{0.0f, 0.0f, 0.0f}, {20.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 6, 0}
     },
 };
 
 static const AnimMesh idleCube = {
-    .meshModel = (Mesh*[]) { &test1 },
+    .meshModel = (const Mesh*[]) { &test1 },
     .animOrientation = (VectB[]) {
         {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0, 0}
     },
 };
 
 static const AnimMesh moveTri = {
-    .meshModel = (Mesh*[]) { &test2 },
+    .meshModel = (const Mesh*[]) { &test2 },
     .animOrientation = (VectB[]) {
         {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0, 0}
     },
 };
 
 static const AnimMesh moveCube = {
-    .meshModel = (Mesh*[]) { &test1 },
+    .meshModel = (const Mesh*[]) { &test1 },
     .animOrientation = (VectB[]) {
         {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 4, 0},
         {{0.0f, -0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, -0.5f, 0.0f}, 4, 0},
@@ -65,19 +65,19 @@ static const AnimMesh moveCube = {
 };
 
 static const ModelAnimations triAnims = {
-    .animations = (AnimMesh*[]) { &idleTri, &moveTri }
+    .animations = (const AnimMesh*[]) { &idleTri, &moveTri }
 };
 
 static const ModelAnimations cubeAnim = {
-    .animations = (AnimMesh*[]) { &idleCube, &moveCube }
+    .animations = (const AnimMesh*[]) { &idleCube, &moveCube }
 };
 
 static const int idleFrames[] = { 1, 2 };
 static const int moveFrames[] = { 5, 1 };
 
 static const PlayerModel_t testox = {
-    .animations = (ModelAnimations*[]) { &cubeAnim, &triAnims },
-    .maxFrames = (int*[]) { &idleFrames, &moveFrames },
+    .animations = (const ModelAnimations*[]) { &cubeAnim, &triAnims },
+    .maxFrames = (const int*[]) { idleFrames, moveFrames },
     .joints = 2,
 };
 

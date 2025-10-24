@@ -167,7 +167,7 @@ static int cLib_addEnt(lua_State* L){
         for (int i = 0; i < jointCount; i++) { jointData[i] = 0; }
 
         allEnts = pd->system->realloc(allEnts, sizeof(EntStruct) * (entAmt + 1));
-        allEnts[entAmt] = createEntity(xPos, yPos, zPos, xRot, yRot, zRot, xSize, ySize, zSize, radius, height, frict, fallFrict, type, jointData, jointData);
+        allEnts[entAmt] = createEntity(xPos, yPos, zPos, xRot, yRot, zRot, xSize, ySize, zSize, radius, height, frict, fallFrict, type, jointData, jointCount);
         entAmt++;
 
         int newPoint = (allPointsCount + entArray[type].count);
@@ -394,15 +394,25 @@ static void addPlayer() {
             FROM_FIXED32(player.position.z) + bone.pos.z
         };
 
+        Vect3f objectRot = {
+            FROM_FIXED32(player.rotation.x) + degToRad(bone.rot.x),
+            FROM_FIXED32(player.rotation.y) + degToRad(bone.rot.y),
+            FROM_FIXED32(player.rotation.z) + degToRad(bone.rot.z)
+        };
+
         Vect3f objectSize = {
             FROM_FIXED32(player.size.x) + bone.size.x,
             FROM_FIXED32(player.size.y) + bone.size.y,
             FROM_FIXED32(player.size.z) + bone.size.z
         };
+
+        if (objectRot.x > degToRad(360.0f)) { objectRot.x -= degToRad(360.0f); } else if (objectRot.x < degToRad(0.0f)) { objectRot.x += degToRad(360.0f); }
+        if (objectRot.y > degToRad(360.0f)) { objectRot.y -= degToRad(360.0f); } else if (objectRot.y < degToRad(0.0f)) { objectRot.y += degToRad(360.0f); }
+        if (objectRot.z > degToRad(360.0f)) { objectRot.z -= degToRad(360.0f); } else if (objectRot.z < degToRad(0.0f)) { objectRot.z += degToRad(360.0f); }
         
         addObjectToWorld(
             objectPos,
-            (Vect3f){FROM_FIXED32(player.rotation.x), FROM_FIXED32(player.rotation.y), FROM_FIXED32(player.rotation.z)},
+            objectRot,
             objectSize,
             cam,
             i,
@@ -415,8 +425,6 @@ static void addPlayer() {
     }
 
     player.lastAnim = player.currentAnim;
-
-    pd->system->logToConsole("Animation: %d", player.currentAnim);
 }
 
 static void addTestModel(Vect3f pos, Vect3f rot, Vect3f size, int type) {

@@ -170,6 +170,8 @@ void movePlayerObj(EntStruct* p, Camera* c, int col){
     float rotY_delta = -0.03f;
     float rotX_delta = -0.1f;
 
+    int moving = 1;
+
     float rotation[3] = {0.0f, 0.0f, 0.0f};
 
     float yawCam = -FROM_FIXED32(c->rotation.y);
@@ -269,7 +271,9 @@ void movePlayerObj(EntStruct* p, Camera* c, int col){
         }
     }
 
-    if (p->grounded == 1 && (p->velocity.x != 0.0f || p->velocity.y != 0.0f)) { p->currentAnim = 1; } else { p->currentAnim = 0; }
+    
+    if ((p->velocity.x > -0.05f && p->velocity.x < 0.05f) && (p->velocity.z > -0.05f && p->velocity.z < 0.05f)) { moving = 0; }
+    if (p->grounded == 1 && moving == 1) {  p->currentAnim = 1; } else { p->currentAnim = 0; }
 }
 
 void updateCamera(Camera* cam, EntStruct* ent, float radius) {

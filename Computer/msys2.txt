@@ -1,0 +1,2 @@
+cd E:/PlaydateSDK/C_API/CrossUp/Computer
+make clean all

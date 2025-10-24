@@ -1,0 +1,3 @@
+E:/PlaydateSDK/C_API/CrossUp/Playdate/build/CMakeFiles/CrossUp.dir
+E:/PlaydateSDK/C_API/CrossUp/Playdate/build/CMakeFiles/edit_cache.dir
+E:/PlaydateSDK/C_API/CrossUp/Playdate/build/CMakeFiles/rebuild_cache.dir

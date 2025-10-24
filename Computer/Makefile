@@ -1,0 +1,113 @@
+# Raylib project Makefile - recursive source compilation
+
+# Compiler
+CC = gcc
+
+# Detect Raylib via pkg-config
+RAYLIB_PKG := $(shell pkg-config --exists raylib 2>/dev/null && echo "yes" || echo "no")
+
+ifeq ($(RAYLIB_PKG),yes)
+    # Use pkg-config if available
+    RAYLIB_CFLAGS := $(shell pkg-config --cflags raylib)
+    RAYLIB_LDFLAGS := $(shell pkg-config --libs raylib)
+else
+    # Fallback: try common installation paths
+    RAYLIB_PATHS := /usr/local/include /usr/include /opt/raylib/include ~/raylib/src ./raylib/src
+    RAYLIB_LIB_PATHS := /usr/local/lib /usr/lib /opt/raylib/lib ~/raylib/src ./raylib/src
+    
+    # Find raylib header and library (prefer same directory)
+    RAYLIB_FOUND_PATH := $(shell for path in $(RAYLIB_PATHS); do \
+        if [ -f "$$path/raylib.h" ]; then \
+            echo "$$path"; \
+            break; \
+        fi \
+    done)
+    
+    # Set include path
+    RAYLIB_INCLUDE := $(if $(RAYLIB_FOUND_PATH),-I$(RAYLIB_FOUND_PATH),)
+    
+    # Try to find library in the same directory as header first, then in standard lib paths
+    RAYLIB_LIBDIR := $(shell \
+        if [ -n "$(RAYLIB_FOUND_PATH)" ] && [ -f "$(RAYLIB_FOUND_PATH)/libraylib.a" -o -f "$(RAYLIB_FOUND_PATH)/libraylib.so" ]; then \
+            echo "-L$(RAYLIB_FOUND_PATH)"; \
+        else \
+            for path in $(RAYLIB_LIB_PATHS); do \
+                if [ -f "$$path/libraylib.a" ] || [ -f "$$path/libraylib.so" ]; then \
+                    echo "-L$$path"; \
+                    break; \
+                fi \
+            done; \
+        fi)
+    
+    RAYLIB_CFLAGS := $(RAYLIB_INCLUDE)
+    RAYLIB_LDFLAGS := $(RAYLIB_LIBDIR) -lraylib -lm -lpthread -ldl -lrt -lX11
+endif
+
+# Directories
+SRCDIR = C
+BINDIR = bin
+
+# Find all .c source files recursively in SRCDIR
+SRC = $(shell find $(SRCDIR) -name "*.c")
+
+# Find all subdirectories to add as include paths
+INCLUDES = $(shell find $(SRCDIR) -type d | sed 's/^/-I/')
+
+# Compiler flags
+CFLAGS = -Wall -Wextra -std=c2x -O2 $(RAYLIB_CFLAGS) $(INCLUDES)
+DEBUG_CFLAGS = -Wall -Wextra -std=c2x -g -DDEBUG $(RAYLIB_CFLAGS) $(INCLUDES)
+
+OUT = $(BINDIR)/CrossUp.exe
+
+check-raylib:
+	@echo "Checking for raylib..."
+ifeq ($(RAYLIB_PKG),yes)
+	@echo "✓ Found raylib via pkg-config"
+	@echo "  CFLAGS: $(RAYLIB_CFLAGS)"
+	@echo "  LDFLAGS: $(RAYLIB_LDFLAGS)"
+else ifneq ($(RAYLIB_CFLAGS),)
+	@echo "✓ Found raylib at: $(RAYLIB_CFLAGS)"
+	@echo "  LDFLAGS: $(RAYLIB_LDFLAGS)"
+else
+	@echo "✗ raylib not found!"
+	@echo ""
+	@echo "Please install raylib using one of these methods:"
+	@echo "1. Package manager: sudo apt install libraylib-dev (Ubuntu/Debian)"
+	@echo "2. From source: make install-raylib"
+	@echo "3. Place raylib in one of these directories:"
+	@echo "   - /usr/local/include and /usr/local/lib"
+	@echo "   - ~/raylib/src"
+	@echo "   - ./raylib/src"
+	@false
+endif
+
+doctor: check-raylib
+raylib-check: check-raylib
+all: check-raylib build
+
+# Create output directory
+directories:
+	@mkdir -p $(BINDIR)
+
+# Build release version
+build: directories
+	$(CC) $(CFLAGS) $(SRC) -o $(OUT) $(RAYLIB_LDFLAGS)
+
+# Build debug version
+debug: directories
+	$(CC) $(DEBUG_CFLAGS) $(SRC) -o $(OUT) $(RAYLIB_LDFLAGS)
+
+# Run the game
+run: build
+	$(OUT)
+
+# Run debug version
+run-debug: debug
+	./$(OUT)
+
+# Clean build artifacts
+clean:
+	@echo "Cleaning..."
+	rm -rf $(BINDIR)/*
+
+.PHONY: build debug run run-debug clean directories

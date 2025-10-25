@@ -16,7 +16,6 @@ void RotationMatrix(float x, float y, float z, float sin1, float cos1, float sin
 
 void staticLineDrawing(int p0[2], int p1[2], int color);
 
-void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_t* zBuffer);
-void drawFilledTrisNoZ(int tris[3][2], int triColor);
+void drawFilledTris(int tris[3][2], int triColor);
 
 #endif

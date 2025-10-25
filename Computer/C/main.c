@@ -228,17 +228,15 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
             project2D(&tri1[0][0], (float[3]){clip1.t1.x, clip1.t1.y, clip1.t1.z}, fov, nearPlane);
             project2D(&tri1[1][0], (float[3]){clip1.t2.x, clip1.t2.y, clip1.t2.z}, fov, nearPlane);
             project2D(&tri1[2][0], (float[3]){clip1.t3.x, clip1.t3.y, clip1.t3.z}, fov, nearPlane);
-            
-            // drawFilledTrisZ(tri1, clip1, color, zBuffer);
-            drawFilledTrisNoZ(tri1, color);
+
+            drawFilledTris(tri1, color);
             
             if (output == 2){
                 project2D(&tri2[0][0], (float[3]){clip2.t1.x, clip2.t1.y, clip2.t1.z}, fov, nearPlane); 
                 project2D(&tri2[1][0], (float[3]){clip2.t2.x, clip2.t2.y, clip2.t2.z}, fov, nearPlane);
                 project2D(&tri2[2][0], (float[3]){clip2.t3.x, clip2.t3.y, clip2.t3.z}, fov, nearPlane);
                 
-                // drawFilledTrisZ(tri2, clip2, color, zBuffer);
-                drawFilledTrisNoZ(tri2, color);
+                drawFilledTris(tri2, color);
             }
         }
     }
@@ -318,20 +316,21 @@ static void addPlayer() {
     if (entArray[player.type].joints != player.jointCount) return;
 
     if (player.currentAnim != player.lastAnim) { 
-        for (int i=0; i < player.jointCount; i++) { player.frameCount[i] = 0; player.currentFrame[i] = 0; }
+        player.frameCount = 0;
+        for (int i=0; i < player.jointCount; i++){ player.currentFrame[i] = 0; }
     }
 
     for (int i=0; i < player.jointCount; i++){
         AnimMesh* anim = entArray[player.type].animations[i]->animations[player.currentAnim];
-        int frameCount = anim->animOrientation[player.currentFrame[i]].frameCount;
 
-        player.frameCount[i]++;
-        if (player.frameCount[i] >= frameCount) {
-            player.frameCount[i] = 0;
-            player.currentFrame[i]++;
+        for (int z = 0; z < anim->count; z++){
+            if (player.frameCount == anim->animOrientation[z].frameSwap) {
+                player.currentFrame[i] = z;
+                break;
+            }
         }
 
-        if (player.currentFrame[i] >= entArray[player.type].maxFrames[player.currentAnim][i]) { player.frameCount[i] = 0; player.currentFrame[i] = 0; }
+        if (player.frameCount >= entArray[player.type].maxFrames[player.currentAnim]) { player.frameCount = 0; for (int t=0; t < player.jointCount; t++){ player.currentFrame[t] = 0; } }
 
         VectB bone = anim->animOrientation[player.currentFrame[i]];
         Vect3f objectPos = {
@@ -355,18 +354,20 @@ static void addPlayer() {
         if (objectRot.x > degToRad(360.0f)) { objectRot.x -= degToRad(360.0f); } else if (objectRot.x < degToRad(0.0f)) { objectRot.x += degToRad(360.0f); }
         if (objectRot.y > degToRad(360.0f)) { objectRot.y -= degToRad(360.0f); } else if (objectRot.y < degToRad(0.0f)) { objectRot.y += degToRad(360.0f); }
         if (objectRot.z > degToRad(360.0f)) { objectRot.z -= degToRad(360.0f); } else if (objectRot.z < degToRad(0.0f)) { objectRot.z += degToRad(360.0f); }
-        
+
+        int frame = anim->animOrientation[player.currentFrame[i]].modelUsed;
         addObjectToWorld(
             objectPos, objectRot, objectSize,
             cam, 10.0f, i,
-            anim->meshModel[anim->animOrientation->modelUsed]->count,
-            anim->meshModel[anim->animOrientation->modelUsed]->data,
-            anim->meshModel[anim->animOrientation->modelUsed]->bfc,
-            anim->meshModel[anim->animOrientation->modelUsed]->color,
+            anim->meshModel[frame]->count,
+            anim->meshModel[frame]->data,
+            anim->meshModel[frame]->bfc,
+            anim->meshModel[frame]->color,
             true
         );
     }
 
+    player.frameCount++;
     player.lastAnim = player.currentAnim;
 }
 
@@ -388,20 +389,20 @@ static void addEntities() {
         if (entArray[allEnts[z].type].joints != allEnts[z].jointCount) return;
 
         if (allEnts[z].currentAnim != allEnts[z].lastAnim) { 
-            for (int i=0; i < allEnts[z].jointCount; i++) { allEnts[z].frameCount[i] = 0; allEnts[z].currentFrame[i] = 0; }
+            for (int i=0; i < allEnts[z].jointCount; i++) { allEnts[z].frameCount = 0; allEnts[z].currentFrame[i] = 0; }
         }
 
         for (int i=0; i < allEnts[z].jointCount; i++){
             AnimMesh* anim = entArray[allEnts[z].type].animations[i]->animations[allEnts[z].currentAnim];
-            int frameCount = anim->animOrientation[allEnts[z].currentFrame[i]].frameCount;
 
-            allEnts[z].frameCount[i]++;
-            if (allEnts[z].frameCount[i] >= frameCount) {
-                allEnts[z].frameCount[i] = 0;
-                allEnts[z].currentFrame[i]++;
+            for (int t = 0; t < anim->count; t++){
+                if (allEnts[z].frameCount == anim->animOrientation[t].frameSwap) {
+                    allEnts[z].currentFrame[i] = t;
+                    break;
+                }
             }
-
-            if (allEnts[z].currentFrame[i] >= entArray[allEnts[z].type].maxFrames[allEnts[z].currentAnim][i]) { allEnts[z].frameCount[i] = 0; allEnts[z].currentFrame[i] = 0; }
+    
+            if (allEnts[z].frameCount >= entArray[allEnts[z].type].maxFrames[allEnts[z].currentAnim]) { allEnts[z].frameCount = 0; for (int t=0; t < allEnts[z].jointCount; t++){ allEnts[z].currentFrame[t] = 0; } }
 
             VectB bone = anim->animOrientation[allEnts[z].currentFrame[i]];
             Vect3f objectPos = {
@@ -426,17 +427,19 @@ static void addEntities() {
             if (objectRot.y > degToRad(360.0f)) { objectRot.y -= degToRad(360.0f); } else if (objectRot.y < degToRad(0.0f)) { objectRot.y += degToRad(360.0f); }
             if (objectRot.z > degToRad(360.0f)) { objectRot.z -= degToRad(360.0f); } else if (objectRot.z < degToRad(0.0f)) { objectRot.z += degToRad(360.0f); }
             
+            int frame = anim->animOrientation[allEnts[z].currentFrame[i]].modelUsed;
             addObjectToWorld(
                 objectPos, objectRot, objectSize,
                 cam, 10.0f, i,
-                anim->meshModel[anim->animOrientation->modelUsed]->count,
-                anim->meshModel[anim->animOrientation->modelUsed]->data,
-                anim->meshModel[anim->animOrientation->modelUsed]->bfc,
-                anim->meshModel[anim->animOrientation->modelUsed]->color,
+                anim->meshModel[frame]->count,
+                anim->meshModel[frame]->data,
+                anim->meshModel[frame]->bfc,
+                anim->meshModel[frame]->color,
                 true
             );
         }
 
+        allEnts[z].frameCount++;
         allEnts[z].lastAnim = allEnts[z].currentAnim;
     }
 }

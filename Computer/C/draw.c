@@ -109,100 +109,9 @@ void computeRotScaleMatrix(float rotMat[3][3], float angleX, float angleY, float
 
 int windingOrder(int *p0, int *p1, int *p2) { return (p0[0]*p1[1] - p0[1]*p1[0] + p1[0]*p2[1] - p1[1]*p2[0] + p2[0]*p0[1] - p2[1]*p0[0] > 0); }
 
-static inline int32_t edgeA(int y0, int y1) { return y0 - y1; }
-static inline int32_t edgeB(int x0, int x1) { return x1 - x0; }
-static inline int32_t edgeC(int x0, int y0, int x1, int y1) { return x0*y1 - x1*y0; }
-
-void drawFilledTrisZ(int tris[3][2], clippedTri fullTri, int triColor, qfixed16_t* zBuffer) {
-    const int x0 = tris[0][0], y0 = tris[0][1];
-    const int x1 = tris[1][0], y1 = tris[1][1];
-    const int x2 = tris[2][0], y2 = tris[2][1];
-
-    const float z0 = fullTri.t1.z;
-    const float z1 = fullTri.t2.z;
-    const float z2 = fullTri.t3.z;
-    
-    int minX = x0 < x1 ? (x0 < x2 ? x0 : x2) : (x1 < x2 ? x1 : x2);
-    int maxX = x0 > x1 ? (x0 > x2 ? x0 : x2) : (x1 > x2 ? x1 : x2);
-    int minY = y0 < y1 ? (y0 < y2 ? y0 : y2) : (y1 < y2 ? y1 : y2);
-    int maxY = y0 > y1 ? (y0 > y2 ? y0 : y2) : (y1 > y2 ? y1 : y2);
-    
-    if (minX < 0) minX = 0;
-    if (minY < 0) minY = 0;
-    if (maxX >= sW) maxX = sW - 1;
-    if (maxY >= sH) maxY = sH - 1;
-    
-    minX = (minX / pixSizeX) * pixSizeX;
-    minY = (minY / pixSizeY) * pixSizeY;
-    maxX = ((maxX + pixSizeX - 1) / pixSizeX) * pixSizeX;
-    maxY = ((maxY + pixSizeY - 1) / pixSizeY) * pixSizeY;
-    
-    const int32_t A01 = edgeA(y0, y1), B01 = edgeB(x0, x1), C01 = edgeC(x0, y0, x1, y1);
-    const int32_t A12 = edgeA(y1, y2), B12 = edgeB(x1, x2), C12 = edgeC(x1, y1, x2, y2);
-    const int32_t A20 = edgeA(y2, y0), B20 = edgeB(x2, x0), C20 = edgeC(x2, y2, x0, y0);
-
-    const int flip = ((x1 - x0)*(y2 - y0) - (x2 - x0)*(y1 - y0)) < 0 ? -1 : 1;
-    
-    int32_t w0_row = A12*minX + B12*minY + C12;
-    int32_t w1_row = A20*minX + B20*minY + C20;
-    int32_t w2_row = A01*minX + B01*minY + C01;
-    
-    const float det = (x0*(y1 - y2) + x1*(y2 - y0) + x2*(y0 - y1));
-    if (det == 0.0f) return;
-    const float invDet = 1.0f / det;
-    const float stepX = (z0*(y1 - y2) + z1*(y2 - y0) + z2*(y0 - y1)) * invDet;
-    const float stepY = (z0*(x2 - x1) + z1*(x0 - x2) + z2*(x1 - x0)) * invDet;
-    const float zC = z0 - stepX*x0 - stepY*y0;
-
-    const qfixed16_t invZStepX = TO_FIXED1_15(stepX);
-    const qfixed16_t invZStepY = TO_FIXED1_15(stepY);
-    qfixed16_t invZ_row = TO_FIXED1_15(stepX*minX + stepY*minY + zC);
-
-    int32_t w0, w1, w2;
-    int idx, index;
-    uint gridX, gridY;
-    qfixed16_t invZ;
-
-    for (int y = minY; y < sH && y <= maxY; y += pixSizeY) {
-        gridY = y & ~(pixSizeY - 1);
-        if (gridY >= sH) gridY = sH - 1;
-        idx = gridY * sW;
-
-        w0 = w0_row;
-        w1 = w1_row;
-        w2 = w2_row;
-
-        invZ = invZ_row;
-
-        for (int x = minX; x < sW && x <= maxX; x += pixSizeX) {
-            gridX = x & ~(pixSizeX - 1);
-            if (gridX >= sW) gridX = sW - 1;
-            
-            if ((w0*flip | w1*flip | w2*flip ) >= 0) {
-                index = idx + gridX;
-
-                if (invZ < zBuffer[index]) {
-                    zBuffer[index] = invZ;
-                    multiPixl(gridX, gridY, triColor);
-                }
-            }
-
-            w0 += A12 * pixSizeX;
-            w1 += A20 * pixSizeX;
-            w2 += A01 * pixSizeX;
-            invZ += invZStepX * pixSizeX;
-        }
-
-        w0_row += B12 * pixSizeY;
-        w1_row += B20 * pixSizeY;
-        w2_row += B01 * pixSizeY;
-        invZ_row += invZStepY * pixSizeY;
-    }
-}
-
 static inline int edgeFunc(int x0, int y0, int x1, int y1, int px, int py) { return (py - y0) * (x1 - x0) - (px - x0) * (y1 - y0); }
 
-void drawFilledTrisNoZ(int tris[3][2], int triColor) {
+void drawFilledTris(int tris[3][2], int triColor) {
     int x0 = tris[0][0], y0 = tris[0][1];
     int x1 = tris[1][0], y1 = tris[1][1];
     int x2 = tris[2][0], y2 = tris[2][1];
@@ -225,16 +134,12 @@ void drawFilledTrisNoZ(int tris[3][2], int triColor) {
     int A01 = (y0 - y1) * pixSizeX, B01 = (x1 - x0) * pixSizeY;
     int A12 = (y1 - y2) * pixSizeX, B12 = (x2 - x1) * pixSizeY;
     int A20 = (y2 - y0) * pixSizeX, B20 = (x0 - x2) * pixSizeY;
-    
-    int yStart = minY;
-    int xStart = minX;
 
-    int w0_row = edgeFunc(x1, y1, x2, y2, xStart, yStart);
-    int w1_row = edgeFunc(x2, y2, x0, y0, xStart, yStart);
-    int w2_row = edgeFunc(x0, y0, x1, y1, xStart, yStart);
+    int w0_row = edgeFunc(x1, y1, x2, y2, minX, minY);
+    int w1_row = edgeFunc(x2, y2, x0, y0, minX, minY);
+    int w2_row = edgeFunc(x0, y0, x1, y1, minX, minY);
 
-    int area = edgeFunc(x0, y0, x1, y1, x2, y2);
-    if (area < 0) {
+    if (edgeFunc(x0, y0, x1, y1, x2, y2) < 0) {
         int tmp;
         tmp = A01; A01 = -A01; B01 = -B01;
         tmp = A12; A12 = -A12; B12 = -B12;
@@ -245,9 +150,7 @@ void drawFilledTrisNoZ(int tris[3][2], int triColor) {
     }
 
     int32_t w0, w1, w2;
-    int idx, index;
     uint gridX, gridY;
-    qfixed16_t invZ;
 
     for (int y = minY; y <= maxY && y < sH; y += pixSizeY) {
         gridY = y & ~(pixSizeY - 1);

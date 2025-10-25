@@ -56,17 +56,14 @@ EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float 
     p.countdown = 0;
     p.rotDir = 0;
 
-    p.frameCount = realloc(NULL, sizeof(int) * jointCount);
+    p.frameCount = 0;
     p.currentFrame = realloc(NULL, sizeof(int) * jointCount);
     p.currentAnim = 0;
     p.lastAnim = 0;
 
     p.jointCount = jointCount;
 
-    for (int i = 0; i < jointCount; i++) {
-        p.frameCount[i] = 0;
-        p.currentFrame[i] = 0;
-    }
+    for (int i = 0; i < jointCount; i++) { p.currentFrame[i] = 0; }
     return p;
 }
 
@@ -110,17 +107,14 @@ EntStruct createPlayer(float x, float y, float z, float rotX, float rotY, float 
     p.countdown = 0;
     p.rotDir = 0;
 
-    p.frameCount = realloc(NULL, sizeof(int) * jointCount);
+    p.frameCount = 0;
     p.currentFrame = realloc(NULL, sizeof(int) * jointCount);
     p.currentAnim = 0;
     p.lastAnim = 0;
 
     p.jointCount = jointCount;
 
-    for (int i = 0; i < jointCount; i++) {
-        p.frameCount[i] = 0;
-        p.currentFrame[i] = 0;
-    }
+    for (int i = 0; i < jointCount; i++) { p.currentFrame[i] = 0; }
     return p;
 }
 

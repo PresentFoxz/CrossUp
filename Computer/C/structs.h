@@ -77,8 +77,8 @@ typedef struct {
     int countdown, rotDir;
     float frict, fallFrict;
 
-    int* frameCount;
     int* currentFrame;
+    int frameCount;
     int currentAnim, lastAnim, jointCount;
 } EntStruct;
 

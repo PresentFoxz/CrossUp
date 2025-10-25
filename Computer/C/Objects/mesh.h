@@ -12,13 +12,17 @@ typedef struct {
 } Mesh_t;
 
 typedef struct {
-    Vect3f pos, rot, size;
-    int frameCount, modelUsed;
+    Vect3f pos;
+    Vect3f rot;
+    Vect3f size;
+    int frameSwap;
+    int modelUsed;
 } VectB;
 
 typedef struct {
     const Mesh_t** meshModel;
     VectB* animOrientation;
+    int count;
 } AnimMesh;
 
 typedef struct { 
@@ -27,8 +31,9 @@ typedef struct {
 
 typedef struct {
     const ModelAnimations** animations;
-    const int** maxFrames;
-    int joints, count;
+    const int* maxFrames;
+    int joints;
+    int count;
 } PlayerModel_t;
 
 #endif

@@ -266,9 +266,7 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int col){
         }
     }
 
-    
-    if ((p->velocity.x > -0.05f && p->velocity.x < 0.05f) && (p->velocity.z > -0.05f && p->velocity.z < 0.05f)) { moving = 0; }
-    if (p->grounded == 1 && moving == 1) {  p->currentAnim = 1; } else { p->currentAnim = 0; }
+    stateMachine(p);
 }
 
 void updateCamera(Camera_t* cam, EntStruct* ent, float radius) {
@@ -322,6 +320,8 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
 
     float rotation[3] = {0.0f, 0.0f, 0.0f};
 
+    int moving = 1;
+
     float mainYaw = FROM_FIXED32(e->rotation.y);
     float secondaryStrength = 0.5f;
 
@@ -366,4 +366,6 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
     }
 
     moveEnt(e, FROM_FIXED32(e->rotation.y), FROM_FIXED32(e->surfRot), secondaryStrength, e->frict, 0.13f, 0.0f, 1);
+
+    stateMachine(p);
 }

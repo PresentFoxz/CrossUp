@@ -97,4 +97,13 @@ typedef struct {
     float invZ_row;
 } RasterTri;
 
+typedef struct {
+    int timer;
+    int type;
+    Vect3i position;
+    Vect3i rotation;
+    Vect3i size;
+    Vect3f velocity;
+} Objects;
+
 #endif

@@ -2,7 +2,9 @@
 set BUILD_TYPE=Simulator
 echo Cleaning and rebuilding CrossUp...
 
-cd /d E:\PlaydateSDK\C_API\CrossUp\Playdate
+cd /d C:\Users\vcapr\Documents\PlaydateSDK\C_API\CrossUp\Playdate
+
+where nmake
 
 if exist build (
     echo Removing old build directory...

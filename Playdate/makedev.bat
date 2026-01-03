@@ -1,7 +1,7 @@
 @echo off
 echo Cleaning and rebuilding CrossUp...
 
-cd /d E:\PlaydateSDK\C_API\CrossUp\Playdate
+cd /d C:\Users\vcapr\Documents\PlaydateSDK\C_API\CrossUp\Playdate
 
 if exist build (
     echo Removing old build directory...
@@ -14,7 +14,7 @@ cd build
 
 echo Running CMake...
 cmake -G "NMake Makefiles" ^
- --toolchain=E:/PlaydateSDK/C_API/buildsupport/arm.cmake ^
+ --toolchain=C:/Users/vcapr/Documents/PlaydateSDK/C_API/buildsupport/arm.cmake ^
  -DCMAKE_BUILD_TYPE=Release ^
  ..
 

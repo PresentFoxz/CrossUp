@@ -41,8 +41,8 @@ static inline qfixed16_t divide16(qfixed16_t a, qfixed16_t b) { return (qfixed16
 
 #define sX  0
 #define sY  0
-#define sW  400
-#define sH  240
+#define sW  800
+#define sH  620
 #define sW_H  (sW / 2)
 #define sH_H  (sH / 2)
 

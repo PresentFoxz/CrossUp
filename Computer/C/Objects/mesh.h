@@ -25,7 +25,7 @@ typedef struct {
     int count;
 } AnimMesh;
 
-typedef struct { 
+typedef struct {
     const AnimMesh** animations;
 } ModelAnimations;
 

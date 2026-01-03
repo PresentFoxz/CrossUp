@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "C:/Users/vcapr/Documents/PlaydateSDK/C_API/CrossUp/Playdate/CrossUp.pdx"
+  "C:/Users/vcapr/Documents/PlaydateSDK/C_API/CrossUp/Playdate/Source/pdex.dll"
   "CMakeFiles/CrossUp.dir/C/collisions.c.obj"
   "CMakeFiles/CrossUp.dir/C/collisions.c.obj.d"
   "CMakeFiles/CrossUp.dir/C/draw.c.obj"
@@ -15,8 +17,6 @@ file(REMOVE_RECURSE
   "CrossUp.dll.manifest"
   "CrossUp.lib"
   "CrossUp.pdb"
-  "E:/PlaydateSDK/C_API/CrossUp/Playdate/CrossUp.pdx"
-  "E:/PlaydateSDK/C_API/CrossUp/Playdate/Source/pdex.dll"
 )
 
 # Per-language clean rules from dependency scanning.

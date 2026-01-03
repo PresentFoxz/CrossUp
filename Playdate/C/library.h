@@ -66,8 +66,6 @@ float unitToMeter(float x);
 float meterToUnit(float x);
 
 extern uint8_t* buf;
-extern const int blockVerts[8][3];
-extern const int blockTris[12][4];
 extern float pCollisionPos[3];
 extern float pColPoints[substeps][3];
 
@@ -78,17 +76,11 @@ extern int pixSizeY;
 int randomInt(int a, int b);
 float randomFloat(float a, float b);
 float degToRad(float deg);
+float radToDeg(float rad)
 float lerp(float t, float a, float b);
 
 void setPixelRaw(uint x, uint8_t* row, int color);
 
-void swapInt(int* a, int* b);
-void swapInt2(int* a, int* b);
-void swapFloat(float* a, float* b);
-void swapFloat2(float* a, float* b);
-
-float dot(Vect3f a, Vect3f b);
-float fastInvSqrt(float x);
 void staticLineDrawing(int p0[2], int p1[2], int color);
 
 #endif

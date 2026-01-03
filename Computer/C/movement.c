@@ -121,7 +121,7 @@ static void runColl(EntStruct* p, int colRend){
             continue;
         }
 
-        movePlayer(p, pCollisionPos[0], pCollisionPos[1] + 0.5f, pCollisionPos[2]);
+        moveEntity(p, pCollisionPos[0], pCollisionPos[1] + 0.5f, pCollisionPos[2]);
 
         if (movePlr.floor == 0 && movePlr.ceiling == 0 && movePlr.wall == 0) { continue; }
         if (movePlr.floor == 1) {
@@ -163,14 +163,13 @@ static void runColl(EntStruct* p, int colRend){
     }
 }
 
+void stateMachine(EntStruct* p){
+    p->currentAnim = 0;
+
+    if (p->grounded == 1 && ((p->velocity.x > 0.02 || p->velocity.x < -0.02) || (p->velocity.z > 0.02 || p->velocity.z < -0.02))) { p->currentAnim = 1; }
+}
+
 void movePlayerObj(EntStruct* p, Camera_t* c, int col){
-    float rotY_delta = -0.03f;
-    float rotX_delta = -0.1f;
-
-    int moving = 1;
-
-    float rotation[3] = {0.0f, 0.0f, 0.0f};
-
     float yawCam = -FROM_FIXED32(c->rotation.y);
     float mainYaw = FROM_FIXED32(p->rotation.y);
     float secondaryStrength = 0.5f;
@@ -288,9 +287,6 @@ void updateCamera(Camera_t* cam, EntStruct* ent, float radius) {
 }
 
 void handleCameraInput(Camera_t* cam) {
-    float rotY_delta = -0.03f;
-    float rotX_delta = -0.1f;
-    
     float crankDelta = 0.0f;
     if (IsKeyDown(KEY_I)) { crankDelta += degToRad(5.0f); }
     if (IsKeyDown(KEY_U)) { crankDelta -= degToRad(5.0f); }
@@ -315,13 +311,6 @@ void handleCameraInput(Camera_t* cam) {
 // == Entity Movements == //
 
 void moveEntObj(EntStruct* e, EntStruct* p) {
-    float rotY_delta = -0.03f;
-    float rotX_delta = -0.1f;
-
-    float rotation[3] = {0.0f, 0.0f, 0.0f};
-
-    int moving = 1;
-
     float mainYaw = FROM_FIXED32(e->rotation.y);
     float secondaryStrength = 0.5f;
 
@@ -366,6 +355,12 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
     }
 
     moveEnt(e, FROM_FIXED32(e->rotation.y), FROM_FIXED32(e->surfRot), secondaryStrength, e->frict, 0.13f, 0.0f, 1);
+}
 
-    stateMachine(p);
+static void objectTypes(Objects obj){
+    obj.timer--;
+
+    obj.position.x += TO_FIXED32(obj.velocity.x);
+    obj.position.y += TO_FIXED32(obj.velocity.y);
+    obj.position.z += TO_FIXED32(obj.velocity.z);
 }

@@ -1,2 +1,2 @@
-cd E:/PlaydateSDK/C_API/CrossUp/Computer
+cd C:/Users/vcapr/Documents/PlaydateSDK/C_API/CrossUp/Computer
 make clean all

@@ -1,5 +1,5 @@
-#ifndef TEST_H
-#define TEST_H
+#ifndef TESTMODELS_H
+#define TESTMODELS_H
 #include "../mesh.h"
 
 static const Mesh_t test1 = {
@@ -20,6 +20,15 @@ static const Mesh_t test1 = {
     .bfc = (int[]) {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     .color = (int[]) {3, 1, 1, 2, 2, 0, 2, 0, 3, 2, 3, 1},
     .count = (int) 12,
+};
+
+static const Mesh_t test2 = {
+    .data = (Vect3m[]) {
+        {-1.5f, 0.8f, 0.0f}, {0.0f, 2.0f, 0.0f}, {1.5f, 0.8f, 0.0f}
+    },
+    .bfc = (int[]) {0},
+    .color = (int[]) {3},
+    .count = (int) 1,
 };
 
 static const Mesh_t test3 = {
@@ -54,70 +63,6 @@ static const Mesh_t test3 = {
     .bfc = (int[]) {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     .color = (int[]) {3, 3, 1, 0, 3, 2, 2, 2, 1, 2, 2, 2, 3, 2, 2, 2, 2, 2, 3, 1, 1, 3, 2, 2, 0, 3},
     .count = (int) 26,
-};
-
-static const Mesh_t test2 = {
-    .data = (Vect3m[]) {
-        {-1.5f, 0.8f, 0.0f}, {0.0f, 2.0f, 0.0f}, {1.5f, 0.8f, 0.0f}
-    },
-    .bfc = (int[]) {0},
-    .color = (int[]) {3},
-    .count = (int) 1,
-};
-
-static const AnimMesh idleTri = {
-    .meshModel = (const Mesh_t*[]) { &test2 },
-    .animOrientation = (VectB[]) {
-        {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 6, 0},
-        {{0.0f, 0.0f, 0.0f}, {20.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 6, 0}
-    },
-    .count = 2,
-};
-
-static const AnimMesh idleCube = {
-    .meshModel = (const Mesh_t*[]) { &test1 },
-    .animOrientation = (VectB[]) {
-        {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0, 0}
-    },
-    .count = 1,
-};
-
-static const AnimMesh moveTri = {
-    .meshModel = (const Mesh_t*[]) { &test2, &test3 },
-    .animOrientation = (VectB[]) {
-        {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0, 0},
-        {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 10, 1}
-    },
-    .count = 2,
-};
-
-static const AnimMesh moveCube = {
-    .meshModel = (const Mesh_t*[]) { &test1 },
-    .animOrientation = (VectB[]) {
-        {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0, 0},
-        {{0.0f, -0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, -0.5f, 0.0f}, 4, 0},
-        {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.5f, 0.0f}, 8, 0},
-        {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 12, 0},
-        {{0.0f, -0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, -0.5f, 0.0f}, 16, 0}
-    },
-    .count = 5,
-};
-
-static const ModelAnimations triAnims = {
-    .animations = (const AnimMesh*[]) { &idleTri, &moveTri }
-};
-
-static const ModelAnimations cubeAnim = {
-    .animations = (const AnimMesh*[]) { &idleCube, &moveCube }
-};
-
-static const int modelCount = (test1.count + test2.count + test3.count);
-
-static const PlayerModel_t testox = {
-    .animations = (const ModelAnimations*[]) { &cubeAnim, &triAnims },
-    .maxFrames = (const int[]) { 12, 20 },
-    .joints = 2,
-    .count = modelCount,
 };
 
 #endif

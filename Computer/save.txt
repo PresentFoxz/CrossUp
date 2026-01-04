@@ -1,0 +1,93 @@
+static void addEntities() {
+    for (int z = 0; z < entAmt; z++) {
+        switch (allEnts[z].type) {
+            case ENTITY:
+                EntStruct *ent_ = &allEnts[z].data.ent;
+                if (ent_->type < 0 || ent_->type >= maxEntStored) continue;
+                if (entArray[ent_->type].joints != ent_->jointCount) continue;
+
+                if (ent_->currentAnim != ent_->lastAnim) {
+                    ent_->frameCount = 0;
+                    for (int i=0; i < ent_->jointCount; i++) { ent_->currentFrame[i] = 0; }
+                }
+
+                for (int i=0; i < ent_->jointCount; i++){
+                    AnimMesh* anim = entArray[ent_->type].animations[i]->animations[ent_->currentAnim];
+                    if (ent_->frameCount == anim->animOrientation[ent_->currentFrame[i]].frameSwap) { ent_->currentFrame[i]++; }
+                    if (ent_->currentFrame[i] >= anim->count-1) { ent_->currentFrame[i] = anim->count-1; }
+
+                    VectB bone = anim->animOrientation[ent_->currentFrame[i]];
+                    Vect3f objectPos = {
+                        FROM_FIXED32(ent_->position.x),
+                        FROM_FIXED32(ent_->position.y),
+                        FROM_FIXED32(ent_->position.z)
+                    };
+
+                    Vect3f objectRot = {
+                        FROM_FIXED32(ent_->rotation.x),
+                        FROM_FIXED32(ent_->rotation.y),
+                        FROM_FIXED32(ent_->rotation.z)
+                    };
+
+                    Vect3f objectSize = {
+                        FROM_FIXED32(ent_->size.x),
+                        FROM_FIXED32(ent_->size.y),
+                        FROM_FIXED32(ent_->size.z)
+                    };
+
+                    if (objectRot.x > degToRad(360.0f)) { objectRot.x -= degToRad(360.0f); } else if (objectRot.x < degToRad(0.0f)) { objectRot.x += degToRad(360.0f); }
+                    if (objectRot.y > degToRad(360.0f)) { objectRot.y -= degToRad(360.0f); } else if (objectRot.y < degToRad(0.0f)) { objectRot.y += degToRad(360.0f); }
+                    if (objectRot.z > degToRad(360.0f)) { objectRot.z -= degToRad(360.0f); } else if (objectRot.z < degToRad(0.0f)) { objectRot.z += degToRad(360.0f); }
+                    
+                    int frame = anim->animOrientation[ent_->currentFrame[i]].modelUsed;
+                    addObjectToWorld(
+                        objectPos, objectRot, objectSize,
+                        cam, 10.0f,
+                        anim->meshModel[frame]->count,
+                        anim->meshModel[frame]->data,
+                        anim->meshModel[frame]->bfc,
+                        anim->meshModel[frame]->color,
+                        true
+                    );
+                }
+
+                ent_->frameCount++;
+                ent_->lastAnim = ent_->currentAnim;
+
+                if (ent_->frameCount >= entArray[ent_->type].maxFrames[ent_->currentAnim]-1) {
+                    ent_->frameCount = 0;
+                    for (int t=0; t < ent_->jointCount; t++){ ent_->currentFrame[t] = 0; }
+                }
+                break;
+            case OBJECT:
+                ObjStruct *obj_ = &allEnts[z].data.obj;
+                // objectTypes(obj_);
+
+                int objIdx = obj_->type;
+                addObjectToWorld(
+                    (Vect3f){FROM_FIXED32(obj_->position.x), FROM_FIXED32(obj_->position.y), FROM_FIXED32(obj_->position.z)},
+                    (Vect3f){FROM_FIXED32(obj_->rotation.x), FROM_FIXED32(obj_->rotation.y), FROM_FIXED32(obj_->rotation.z)},
+                    (Vect3f){FROM_FIXED32(obj_->size.x), FROM_FIXED32(obj_->size.y), FROM_FIXED32(obj_->size.z)},
+                    cam, 0.0f,
+                    objArray[objIdx].count,
+                    objArray[objIdx].data,
+                    objArray[objIdx].bfc,
+                    objArray[objIdx].color,
+                    true
+                );
+                break;
+        }
+    }
+}
+
+static void addMap(){
+    addObjectToWorld(
+        (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f},
+        cam, 0.0f,
+        mapArray[modelIndex].count,
+        mapArray[modelIndex].data,
+        mapArray[modelIndex].bfc,
+        mapArray[modelIndex].color,
+        false
+    );
+}

@@ -10,8 +10,15 @@ const int paletteSize = sizeof(shades) / sizeof(shades[0]);
 
 static void multiPixl(uint gridX, uint gridY, int shade) {
     if (gridX >= sW || gridY >= sH) return;
-    int colorIndex = shade % paletteSize;
-    Color color = shades[colorIndex];
+    int colorIndex;
+    Color color;
+
+    if (shade != -1) {
+        colorIndex = shade % paletteSize;
+        color = shades[colorIndex];
+    } else {
+        color = (Color){0, 0, 0, 255};
+    }
 
     for (int dy = 0; dy < resolution; dy++) {
         uint rowY = gridY + dy;
@@ -169,6 +176,27 @@ void drawFilledTris(int tris[3][2], int triColor) {
         w0_row += B12;
         w1_row += B20;
         w2_row += B01;
+    }
+}
+
+void drawTriLines(int tris[3][2]) {
+    for (int i = 0; i < 3; i++) {
+        int next = (i + 1) % 3;
+        int x0 = tris[i][0], y0 = tris[i][1];
+        int x1 = tris[next][0], y1 = tris[next][1];
+
+        int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+        int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+        int err = dx + dy, e2;
+
+        while (1) {
+            multiPixl(x0 & ~(resolution - 1), y0 & ~(resolution - 1), -1);
+
+            if (x0 == x1 && y0 == y1) break;
+            e2 = 2 * err;
+            if (e2 >= dy) { err += dy; x0 += sx; }
+            if (e2 <= dx) { err += dx; y0 += sy; }
+        }
     }
 }
 

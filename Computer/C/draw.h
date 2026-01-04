@@ -17,5 +17,6 @@ void multiplyMatrix3x3(float a[3][3], float b[3][3], float out[3][3]);
 void staticLineDrawing(int p0[2], int p1[2], int color);
 
 void drawFilledTris(int tris[3][2], int triColor);
+void drawTriLines(int tris[3][2]);
 
 #endif

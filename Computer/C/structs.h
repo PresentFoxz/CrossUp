@@ -42,6 +42,7 @@ typedef struct {
     int color;
     float dist;
     int bfc;
+    int lines;
 } worldTris;
 
 typedef struct {
@@ -90,11 +91,10 @@ typedef struct {
     int type, grounded, groundTimer;
     int coyote, ifMove, state;
     int countdown, rotDir;
-    float frict, fallFrict;
-
-    int* currentFrame;
-    int frameCount;
-    int currentAnim, lastAnim, jointCount;
+    float frict, fallFrict;;
+    int frameCount, currentFrame;
+    int currentAnim, lastAnim;
+    int meshIndex;
 } EntStruct;
 
 typedef struct {

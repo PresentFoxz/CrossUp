@@ -50,6 +50,9 @@ BINDIR = bin
 # Find all .c source files recursively in SRCDIR
 SRC = $(shell find $(SRCDIR) -name "*.c")
 
+MESHDIR = $(BINDIR)/mesh
+OBJ_SRC = $(SRCDIR)/Objects
+
 # Find all subdirectories to add as include paths
 INCLUDES = $(shell find $(SRCDIR) -type d | sed 's/^/-I/')
 
@@ -81,6 +84,11 @@ else
 	@false
 endif
 
+mesh:
+	@echo "Copying Objects folder into $(BINDIR)..."
+	@mkdir -p $(BINDIR)/mesh
+	@cp -r $(OBJ_SRC)/* $(BINDIR)/mesh/
+
 doctor: check-raylib
 raylib-check: check-raylib
 all: check-raylib build
@@ -90,7 +98,7 @@ directories:
 	@mkdir -p $(BINDIR)
 
 # Build release version
-build: directories
+build: directories mesh
 	$(CC) $(CFLAGS) $(SRC) -o $(OUT) $(RAYLIB_LDFLAGS)
 
 # Build debug version

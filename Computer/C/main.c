@@ -3,15 +3,14 @@
 #include "draw.h"
 #include "movement.h"
 #include "collisions.h"
-#include "Objects/allMeshes.h"
+#include "mesh.h"
+#include "meshConvert.h"
 
 Camera_t cam;
 worldTris* allPoints;
 staticPoints* static3D;
 worldTris* entModels;
 int gameStart = 1;
-
-qfixed16_t zBuffer[sW * sH];
 
 int rendAmt = 0;
 int entAmt = 0;
@@ -25,11 +24,13 @@ Objects* allEnts;
 EntStruct player;
 #define MAX_ENTITIES 240
 
-Mesh_t* mapArray;
-Mesh_t* objArray;
-PlayerModel_t* entArray;
-const int maxProjs = 1;
-const int maxMaps = 1;
+Mesh_t meshTest;
+
+// SMesh_t* mapArray;
+// SMesh_t* objArray;
+VertAnims* entArray;
+// const int maxProjs = 1;
+// const int maxMaps = 1;
 const int maxEntStored = 1;
 
 int modelIndex = 0;
@@ -37,30 +38,24 @@ int allPointsCount = 0;
 const int lengthJoints = 3;
 
 Vect3f rotModelSet;
-
 Vect3f camForward;
-Camera_t setCam;
-
 int gameScreen = 0;
 
 static void generateMap(int len){
     allPoints = realloc(allPoints, sizeof(worldTris) * 0);
-    resetCollisionSurface();
-    for (int i=0; i < len; i++){
-        int idx[3] = {(i*3), (i*3)+1, (i*3)+2};
-        addCollisionSurface(
-            (Vect3f){mapArray[modelIndex].data[idx[0]].x, mapArray[modelIndex].data[idx[0]].y, mapArray[modelIndex].data[idx[0]].z},
-            (Vect3f){mapArray[modelIndex].data[idx[1]].x, mapArray[modelIndex].data[idx[1]].y, mapArray[modelIndex].data[idx[1]].z},
-            (Vect3f){mapArray[modelIndex].data[idx[2]].x, mapArray[modelIndex].data[idx[2]].y, mapArray[modelIndex].data[idx[2]].z},
-            SURFACE_NONE
-        );
-    }
-
-    rendAmt = len;
     allPointsCount = 0;
-    for (int i=0; i < entAmt; i++){ allPointsCount += entArray[allEnts[i].type].count; }
-    allPointsCount += (rendAmt + entArray[player.type].count);
+    // resetCollisionSurface();
+    // for (int i=0; i < len; i++){
+    //     int idx[3] = {(i*3), (i*3)+1, (i*3)+2};
+    //     addCollisionSurface(
+    //         (Vect3f){mapArray[modelIndex].data[idx[0]].x, mapArray[modelIndex].data[idx[0]].y, mapArray[modelIndex].data[idx[0]].z},
+    //         (Vect3f){mapArray[modelIndex].data[idx[1]].x, mapArray[modelIndex].data[idx[1]].y, mapArray[modelIndex].data[idx[1]].z},
+    //         (Vect3f){mapArray[modelIndex].data[idx[2]].x, mapArray[modelIndex].data[idx[2]].y, mapArray[modelIndex].data[idx[2]].z},
+    //         SURFACE_NONE
+    //     );
+    // }
 
+    allPointsCount += len;
     allPoints = realloc(allPoints, allPointsCount * sizeof(worldTris));
 }
 
@@ -85,27 +80,23 @@ static int compareRenderTris(const void* a, const void* b) {
 }
 
 static int cLib_init() {
-    setCam = createCamera(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 90.0f, 0.1f, 100.0f);
     cam = createCamera(10.0f, 3.0f, 41.0f, 0.0f, 0.0f, 0.0f, 90.0f, 0.1f, 100.0f);
 
-    mapArray = realloc(mapArray, sizeof(Mesh_t) * maxMaps);
-    objArray = realloc(objArray, sizeof(Mesh_t) * maxProjs);
-    entArray = realloc(entArray, sizeof(PlayerModel_t) * maxEntStored);
-
-    mapArray[0] = map;
-    objArray[0] = disk;
-    entArray[0] = testox;
+    // mapArray = realloc(mapArray, sizeof(Mesh_t) * maxMaps);
+    // mapArray[0] = map;
+    // entArray = realloc(entArray, sizeof(VertAnims) * maxEntStored);
+    // allocateMeshes(entArray, maxEntStored, 1, (int[]){1});
 
     static3D = realloc(static3D, sizeof(staticPoints) * lengthJoints);
     allEnts = realloc(allEnts, sizeof(EntStruct) * MAX_ENTITIES);
 
-    generateMap(mapArray[modelIndex].count);
+    generateMap(0);
     generatePoints(lengthJoints);
 
     int jointCount = 2;
     int* jointData = realloc(NULL, sizeof(int) * jointCount);
     for (int i = 0; i < jointCount; i++) { jointData[i] = 0; }
-    player = createEntity(10.0f, 3.0f, 41.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.56f, 0.08f, 0, jointData, jointCount);
+    player = createEntity(10.0f, 3.0f, 41.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 1.8f, 0.56f, 0.08f, 0);
 
     return 0;
 }
@@ -120,7 +111,7 @@ static int cLib_addEnt(Vect3f pos, Vect3f rot, Vect3f size, float radius, float 
 
         switch(objType) {
             case ENTITY:
-                allEnts[entAmt].data.ent = createEntity(pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, size.x, size.y, size.z, radius, height, frict, fallFrict, type, jointData, jointCount);
+                allEnts[entAmt].data.ent = createEntity(pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, size.x, size.y, size.z, radius, height, frict, fallFrict, type);
                 break;
             case OBJECT:
                 allEnts[entAmt].data.obj = createObject(pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, size.x, size.y, size.z, type, 1000);
@@ -211,6 +202,8 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
             project2D(&tri1[2][0], (float[3]){clip1.t3.x, clip1.t3.y, clip1.t3.z}, fov, nearPlane);
 
             drawFilledTris(tri1, color);
+
+            if (allPoints[index].lines == 1) drawTriLines(tri1);
             
             if (output == 2){
                 project2D(&tri2[0][0], (float[3]){clip2.t1.x, clip2.t1.y, clip2.t1.z}, fov, nearPlane); 
@@ -218,22 +211,16 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
                 project2D(&tri2[2][0], (float[3]){clip2.t3.x, clip2.t3.y, clip2.t3.z}, fov, nearPlane);
                 
                 drawFilledTris(tri2, color);
+                if (allPoints[index].lines == 1) drawTriLines(tri2);
             }
         }
     }
 }
 
-static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, VectB Bone, Camera_t cCam, float depthOffset, int triCount, Vect3m* data, int* backFace, int* colorArray, int posDist) {
+static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, int triCount, Vect3f* data, int* backFace, int* colorArray, int lineDraw) {
     worldTris tri;
-    Vect3f rotatedBonePos;
     float rotMat[3][3];
-    float boneMat[3][3];
-    float finalMat[3][3];
-
     computeRotScaleMatrix(rotMat, rot.x, rot.y, rot.z, size.x, size.y, size.z);
-    computeRotScaleMatrix(boneMat, degToRad(Bone.rot.x), degToRad(Bone.rot.y), degToRad(Bone.rot.z), size.x, size.y, size.z);
-    rotateVertex(Bone.pos.x, Bone.pos.y, Bone.pos.z, rotMat, &rotatedBonePos.x);
-    multiplyMatrix3x3(rotMat, boneMat, finalMat);
 
     float camX = FROM_FIXED32(cCam.position.x);
     float camY = FROM_FIXED32(cCam.position.y);
@@ -242,13 +229,13 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, VectB Bone, Ca
     const float one_third = 0.3333333f;
 
     Vect3f* transformedVerts = realloc(NULL, sizeof(Vect3f) * triCount * 3);
-    
+
     for (int v = 0; v < triCount * 3; v++) {
         float r[3];
-        rotateVertex(data[v].x, data[v].y, data[v].z, finalMat, r);
-        transformedVerts[v].x = r[0] + (pos.x + rotatedBonePos.x);
-        transformedVerts[v].y = r[1] + (pos.y + rotatedBonePos.y);
-        transformedVerts[v].z = r[2] + (pos.z + rotatedBonePos.z);
+        rotateVertex(data[v].x, data[v].y, data[v].z, rotMat, r);
+        transformedVerts[v].x = r[0] + pos.x;
+        transformedVerts[v].y = r[1] + pos.y;
+        transformedVerts[v].z = r[2] + pos.z;
     }
 
     for (int i = 0; i < triCount; i++) {
@@ -280,6 +267,7 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, VectB Bone, Ca
         tri.color = colorArray[i];
         tri.dist = dist - depthOffset;
         tri.bfc = backFace[i];
+        tri.lines = lineDraw;
         allPoints[allAmt++] = tri;
     }
 
@@ -288,172 +276,58 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, VectB Bone, Ca
 
 static void addPlayer() {
     if (player.type < 0 || player.type >= maxEntStored) return;
-    if (entArray[player.type].joints != player.jointCount) return;
 
-    if (player.currentAnim != player.lastAnim) {
-        player.frameCount = 0;
-        for (int i=0; i < player.jointCount; i++){ player.currentFrame[i] = 0; }
-    }
+    // if (player.currentAnim != player.lastAnim) {
+    //     player.frameCount = 0;
+    //     player.currentFrame = 0;
+    // }
 
-    for (int i=0; i < player.jointCount; i++){
-        AnimMesh* anim = entArray[player.type].animations[i]->animations[player.currentAnim];
-        if (player.frameCount >= anim->animOrientation[player.currentFrame[i]].frameSwap) { player.currentFrame[i]++; }
-        if (player.currentFrame[i] >= anim->count-1) { player.currentFrame[i] = anim->count-1; }
+    Mesh_t model = meshTest;
+    // int newFrame = entArray[player.type].anims[player.currentAnim]->frames[player.currentFrame];
 
-        VectB bone = anim->animOrientation[player.currentFrame[i]];
-        Vect3f objectPos = {
-            FROM_FIXED32(player.position.x),
-            FROM_FIXED32(player.position.y),
-            FROM_FIXED32(player.position.z)
-        };
+    if (model.data == NULL) return;
+    if (model.bfc == NULL) return;
+    if (model.color == NULL) return;
 
-        Vect3f objectRot = {
-            FROM_FIXED32(player.rotation.x),
-            FROM_FIXED32(player.rotation.y),
-            FROM_FIXED32(player.rotation.z)
-        };
+    Vect3f objectPos = {
+        FROM_FIXED32(player.position.x),
+        FROM_FIXED32(player.position.y),
+        FROM_FIXED32(player.position.z)
+    };
 
-        Vect3f objectSize = {
-            FROM_FIXED32(player.size.x) + bone.size.x,
-            FROM_FIXED32(player.size.y) + bone.size.y,
-            FROM_FIXED32(player.size.z) + bone.size.z
-        };
+    Vect3f objectRot = {
+        FROM_FIXED32(player.rotation.x),
+        FROM_FIXED32(player.rotation.y),
+        FROM_FIXED32(player.rotation.z)
+    };
 
-        addObjectToWorld(
-            objectPos, objectRot, objectSize, bone,
-            cam, 10.0f,
-            anim->meshModel[bone.modelUsed]->count,
-            anim->meshModel[bone.modelUsed]->data,
-            anim->meshModel[bone.modelUsed]->bfc,
-            anim->meshModel[bone.modelUsed]->color,
-            true
-        );
-    }
-
-    player.lastAnim = player.currentAnim;
-
-    if (player.frameCount >= entArray[player.type].maxFrames[player.currentAnim] - 1) {
-        player.frameCount = 0;
-        for (int t = 0; t < player.jointCount; t++) {
-            player.currentFrame[t] = 0;
-        }
-    } else {
-        player.frameCount++;
-    }
-
-    for (int i=0; i < player.jointCount; i++){ TraceLog(LOG_INFO, "Limb: %d | Frame: %d", i, player.currentFrame[i]); }
-    TraceLog(LOG_INFO, "FrameCount: %d | Animation: %d | Max Frames: %d", player.frameCount, player.currentAnim, entArray[player.type].maxFrames[player.currentAnim]);
-}
-
-static void addEntities() {
-    for (int z = 0; z < entAmt; z++) {
-        switch (allEnts[z].type) {
-            case ENTITY:
-                EntStruct *ent_ = &allEnts[z].data.ent;
-                if (ent_->type < 0 || ent_->type >= maxEntStored) continue;
-                if (entArray[ent_->type].joints != ent_->jointCount) continue;
-
-                if (ent_->currentAnim != ent_->lastAnim) {
-                    ent_->frameCount = 0;
-                    for (int i=0; i < ent_->jointCount; i++) { ent_->currentFrame[i] = 0; }
-                }
-
-                for (int i=0; i < ent_->jointCount; i++){
-                    AnimMesh* anim = entArray[ent_->type].animations[i]->animations[ent_->currentAnim];
-                    if (ent_->frameCount == anim->animOrientation[ent_->currentFrame[i]].frameSwap) { ent_->currentFrame[i]++; }
-                    if (ent_->currentFrame[i] >= anim->count-1) { ent_->currentFrame[i] = anim->count-1; }
-
-                    VectB bone = anim->animOrientation[ent_->currentFrame[i]];
-                    Vect3f objectPos = {
-                        FROM_FIXED32(ent_->position.x) + bone.pos.x,
-                        FROM_FIXED32(ent_->position.y) + bone.pos.y,
-                        FROM_FIXED32(ent_->position.z) + bone.pos.z
-                    };
-
-                    Vect3f objectRot = {
-                        FROM_FIXED32(ent_->rotation.x),
-                        FROM_FIXED32(ent_->rotation.y),
-                        FROM_FIXED32(ent_->rotation.z)
-                    };
-
-                    Vect3f objectSize = {
-                        FROM_FIXED32(ent_->size.x) + bone.size.x,
-                        FROM_FIXED32(ent_->size.y) + bone.size.y,
-                        FROM_FIXED32(ent_->size.z) + bone.size.z
-                    };
-
-                    if (objectRot.x > degToRad(360.0f)) { objectRot.x -= degToRad(360.0f); } else if (objectRot.x < degToRad(0.0f)) { objectRot.x += degToRad(360.0f); }
-                    if (objectRot.y > degToRad(360.0f)) { objectRot.y -= degToRad(360.0f); } else if (objectRot.y < degToRad(0.0f)) { objectRot.y += degToRad(360.0f); }
-                    if (objectRot.z > degToRad(360.0f)) { objectRot.z -= degToRad(360.0f); } else if (objectRot.z < degToRad(0.0f)) { objectRot.z += degToRad(360.0f); }
-                    
-                    int frame = anim->animOrientation[ent_->currentFrame[i]].modelUsed;
-                    addObjectToWorld(
-                        objectPos, objectRot, objectSize, bone,
-                        cam, 10.0f,
-                        anim->meshModel[frame]->count,
-                        anim->meshModel[frame]->data,
-                        anim->meshModel[frame]->bfc,
-                        anim->meshModel[frame]->color,
-                        true
-                    );
-                }
-
-                ent_->frameCount++;
-                ent_->lastAnim = ent_->currentAnim;
-
-                if (ent_->frameCount >= entArray[ent_->type].maxFrames[ent_->currentAnim]-1) {
-                    ent_->frameCount = 0;
-                    for (int t=0; t < ent_->jointCount; t++){ ent_->currentFrame[t] = 0; }
-                }
-                break;
-            case OBJECT:
-                ObjStruct *obj_ = &allEnts[z].data.obj;
-                // objectTypes(obj_);
-
-                int objIdx = obj_->type;
-                VectB bone = {
-                    .pos = {0.0f, 0.0f, 0.0f},
-                    .rot = {0.0f, 0.0f, 0.0f},
-                    .size = {1.0f, 1.0f, 1.0f},
-                    .frameSwap = 0,
-                    .modelUsed = 0
-                };
-
-                addObjectToWorld(
-                    (Vect3f){FROM_FIXED32(obj_->position.x), FROM_FIXED32(obj_->position.y), FROM_FIXED32(obj_->position.z)},
-                    (Vect3f){FROM_FIXED32(obj_->rotation.x), FROM_FIXED32(obj_->rotation.y), FROM_FIXED32(obj_->rotation.z)},
-                    (Vect3f){FROM_FIXED32(obj_->size.x), FROM_FIXED32(obj_->size.y), FROM_FIXED32(obj_->size.z)},
-                    bone,
-                    cam, 0.0f,
-                    objArray[objIdx].count,
-                    objArray[objIdx].data,
-                    objArray[objIdx].bfc,
-                    objArray[objIdx].color,
-                    false
-                );
-                break;
-        }
-    }
-}
-
-static void addMap(){
-    VectB bone = {
-        .pos = {0.0f, 0.0f, 0.0f},
-        .rot = {0.0f, 0.0f, 0.0f},
-        .size = {1.0f, 1.0f, 1.0f},
-        .frameSwap = 0,
-        .modelUsed = 0,
+    Vect3f objectSize = {
+        FROM_FIXED32(player.size.x),
+        FROM_FIXED32(player.size.y),
+        FROM_FIXED32(player.size.z)
     };
 
     addObjectToWorld(
-        (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f}, bone,
-        cam, 0.0f,
-        mapArray[modelIndex].count,
-        mapArray[modelIndex].data,
-        mapArray[modelIndex].bfc,
-        mapArray[modelIndex].color,
+        objectPos, objectRot, objectSize,
+        cam, 10.0f,
+        model.count,
+        model.data,
+        model.bfc,
+        model.color,
         false
     );
+
+    // player.lastAnim = player.currentAnim;
+
+    // if (player.frameCount >= newFrame) {
+    //     player.frameCount = 0;
+    //     player.currentFrame = 0;
+    // } else {
+    //     player.frameCount++;
+    // }
+
+    // for (int i=0; i < player.jointCount; i++){ TraceLog(LOG_INFO, "Limb: %d | Frame: %d", i, player.currentFrame[i]); }
+    // TraceLog(LOG_INFO, "FrameCount: %d | Animation: %d | Max Frames: %d", player.frameCount, player.currentAnim, entArray[player.type].maxFrames[player.currentAnim]);
 }
 
 static int cLib_render() {
@@ -464,8 +338,8 @@ static int cLib_render() {
     const float CamZDirSin = -sinf(FROM_FIXED32(cam.rotation.z));
     const float CamZDirCos = cosf(FROM_FIXED32(cam.rotation.z));
 
-    addMap();
-    addEntities();
+    // addMap();
+    // addEntities();
     addPlayer();
     qsort(allPoints, allAmt, sizeof(worldTris), compareRenderTris);
     
@@ -476,10 +350,9 @@ static int cLib_render() {
 }
 
 static int cLib_playerAction() {
-    for (int i=0; i < (sW * sH); i++){ zBuffer[i] = FLT_MAX16; }
     allAmt = 0;
 
-    movePlayerObj(&player, &cam, colRend);
+    // movePlayerObj(&player, &cam);
     handleCameraInput(&cam);
     updateCamera(&cam, &player, 7.0f);
 
@@ -501,15 +374,6 @@ static int cLib_playerAction() {
     return 0;
 }
 
-static int cLib_SettingsChange(){
-    renderRadius = 85;
-
-    camForward.x = cosf(FROM_FIXED32(setCam.rotation.x)) * sinf(FROM_FIXED32(setCam.rotation.y));
-    camForward.y = sinf(FROM_FIXED32(setCam.rotation.x));
-    camForward.z = cosf(FROM_FIXED32(setCam.rotation.x)) * cosf(FROM_FIXED32(setCam.rotation.y));
-
-    return 0;
-}
 
 int main(){
     InitWindow(sW, sH, "CrossUp");
@@ -518,8 +382,11 @@ int main(){
     gameScreen = 1;
 
     cLib_init();
-    cLib_addEnt((Vect3f){0.0, 4.0, 0.0}, (Vect3f){0.0, 0.0, 0.0}, (Vect3f){1.0, 1.0, 1.0}, 0.5, 1.8, 0.56, 0.08, 0, ENTITY);
-    cLib_addEnt((Vect3f){0.0, 4.0, -10.0}, (Vect3f){0.0, 0.0, 0.0}, (Vect3f){1.0, 1.0, 1.0}, 0.5, 1.8, 0.56, 0.08, 0, OBJECT);
+    convertFileToMesh("mesh/player/test.obj", &meshTest, -1);
+    printf("Tri Count: %d\n", meshTest.count);
+
+    allPointsCount += meshTest.count;
+    allPoints = realloc(allPoints, allPointsCount * sizeof(worldTris));
 
     while (!WindowShouldClose()) {
         BeginDrawing();

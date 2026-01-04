@@ -20,7 +20,7 @@ void moveCamera(Camera_t* cam, float dx, float dy, float dz) { if (cam) { cam->p
 void rotateCamera(Camera_t* cam, float rx, float ry, float rz) { if (cam) { cam->rotation.x += TO_FIXED32(rx); cam->rotation.y += TO_FIXED32(ry); cam->rotation.z += TO_FIXED32(rz); } }
 void destroyCamera(Camera_t* cam) { if (cam) { cam = realloc(cam, 0); } }
 
-EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, float radius, float height, float frict, float fallFrict, int type, int* joints, int jointCount) {
+EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, float radius, float height, float frict, float fallFrict, int type) {
     EntStruct p;
     p.position.x = TO_FIXED32(x);
     p.position.y = TO_FIXED32(y);
@@ -57,13 +57,10 @@ EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float 
     p.rotDir = 0;
 
     p.frameCount = 0;
-    p.currentFrame = realloc(NULL, sizeof(int) * jointCount);
+    p.currentFrame = 0;
     p.currentAnim = 0;
     p.lastAnim = 0;
-
-    p.jointCount = jointCount;
-
-    for (int i = 0; i < jointCount; i++) { p.currentFrame[i] = 0; }
+    
     return p;
 }
 

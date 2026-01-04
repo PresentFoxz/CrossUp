@@ -95,7 +95,7 @@ static void rotateTowards(EntStruct* p, float rot, float current){
     return;
 }
 
-static void runColl(EntStruct* p, int colRend){
+static void runColl(EntStruct* p){
     Vect3f pCollisionPos = {FROM_FIXED32(p->position.x), FROM_FIXED32(p->position.y), FROM_FIXED32(p->position.z)};
     float stepX = p->velocity.x / substeps;
     float stepY = p->velocity.y / substeps;
@@ -147,7 +147,7 @@ void stateMachine(EntStruct* p){
     if (p->grounded == 1 && ((p->velocity.x > 0.02 || p->velocity.x < -0.02) || (p->velocity.z > 0.02 || p->velocity.z < -0.02))) { p->currentAnim = 1; }
 }
 
-void movePlayerObj(EntStruct* p, Camera_t* c, int col){
+void movePlayerObj(EntStruct* p, Camera_t* c){
     float yawCam = -FROM_FIXED32(c->rotation.y);
     float mainYaw = FROM_FIXED32(p->rotation.y);
     float secondaryStrength = 0.5f;
@@ -220,7 +220,7 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int col){
     p->velocity.y -= p->fallFrict;
     if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
 
-    runColl(p, col);
+    runColl(p);
     moveEnt(p, FROM_FIXED32(p->rotation.y), FROM_FIXED32(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 1);
 
     p->coyote++;
@@ -296,7 +296,7 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
 
     if (e->velocity.y < -5.0f){ e->velocity.y = -5.0f; }
 
-    runColl(e, 0);
+    runColl(e);
 
     e->coyote++;
     if (e->grounded == 1) {

@@ -41,8 +41,8 @@ static inline qfixed16_t divide16(qfixed16_t a, qfixed16_t b) { return (qfixed16
 
 #define sX  0
 #define sY  0
-#define sW  800
-#define sH  620
+#define sW  400
+#define sH  240
 #define sW_H  (sW / 2)
 #define sH_H  (sH / 2)
 
@@ -59,12 +59,9 @@ float meterToUnit(float x);
 
 extern const int blockVerts[8][3];
 extern const int blockTris[12][4];
-extern float pCollisionPos[3];
-extern float pColPoints[substeps][3];
 
 #define rowStride 52
-extern int pixSizeX;
-extern int pixSizeY;
+#define resolution 1
 
 int randomInt(int a, int b);
 float randomFloat(float a, float b);

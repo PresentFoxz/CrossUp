@@ -3,9 +3,6 @@
 const float fovX = 2.44346f;
 const float fovY = 1.41435f;
 
-int pixSizeX = 2;
-int pixSizeY = 2;
-
 int objectCount = 0;
 
 int inside(int x, int y) { return x >= sX && x < sX + sW && y >= sY && y < sY + sH; }

@@ -66,6 +66,27 @@ typedef struct {
 } Camera_t;
 
 typedef struct {
+    int x0, y0, x1, y1, x2, y2;
+    float z0, z1, z2;
+    
+    int32_t A01, B01, C01;
+    int32_t A12, B12, C12;
+    int32_t A20, B20, C20;
+
+    int minX, maxX, minY, maxY;
+    int flip;
+
+    float invZStepX, invZStepY;
+    float invZ_row;
+} RasterTri;
+
+typedef enum {
+    PLAYER,
+    ENTITY,
+    OBJECT
+} ModelType;
+
+typedef struct {
     Vect3i position;
     Vect3i rotation;
     Vect3i size;
@@ -83,27 +104,22 @@ typedef struct {
 } EntStruct;
 
 typedef struct {
-    int x0, y0, x1, y1, x2, y2;
-    float z0, z1, z2;
-    
-    int32_t A01, B01, C01;
-    int32_t A12, B12, C12;
-    int32_t A20, B20, C20;
-
-    int minX, maxX, minY, maxY;
-    int flip;
-
-    float invZStepX, invZStepY;
-    float invZ_row;
-} RasterTri;
-
-typedef struct {
     int timer;
     int type;
     Vect3i position;
     Vect3i rotation;
     Vect3i size;
     Vect3f velocity;
+} ObjStruct;
+
+typedef struct {
+    ModelType type;
+
+    union {
+        EntStruct plr;
+        EntStruct ent;
+        ObjStruct obj;
+    } data;
 } Objects;
 
 #endif

@@ -71,8 +71,8 @@ void moveEntity(EntStruct* p, float dx, float dy, float dz) { if (p) { p->positi
 void rotateEntity(EntStruct* p, float rx, float ry, float rz) { if (p) { p->rotation.x = TO_FIXED32(rx); p->rotation.y = TO_FIXED32(ry); p->rotation.z = TO_FIXED32(rz); } }
 void destroyEntity(EntStruct* p) { if (p) { p = realloc(p, 0); } }
 
-Objects createObject(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, int type, int timer){
-    Objects o;
+ObjStruct createObject(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, int type, int timer){
+    ObjStruct o;
     o.position.x = TO_FIXED32(x);
     o.position.y = TO_FIXED32(y);
     o.position.z = TO_FIXED32(z);

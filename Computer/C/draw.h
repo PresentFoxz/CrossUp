@@ -12,7 +12,7 @@ void rotateVertex(float x, float y, float z, float rotMat[3][3], float out[3]);
 void rotateVertexInPlace(Vertex* verts, Vect3f camPos, float rotMat[3][3]);
 void computeCamMatrix(float m[3][3], float sinY, float cosY, float sinX, float cosX, float sinZ, float cosZ);
 void computeRotScaleMatrix(float rotMat[3][3], float angleX, float angleY, float angleZ, float sx, float sy, float sz);
-void RotationMatrix(float x, float y, float z, float sin1, float cos1, float sin2, float cos2, float sin3, float cos3, float rot[3]);
+void multiplyMatrix3x3(float a[3][3], float b[3][3], float out[3][3]);
 
 void staticLineDrawing(int p0[2], int p1[2], int color);
 

@@ -16,7 +16,7 @@
 
 void movePlayerObj(EntStruct* p, Camera_t* c, int col);
 void moveEntObj(EntStruct* e, EntStruct* p);
-static void objectTypes(Objects obj);
+static void objectTypes(ObjStruct obj);
 
 void handleCameraInput(Camera_t* cam);
 void updateCamera(Camera_t* cam, EntStruct* ent, float radius);

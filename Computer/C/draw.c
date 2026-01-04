@@ -13,11 +13,11 @@ static void multiPixl(uint gridX, uint gridY, int shade) {
     int colorIndex = shade % paletteSize;
     Color color = shades[colorIndex];
 
-    for (int dy = 0; dy < pixSizeY; dy++) {
+    for (int dy = 0; dy < resolution; dy++) {
         uint rowY = gridY + dy;
         if (rowY >= sH) break;
 
-        for (int dx = 0; dx < pixSizeX; dx++) {
+        for (int dx = 0; dx < resolution; dx++) {
             uint colX = gridX + dx;
             if (colX >= sW) break;
             
@@ -40,21 +40,6 @@ void project2D(int point[2], float verts[3], float fov, float nearPlane) {
     point[1] = (int)(-verts[1] * scale + (sH_H + sY));
 }
 
-void RotationMatrix(float x, float y, float z, float sin1, float cos1, float sin2, float cos2, float sin3, float cos3, float* rot){
-    float tempX = (z * sin1) + (x * cos1);
-    float tempZ = (z * cos1) - (x * sin1);
-
-    float tempY = (tempZ * sin2) + (y * cos2);
-    float finalZ = (tempZ * cos2) - (y * sin2);
-
-    float finalX = (tempX * cos3) - (tempY * sin3);
-    float finalY = (tempX * sin3) + (tempY * cos3);
-
-    rot[0] = finalX;
-    rot[1] = finalY;
-    rot[2] = finalZ;
-}
-
 void rotateVertexInPlace(Vertex* v, Vect3f camPos, float rotMat[3][3]) {
     float x = v->x - camPos.x;
     float y = v->y - camPos.y;
@@ -67,6 +52,14 @@ void rotateVertexInPlace(Vertex* v, Vect3f camPos, float rotMat[3][3]) {
     v->x = rx;
     v->y = ry;
     v->z = rz;
+}
+
+void multiplyMatrix3x3(float a[3][3], float b[3][3], float out[3][3]) {
+    for(int i=0;i<3;i++){
+        for(int j=0;j<3;j++){
+            out[i][j] = a[i][0]*b[0][j] + a[i][1]*b[1][j] + a[i][2]*b[2][j];
+        }
+    }
 }
 
 void rotateVertex(float x, float y, float z, float rotMat[3][3], float out[3]) {
@@ -126,14 +119,14 @@ void drawFilledTris(int tris[3][2], int triColor) {
     if (maxX >= sW) maxX = sW - 1;
     if (maxY >= sH) maxY = sH - 1;
     
-    minX = (minX / pixSizeX) * pixSizeX;
-    minY = (minY / pixSizeY) * pixSizeY;
-    maxX = ((maxX + pixSizeX - 1) / pixSizeX) * pixSizeX;
-    maxY = ((maxY + pixSizeY - 1) / pixSizeY) * pixSizeY;
+    minX = (minX / resolution) * resolution;
+    minY = (minY / resolution) * resolution;
+    maxX = ((maxX + resolution - 1) / resolution) * resolution;
+    maxY = ((maxY + resolution - 1) / resolution) * resolution;
 
-    int A01 = (y0 - y1) * pixSizeX, B01 = (x1 - x0) * pixSizeY;
-    int A12 = (y1 - y2) * pixSizeX, B12 = (x2 - x1) * pixSizeY;
-    int A20 = (y2 - y0) * pixSizeX, B20 = (x0 - x2) * pixSizeY;
+    int A01 = (y0 - y1) * resolution, B01 = (x1 - x0) * resolution;
+    int A12 = (y1 - y2) * resolution, B12 = (x2 - x1) * resolution;
+    int A20 = (y2 - y0) * resolution, B20 = (x0 - x2) * resolution;
 
     int w0_row = edgeFunc(x1, y1, x2, y2, minX, minY);
     int w1_row = edgeFunc(x2, y2, x0, y0, minX, minY);
@@ -152,16 +145,16 @@ void drawFilledTris(int tris[3][2], int triColor) {
     int32_t w0, w1, w2;
     uint gridX, gridY;
 
-    for (int y = minY; y <= maxY && y < sH; y += pixSizeY) {
-        gridY = y & ~(pixSizeY - 1);
+    for (int y = minY; y <= maxY && y < sH; y += resolution) {
+        gridY = y & ~(resolution - 1);
         if (gridY >= sH) gridY = sH - 1;
 
         w0 = w0_row;
         w1 = w1_row;
         w2 = w2_row;
 
-        for (int x = minX; x <= maxX && x < sW; x += pixSizeX) {
-            gridX = x & ~(pixSizeX - 1);
+        for (int x = minX; x <= maxX && x < sW; x += resolution) {
+            gridX = x & ~(resolution - 1);
             if (gridX >= sW) gridX = sW - 1;
 
             if ((w0 | w1 | w2) >= 0) {

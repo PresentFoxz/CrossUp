@@ -1,8 +1,6 @@
 #include "movement.h"
 #include "collisions.h"
 
-float pCollisionPos[3];
-float pColPoints[substeps][3];
 const int detectDist = 15;
 
 static float wrapFloat(float value, float min, float max) {
@@ -98,20 +96,18 @@ static void rotateTowards(EntStruct* p, float rot, float current){
 }
 
 static void runColl(EntStruct* p, int colRend){
-    pCollisionPos[0] = FROM_FIXED32(p->position.x);
-    pCollisionPos[1] = FROM_FIXED32(p->position.y);
-    pCollisionPos[2] = FROM_FIXED32(p->position.z);
+    Vect3f pCollisionPos = {FROM_FIXED32(p->position.x), FROM_FIXED32(p->position.y), FROM_FIXED32(p->position.z)};
     float stepX = p->velocity.x / substeps;
     float stepY = p->velocity.y / substeps;
     float stepZ = p->velocity.z / substeps;
 
     for (int i = 0; i < substeps; i++) {
-        pCollisionPos[0] = FROM_FIXED32(p->position.x) + stepX;
-        pCollisionPos[1] = (FROM_FIXED32(p->position.y) - 0.5f) + stepY;
-        pCollisionPos[2] = FROM_FIXED32(p->position.z) + stepZ;
+        pCollisionPos.x = FROM_FIXED32(p->position.x) + stepX;
+        pCollisionPos.y = (FROM_FIXED32(p->position.y) - 0.5f) + stepY;
+        pCollisionPos.z = FROM_FIXED32(p->position.z) + stepZ;
 
-        wrapPositionFloat( &pCollisionPos[0], &pCollisionPos[1], &pCollisionPos[2] );
-        VectMf movePlr = cylinderInTriangle((Vect3f){pCollisionPos[0], pCollisionPos[1], pCollisionPos[2]}, FROM_FIXED32(p->radius), FROM_FIXED32(p->height));
+        wrapPositionFloat( &pCollisionPos.x, &pCollisionPos.y, &pCollisionPos.z );
+        VectMf movePlr = cylinderInTriangle(pCollisionPos, FROM_FIXED32(p->radius), FROM_FIXED32(p->height));
         if (movePlr.floor == -1 && movePlr.ceiling == -1 && movePlr.wall == -1) { break; }
         if (movePlr.floor == 1 && movePlr.ceiling == 1) {
             p->velocity.y = 0.0f;
@@ -121,7 +117,7 @@ static void runColl(EntStruct* p, int colRend){
             continue;
         }
 
-        moveEntity(p, pCollisionPos[0], pCollisionPos[1] + 0.5f, pCollisionPos[2]);
+        moveEntity(p, pCollisionPos.x, pCollisionPos.y + 0.5f, pCollisionPos.z);
 
         if (movePlr.floor == 0 && movePlr.ceiling == 0 && movePlr.wall == 0) { continue; }
         if (movePlr.floor == 1) {
@@ -141,24 +137,6 @@ static void runColl(EntStruct* p, int colRend){
         if (movePlr.wall == 1) {
             p->position.x += TO_FIXED32(movePlr.pos.x);
             p->position.z += TO_FIXED32(movePlr.pos.z);
-        }
-    }
-
-    if (colRend){
-        float pColNext[3] = {FROM_FIXED32(p->position.x), FROM_FIXED32(p->position.y) - 0.5f, FROM_FIXED32(p->position.z)};
-        float stepX = p->velocity.x / substeps;
-        float stepY = p->velocity.y / substeps;
-        float stepZ = p->velocity.z / substeps;
-
-        for (int i = 0; i < substeps; i++) {
-            pColNext[0] += stepX;
-            pColNext[1] += stepY;
-            pColNext[2] += stepZ;
-
-
-            pColPoints[i][0] = pColNext[0];
-            pColPoints[i][1] = pColNext[1];
-            pColPoints[i][2] = pColNext[2];
         }
     }
 }
@@ -240,11 +218,9 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int col){
     if (p->ifMove > 0) { moveEnt(p, FROM_FIXED32(p->rotation.y), FROM_FIXED32(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 0); }
 
     p->velocity.y -= p->fallFrict;
-
     if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
 
     runColl(p, col);
-
     moveEnt(p, FROM_FIXED32(p->rotation.y), FROM_FIXED32(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 1);
 
     p->coyote++;
@@ -355,9 +331,10 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
     }
 
     moveEnt(e, FROM_FIXED32(e->rotation.y), FROM_FIXED32(e->surfRot), secondaryStrength, e->frict, 0.13f, 0.0f, 1);
+    stateMachine(p);
 }
 
-static void objectTypes(Objects obj){
+static void objectTypes(ObjStruct obj){
     obj.timer--;
 
     obj.position.x += TO_FIXED32(obj.velocity.x);

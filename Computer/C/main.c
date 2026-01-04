@@ -91,7 +91,7 @@ static int cLib_init() {
     mapArray = realloc(mapArray, sizeof(Mesh_t) * maxMaps);
     objArray = realloc(objArray, sizeof(Mesh_t) * maxProjs);
     convertFileToMesh("Objects/map/Castle.obj", &mapArray[0], 0, 0);
-    convertFileToMesh("Objects/proj/ball.obj", &objArray[0], -1, 0);
+    convertFileToMesh("Objects/proj/ball.obj", &objArray[0], 0, 0);
     
     entArray = realloc(entArray, sizeof(VertAnims) * maxEntStored);
 
@@ -336,7 +336,7 @@ static void addPlayer() {
         player.frameCount = 0;
     }
 
-    TraceLog(LOG_INFO, "FrameCount: %d | Animation: %d | Current Frame: %d", player.frameCount, player.currentAnim, player.currentFrame);
+    // TraceLog(LOG_INFO, "FrameCount: %d | Animation: %d | Current Frame: %d", player.frameCount, player.currentAnim, player.currentFrame);
 }
 
 static void addEntities() {
@@ -411,7 +411,7 @@ static void addEntities() {
                     objArray[obj_->type].data,
                     objArray[obj_->type].bfc,
                     objArray[obj_->type].color,
-                    true
+                    false
                 );
                 break;
         }

@@ -11,7 +11,7 @@ typedef struct {
 
 typedef struct {
     Mesh_t* meshModel;
-    int* frames;
+    int frames;
 } AnimFrames;
 
 typedef struct {

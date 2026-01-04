@@ -1,35 +1,27 @@
 #include "meshConvert.h"
 
-void allocateMeshes(VertAnims* mesh, int entCount, int maxAnims, int* framesPerAnim) {
-    for (int e = 0; e < entCount; e++) {
-        mesh[e].anims = malloc(sizeof(AnimFrames*) * maxAnims);
+void allocateMeshes(VertAnims* mesh, int maxAnims, const int* framesPerAnim) {
+    mesh->anims = malloc(sizeof(AnimFrames*) * maxAnims);
 
-        for (int a = 0; a < maxAnims; a++) {
-            int frames = framesPerAnim[a];
+    for (int a = 0; a < maxAnims; a++) {
+        int frames = framesPerAnim[a];
             
-            mesh[e].anims[a] = malloc(sizeof(AnimFrames));
+        mesh->anims[a] = malloc(sizeof(AnimFrames));
             
-            mesh[e].anims[a]->meshModel = malloc(sizeof(Mesh_t) * frames);
-            for (int f = 0; f < frames; f++) {
-                mesh[e].anims[a]->meshModel[f].data = NULL;
-                mesh[e].anims[a]->meshModel[f].bfc = NULL;
-                mesh[e].anims[a]->meshModel[f].color = NULL;
-                mesh[e].anims[a]->meshModel[f].count = 0;
-            }
-
-            mesh[e].anims[a]->frames = malloc(sizeof(int) * frames);
-            for (int f = 0; f < frames; f++) {
-                mesh[e].anims[a]->frames[f] = 1;
-            }
-            printf("Frames per Anim: %d\n", framesPerAnim[a]);
+        mesh->anims[a]->meshModel = malloc(sizeof(Mesh_t) * frames);
+        for (int f = 0; f < frames; f++) {
+            mesh->anims[a]->meshModel[f].data = NULL;
+            mesh->anims[a]->meshModel[f].bfc = NULL;
+            mesh->anims[a]->meshModel[f].color = NULL;
+            mesh->anims[a]->meshModel[f].count = 0;
         }
-
-        printf("Allocated meshes %d\n", (e+1));
-        printf("Max Anims: %d\n", maxAnims);
+        printf("Frames per Anim: %d\n", framesPerAnim[a]);
     }
+
+    printf("Max Anims: %d\n", maxAnims);
 }
 
-void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color) {
+void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int invert) {
     FILE* fptr = fopen(filename, "r");
     if (!fptr) {
         printf("Error: Could not open file %s\n", filename);
@@ -69,23 +61,41 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color) {
             if (idx == 3) {
                 tris = realloc(tris, sizeof(int[3]) * (triCount + 1));
                 colorArr = realloc(colorArr, sizeof(int) * (triCount + 1));
-                tris[triCount][0] = indices[0];
-                tris[triCount][1] = indices[2];
-                tris[triCount][2] = indices[1];
+                if (invert == 1){
+                    tris[triCount][0] = indices[0];
+                    tris[triCount][1] = indices[2];
+                    tris[triCount][2] = indices[1];
+                } else {
+                    tris[triCount][0] = indices[0];
+                    tris[triCount][1] = indices[1];
+                    tris[triCount][2] = indices[2];
+                }
                 colorArr[triCount] = randomInt(0, 3);
                 triCount++;
             } else if (idx == 4) {
                 tris = realloc(tris, sizeof(int[3]) * (triCount + 2));
                 colorArr = realloc(colorArr, sizeof(int) * (triCount + 2));
 
-                tris[triCount][0] = indices[0];
-                tris[triCount][1] = indices[2];
-                tris[triCount][2] = indices[1];
+                if (invert == 1){
+                    tris[triCount][0] = indices[0];
+                    tris[triCount][1] = indices[2];
+                    tris[triCount][2] = indices[1];
+                } else {
+                    tris[triCount][0] = indices[0];
+                    tris[triCount][1] = indices[1];
+                    tris[triCount][2] = indices[2];
+                }
                 colorArr[triCount] = randomInt(0, 3);
 
-                tris[triCount + 1][0] = indices[0];
-                tris[triCount + 1][1] = indices[3];
-                tris[triCount + 1][2] = indices[2];
+                if (invert == 1){
+                    tris[triCount + 1][0] = indices[0];
+                    tris[triCount + 1][1] = indices[3];
+                    tris[triCount + 1][2] = indices[2];
+                } else {
+                    tris[triCount + 1][0] = indices[0];
+                    tris[triCount + 1][1] = indices[2];
+                    tris[triCount + 1][2] = indices[3];
+                }
                 colorArr[triCount + 1] = randomInt(0, 3);
 
                 triCount += 2;
@@ -110,4 +120,22 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color) {
     free(tris);
     free(colorArr);
     fclose(fptr);
+}
+
+int allocPlayer(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[]) {
+    int highest = 0;
+    allocateMeshes(mesh, maxAnims, framesPerAnim);
+    for (int i = 0; i < maxAnims; i++) {
+        mesh->anims[i]->frames = framesPerAnim[i];
+        for (int f = 0; f < framesPerAnim[i]; f++) {
+            convertFileToMesh(names[i][f], &mesh->anims[i]->meshModel[f], -1, 1);
+
+            int triCount = mesh->anims[i]->meshModel[f].count;
+            if (triCount > highest) highest = triCount;
+
+            printf("Cross Tri Count: %d\n", triCount);
+        }
+    }
+
+    return highest;
 }

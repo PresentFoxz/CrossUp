@@ -80,12 +80,6 @@ typedef struct {
     float invZ_row;
 } RasterTri;
 
-typedef enum {
-    PLAYER,
-    ENTITY,
-    OBJECT
-} ModelType;
-
 typedef struct {
     Vect3i position;
     Vect3i rotation;
@@ -111,6 +105,12 @@ typedef struct {
     Vect3i size;
     Vect3f velocity;
 } ObjStruct;
+
+typedef enum {
+    PLAYER,
+    ENTITY,
+    OBJECT
+} ModelType;
 
 typedef struct {
     ModelType type;

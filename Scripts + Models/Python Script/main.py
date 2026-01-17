@@ -1,19 +1,8 @@
-import pygame
-import sys
-import draw
-import math
-import keyboard
-import json
-import random
 import os
-
-SCREEN_WIDTH = 400
-SCREEN_HEIGHT = 240
-
-pygame.init()
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Model Editor")
-clock = pygame.time.Clock()
+import shutil
+import subprocess
+import time
+import random
 
 verts = []
 tris = []
@@ -22,6 +11,24 @@ color = []
 orderedTris = []
 
 check = False
+
+BASE_DIR = os.getcwd()
+DIR = os.path.join(BASE_DIR, "models")
+
+def createHLoader(loaded, filename):
+    base_path = os.path.join(BASE_DIR, "C/hFiles")
+    loader_path = os.path.join(base_path, "fileLoader.h")
+    os.makedirs(base_path, exist_ok=True)
+
+    with open(loader_path, "a") as file:
+        if loaded == 0:
+            file.write("#ifndef FILELOADER_H\n")
+            file.write("#define FILELOADER_H\n\n")
+            file.write(f"#include \"../models/{filename}\"\n")
+        elif loaded == 1:
+            file.write(f"#include \"../models/{filename}\"\n")
+        elif loaded == 2:
+            file.write(f"\n#endif")
 
 def load_obj(filename):
     global verts, tris, color, orderedTris
@@ -54,7 +61,6 @@ def load_obj(filename):
                     tris.append([quad[0], quad[1], quad[2]])
                     tris.append([quad[0], quad[2], quad[3]])
                     color.append(random.randint(0, 3))
-                    color.append(random.randint(0, 3))
                 else:
                     pass
     
@@ -70,38 +76,6 @@ def load_obj(filename):
     print("Triangles: ", tris)
     print("Colors: ", color)
     print("Ordered Triangles: ", orderedTris)
-
-def loadModelData():
-    global verts, tris, color, orderedTris
-
-    orderedTris = []
-    
-    with open("model.json", "r") as file:
-        data = json.load(file)
-        verts = data["verts"]
-        tris = data["tris"]
-        color = data["colors"]
-        print("Vert data loaded:", verts)
-        print("Tri data loaded:", tris)
-        print("Color data loaded:", color)
-    
-    for triIndex, tri in enumerate(tris):
-        triVerts = [verts[idx] for idx in tri]
-        orderedTris.append(triVerts)
-
-def exportModelDataJson():
-    global verts, tris, color
-
-    data = {
-        "verts": verts,
-        "tris": tris,
-        "colors": color
-    }
-
-    with open("model_export.json", "w") as file:
-        json.dump(data, file, indent=4)
-
-    print("Model data exported to model_export.json")
 
 def exportModelDataH():
     global verts, tris, color, orderedTris
@@ -144,100 +118,56 @@ def exportModelDataH():
     
     print("Model data exported to model.h")
 
-def moveCam():
-    yaw = draw.rot[1]
-    move_delta = 0.03
-    if keyboard.is_pressed("w"):
-        draw.cam[0] += move_delta * math.sin(yaw)
-        draw.cam[2] += move_delta * math.cos(yaw)
-    if keyboard.is_pressed("s"):
-        draw.cam[0] -= move_delta * math.sin(yaw)
-        draw.cam[2] -= move_delta * math.cos(yaw)
-    if keyboard.is_pressed("a"):
-        draw.cam[0] -= move_delta * math.cos(yaw)
-        draw.cam[2] += move_delta * math.sin(yaw)
-    if keyboard.is_pressed("d"):
-        draw.cam[0] += move_delta * math.cos(yaw)
-        draw.cam[2] -= move_delta * math.sin(yaw)
-    
-    if keyboard.is_pressed("q"):
-        draw.cam[1] -= move_delta
-    if keyboard.is_pressed("e"):
-        draw.cam[1] += move_delta
-        
-    if keyboard.is_pressed("up"):
-        draw.rot[0] += 0.1
-    if keyboard.is_pressed("down"):
-        draw.rot[0] -= 0.1
-    if keyboard.is_pressed("left"):
-        draw.rot[1] -= 0.1
-    if keyboard.is_pressed("right"):
-        draw.rot[1] += 0.1
+def main():
+    user_input = input("How many folders do you have in the models folder? (make sure they are named 0+ so they are in order for the animations): ")
+    user_delete = input("Do you want to delete all existing .h files in the hFiles folder? (y/n): ")
 
-def swapVerts(i, j):
-    global tris, orderedTris
-    for tri in tris:
-        tmp = tri[i]
-        tri[i] = tri[j]
-        tri[j] = tmp
+    hfiles_path = os.path.join(BASE_DIR, "C/hFiles")
+    if user_delete.lower() == 'y':
+        if os.path.isdir(hfiles_path):
+            shutil.rmtree(hfiles_path)
+            print("Existing .h files deleted.")
+        os.makedirs(hfiles_path, exist_ok=True)
+        print("hFiles directory created.")
 
-    orderedTris = []
-    for triIndex, tri in enumerate(tris):
-        triVerts = [verts[idx] for idx in tri]
-        orderedTris.append(triVerts)
+    try:
+        count = int(user_input)
+    except ValueError:
+        print("Please enter a valid number.")
+        return
 
-loadModelData()
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+    data = []
+    save_paths = []
+    save_names = []
 
-    screen.fill((30, 30, 30))
+    for i in range(count):
+        folder_path = os.path.join(DIR, str(i))
+        if not os.path.isdir(folder_path):
+            print(f"Folder not found: {folder_path}")
+            continue
 
-    moveCam()
+        paths = [os.path.join(folder_path, f) for f in os.listdir(folder_path)]
+        names = [os.path.splitext(f)[0] for f in os.listdir(folder_path)]
 
-    if keyboard.is_pressed("r"):
-        loadModelData()
-    if keyboard.is_pressed("o"):
-        load_obj("model.obj")
-        print("Tri Count: ", len(tris))
-        print("Vert Count: ", len(verts))
-    if keyboard.is_pressed("p"):
-        print("Saving Model...")
+        for idx, file in enumerate(paths):
+            load_obj(file)
+            path_to_folder = os.path.join(BASE_DIR, f"C/hFiles/{i}")
+            os.makedirs(path_to_folder, exist_ok=True)
+            exportModelDataH()
 
-        exportModelDataJson()
-        exportModelDataH()
+        save_names.append(names)
+        data.append(len(paths))
 
-        print("Saved Model!")
-    
-    if keyboard.is_pressed("z") and check:
-        swapVerts(1, 2)
-        check = False
-    else:
-        check = True
+    loaded = 0
+    print(save_names)
+    for i in range(len(data)):
+        for z, name in enumerate(save_names[i]):
+            createHLoader(loaded, f"{i}/{name}.h")
+            loaded = 1
+    createHLoader(2, f"{i}/{name}.h")
 
-    for triIndex, tri in enumerate(tris):
-        projected_verts = [draw.rotate_and_project(verts[idx], math, SCREEN_WIDTH, SCREEN_HEIGHT) for idx in tri]
-        if not len(color) > triIndex:
-            c = 0
-        else:
-            c = color[triIndex]
+    print("All models processed. Running external program...")
 
-        skip = False
-        for (x, y) in projected_verts:
-            if x == -1 and y == -1:
-                skip = True
-                break
-            if x < 0 or x >= SCREEN_WIDTH or y < 0 or y >= SCREEN_HEIGHT:
-                skip = True
-                break
-        if not skip:
-            draw.drawFilledTriangle(projected_verts, c, 2, 2, pygame, screen)
-            draw.drawTris(projected_verts, pygame, screen)
+    time.sleep(500)
 
-    pygame.display.flip()
-    clock.tick(60)
-
-if __name__ == "__main__":
-    main()
+main()

@@ -1,5 +1,5 @@
-#ifndef DRAW_H
-#define DRAW_H
+#ifndef _3DMATH_H
+#define _3DMATH_H
 #include "library.h"
 
 void project2D(int point[2], float verts[3], float fov, float nearPlane);
@@ -17,5 +17,10 @@ void multiplyMatrix3x3(float a[3][3], float b[3][3], float out[3][3]);
 void staticLineDrawing(int p0[2], int p1[2], int color);
 
 void drawFilledTris(int tris[3][2], int triColor);
+<<<<<<< Updated upstream:Computer/C/draw.h
+=======
+void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, int texH);
+void drawTriLines(int tris[3][2]);
+>>>>>>> Stashed changes:Computer/C/3DMath.h
 
 #endif

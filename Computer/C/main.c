@@ -1,9 +1,17 @@
 #include "library.h"
 #include "entities.h"
-#include "draw.h"
+#include "3DMath.h"
 #include "movement.h"
 #include "collisions.h"
+<<<<<<< Updated upstream
 #include "Objects/allMeshes.h"
+=======
+#include "mesh.h"
+#include "meshConvert.h"
+
+#include "textures/text1.h"
+#include "Objects/animData.h"
+>>>>>>> Stashed changes
 
 Camera_t cam;
 worldTris* allPoints;
@@ -20,6 +28,8 @@ int staticAmt = 0;
 
 const int colRend = 0;
 int renderRadius = 85;
+
+TextAtlas* textAtlas;
 
 Objects* allEnts;
 EntStruct player;
@@ -102,10 +112,18 @@ static int cLib_init() {
     generateMap(mapArray[modelIndex].count);
     generatePoints(lengthJoints);
 
+<<<<<<< Updated upstream
     int jointCount = 2;
     int* jointData = realloc(NULL, sizeof(int) * jointCount);
     for (int i = 0; i < jointCount; i++) { jointData[i] = 0; }
     player = createEntity(10.0f, 3.0f, 41.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.56f, 0.08f, 0, jointData, jointCount);
+=======
+    player = createEntity(10.0f, 3.0f, 41.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 1.8f, 0.56f, 0.08f, 0);
+>>>>>>> Stashed changes
+
+
+    textAtlas = realloc(textAtlas, sizeof(TextAtlas) * 1);
+    textAtlas[0] = texture1;
 
     return 0;
 }
@@ -210,14 +228,33 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
             project2D(&tri1[1][0], (float[3]){clip1.t2.x, clip1.t2.y, clip1.t2.z}, fov, nearPlane);
             project2D(&tri1[2][0], (float[3]){clip1.t3.x, clip1.t3.y, clip1.t3.z}, fov, nearPlane);
 
+<<<<<<< Updated upstream
             drawFilledTris(tri1, color);
+=======
+            // drawTexturedTris(tri2, (int[3][2]){
+            //     {(int)(clip1.t1.u * textAtlas[0].w), (int)(clip1.t1.v * textAtlas[0].h)}, {(int)(clip1.t2.u * textAtlas[0].w), (int)(clip1.t2.v * textAtlas[0].h)}, {(int)(clip1.t3.u * textAtlas[0].w), (int)(clip1.t3.v * textAtlas[0].h)} },
+            //     textAtlas[0].pixels, textAtlas[0].w, textAtlas[0].h
+            // );
+
+            drawTexturedTris(tri1, (float[3][2]){ {0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f} }, textAtlas[0].pixels, textAtlas[0].w, textAtlas[0].h );
+
+            // drawFilledTris(tri1, color);
+            if (allPoints[index].lines == 1) drawTriLines(tri1);
+>>>>>>> Stashed changes
             
             if (output == 2){
                 project2D(&tri2[0][0], (float[3]){clip2.t1.x, clip2.t1.y, clip2.t1.z}, fov, nearPlane); 
                 project2D(&tri2[1][0], (float[3]){clip2.t2.x, clip2.t2.y, clip2.t2.z}, fov, nearPlane);
                 project2D(&tri2[2][0], (float[3]){clip2.t3.x, clip2.t3.y, clip2.t3.z}, fov, nearPlane);
                 
+<<<<<<< Updated upstream
                 drawFilledTris(tri2, color);
+=======
+                drawTexturedTris(tri2, (float[3][2]){ {0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f} }, textAtlas[0].pixels, textAtlas[0].w, textAtlas[0].h );
+
+                // drawFilledTris(tri2, color);
+                if (allPoints[index].lines == 1) drawTriLines(tri2);
+>>>>>>> Stashed changes
             }
         }
     }
@@ -425,11 +462,19 @@ static void addEntities() {
                     (Vect3f){FROM_FIXED32(obj_->size.x), FROM_FIXED32(obj_->size.y), FROM_FIXED32(obj_->size.z)},
                     bone,
                     cam, 0.0f,
+<<<<<<< Updated upstream
                     objArray[objIdx].count,
                     objArray[objIdx].data,
                     objArray[objIdx].bfc,
                     objArray[objIdx].color,
                     false
+=======
+                    objArray[obj_->type].count,
+                    objArray[obj_->type].data,
+                    objArray[obj_->type].bfc,
+                    objArray[obj_->type].color,
+                    true
+>>>>>>> Stashed changes
                 );
                 break;
         }
@@ -448,11 +493,19 @@ static void addMap(){
     addObjectToWorld(
         (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f}, bone,
         cam, 0.0f,
+<<<<<<< Updated upstream
         mapArray[modelIndex].count,
         mapArray[modelIndex].data,
         mapArray[modelIndex].bfc,
         mapArray[modelIndex].color,
         false
+=======
+        mapArray[mapIndex].count,
+        mapArray[mapIndex].data,
+        mapArray[mapIndex].bfc,
+        mapArray[mapIndex].color,
+        true
+>>>>>>> Stashed changes
     );
 }
 

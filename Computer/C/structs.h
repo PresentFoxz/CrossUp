@@ -122,4 +122,10 @@ typedef struct {
     } data;
 } Objects;
 
+typedef struct {
+    int* pixels;
+    int w;
+    int h;  
+} TextAtlas;
+
 #endif

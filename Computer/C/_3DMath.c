@@ -1,4 +1,4 @@
-#include "draw.h"
+#include "_3DMATH.h"
 
 Color shades[] = {
     (Color){50, 50, 50, 255},
@@ -178,6 +178,94 @@ void drawFilledTris(int tris[3][2], int triColor) {
         w2_row += B01;
     }
 }
+
+void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, int texH) {
+    int x0 = tris[0][0], y0 = tris[0][1];
+    int x1 = tris[1][0], y1 = tris[1][1];
+    int x2 = tris[2][0], y2 = tris[2][1];
+
+    int u0 = (int)(uvs[0][0] * (texW - 1)), v0 = (int)(uvs[0][1] * (texH - 1));
+    int u1 = (int)(uvs[1][0] * (texW - 1)), v1 = (int)(uvs[1][1] * (texH - 1));
+    int u2 = (int)(uvs[2][0] * (texW - 1)), v2 = (int)(uvs[2][1] * (texH - 1));
+    
+    int minX = x0 < x1 ? (x0 < x2 ? x0 : x2) : (x1 < x2 ? x1 : x2);
+    int maxX = x0 > x1 ? (x0 > x2 ? x0 : x2) : (x1 > x2 ? x1 : x2);
+    int minY = y0 < y1 ? (y0 < y2 ? y0 : y2) : (y1 < y2 ? y1 : y2);
+    int maxY = y0 > y1 ? (y0 > y2 ? y0 : y2) : (y1 > y2 ? y1 : y2);
+
+    if (minX < 0) minX = 0;
+    if (minY < 0) minY = 0;
+    if (maxX >= sW) maxX = sW - 1;
+    if (maxY >= sH) maxY = sH - 1;
+
+    minX = (minX / resolution) * resolution;
+    minY = (minY / resolution) * resolution;
+    maxX = ((maxX + resolution - 1) / resolution) * resolution;
+    maxY = ((maxY + resolution - 1) / resolution) * resolution;
+    
+    int A01 = (y0 - y1) * resolution, B01 = (x1 - x0) * resolution;
+    int A12 = (y1 - y2) * resolution, B12 = (x2 - x1) * resolution;
+    int A20 = (y2 - y0) * resolution, B20 = (x0 - x2) * resolution;
+    
+    int cx = minX + (resolution >> 1);
+    int cy = minY + (resolution >> 1);
+
+    int w0_row = edgeFunc(x1, y1, x2, y2, cx, cy);
+    int w1_row = edgeFunc(x2, y2, x0, y0, cx, cy);
+    int w2_row = edgeFunc(x0, y0, x1, y1, cx, cy);
+
+    int area = edgeFunc(x0, y0, x1, y1, x2, y2);
+    if (area == 0) return;
+    
+    if (area < 0) {
+        area = -area;
+
+        int tmp;
+        tmp = A01; A01 = -A01; B01 = -B01;
+        tmp = A12; A12 = -A12; B12 = -B12;
+        tmp = A20; A20 = -A20; B20 = -B20;
+
+        w0_row = -w0_row;
+        w1_row = -w1_row;
+        w2_row = -w2_row;
+    }
+
+    int32_t w0, w1, w2;
+    uint gridX, gridY;
+
+    for (int y = minY; y <= maxY && y < sH; y += resolution) {
+        gridY = y & ~(resolution - 1);
+        if (gridY >= sH) gridY = sH - 1;
+
+        w0 = w0_row;
+        w1 = w1_row;
+        w2 = w2_row;
+
+        for (int x = minX; x <= maxX && x < sW; x += resolution) {
+            gridX = x & ~(resolution - 1);
+            if (gridX >= sW) gridX = sW - 1;
+
+            if ((w0 | w1 | w2) >= 0) {
+                int u = (int)(((int64_t)w0 * u0 + (int64_t)w1 * u1 + (int64_t)w2 * u2) / area);
+                int v = (int)(((int64_t)w0 * v0 + (int64_t)w1 * v1 + (int64_t)w2 * v2) / area);
+
+                if (u >= 0 && v >= 0 && u < texW && v < texH) {
+                    int shade = texture[v * texW + u];
+                    if (shade != -1) multiPixl(gridX, gridY, shade);
+                }
+            }
+
+            w0 += A12;
+            w1 += A20;
+            w2 += A01;
+        }
+
+        w0_row += B12;
+        w1_row += B20;
+        w2_row += B01;
+    }
+}
+
 
 void drawTriLines(int tris[3][2]) {
     for (int i = 0; i < 3; i++) {

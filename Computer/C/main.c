@@ -1,12 +1,13 @@
 #include "library.h"
 #include "entities.h"
-#include "draw.h"
+#include "_3DMATH.h"
 #include "movement.h"
 #include "collisions.h"
 #include "mesh.h"
 #include "meshConvert.h"
 
 #include "Objects/animData.h"
+#include "textures/allTexts.h"
 
 Camera_t cam;
 worldTris* allPoints;
@@ -21,6 +22,8 @@ int staticAmt = 0;
 
 const int colRend = 0;
 int renderRadius = 85;
+
+textAtlas* textAtlasMem;
 
 Objects* allEnts;
 EntStruct player;
@@ -105,6 +108,9 @@ static int cLib_init() {
     int* jointData = realloc(NULL, sizeof(int) * jointCount);
     for (int i = 0; i < jointCount; i++) { jointData[i] = 0; }
     player = createEntity(10.0f, 3.0f, 41.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 1.8f, 0.56f, 0.08f, 0);
+
+    textAtlasMem = realloc(textAtlasMem, sizeof(textAtlas) * 1);
+    textAtlasMem[0] = testTexture;
 
     return 0;
 }
@@ -209,8 +215,8 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
             project2D(&tri1[1][0], (float[3]){clip1.t2.x, clip1.t2.y, clip1.t2.z}, fov, nearPlane);
             project2D(&tri1[2][0], (float[3]){clip1.t3.x, clip1.t3.y, clip1.t3.z}, fov, nearPlane);
 
-            drawFilledTris(tri1, color);
-
+            drawTexturedTris(tri1, (float[3][2]){ {0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f} }, textAtlasMem[0].pixels, textAtlasMem[0].w, textAtlasMem[0].h );
+            // drawFilledTris(tri1, color);
             if (allPoints[index].lines == 1) drawTriLines(tri1);
             
             if (output == 2){
@@ -218,7 +224,8 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
                 project2D(&tri2[1][0], (float[3]){clip2.t2.x, clip2.t2.y, clip2.t2.z}, fov, nearPlane);
                 project2D(&tri2[2][0], (float[3]){clip2.t3.x, clip2.t3.y, clip2.t3.z}, fov, nearPlane);
                 
-                drawFilledTris(tri2, color);
+                drawTexturedTris(tri2, (float[3][2]){ {0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f} }, textAtlasMem[0].pixels, textAtlasMem[0].w, textAtlasMem[0].h );
+                // drawFilledTris(tri2, color);
                 if (allPoints[index].lines == 1) drawTriLines(tri2);
             }
         }

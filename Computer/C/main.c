@@ -1,6 +1,6 @@
 #include "library.h"
 #include "entities.h"
-#include "_3DMATH.h"
+#include "_3DMath.h"
 #include "movement.h"
 #include "collisions.h"
 #include "mesh.h"
@@ -13,9 +13,7 @@ Camera_t cam;
 worldTris* allPoints;
 staticPoints* static3D;
 worldTris* entModels;
-int gameStart = 1;
 
-int rendAmt = 0;
 int entAmt = 0;
 int allAmt = 0;
 int staticAmt = 0;
@@ -29,18 +27,15 @@ Objects* allEnts;
 EntStruct player;
 #define MAX_ENTITIES 240
 
-Mesh_t meshTest;
-
-Mesh_t* mapArray;
+Mesh_t mapArray;
 int mapIndex = 0;
-const int maxMaps = 1;
+const int mapObjsCount = 2;
 
 Mesh_t* objArray;
 const int maxProjs = 1;
 
 VertAnims* entArray;
 int entIndex = 0;
-const int maxEntStored = 1;
 
 int allPointsCount = 0;
 const int lengthJoints = 3;
@@ -49,23 +44,59 @@ Vect3f rotModelSet;
 Vect3f camForward;
 int gameScreen = 0;
 
-static void generateMap(int len){
-    allPoints = realloc(allPoints, sizeof(worldTris) * 0);
-    allPointsCount = 0;
+static int addEnt(Vect3f pos, Vect3f rot, Vect3f size, float radius, float height, float frict, float fallFrict, int type, ModelType objType){
+    if (entAmt < MAX_ENTITIES){
+        allEnts[entAmt].type = objType;
+
+        switch(objType) {
+            case ENTITY:
+                allEnts[entAmt].data.ent = createEntity(pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, size.x, size.y, size.z, radius, height, frict, fallFrict, type);
+                break;
+            case OBJECT:
+                allEnts[entAmt].data.obj = createObject(pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, size.x, size.y, size.z, type, 1000);
+                break;
+        }
+        entAmt++;
+
+        if (objType != OBJECT) {
+            int newPoint = (allPointsCount + entArray[type].count);
+            if (newPoint > allPointsCount) { allPointsCount = (newPoint + 50); }
+        }
+    } else {
+        printf("Max entities reached!\n");
+    }
+
+    return 0;
+}
+
+static void generateMap() {
     resetCollisionSurface();
-    for (int i=0; i < len; i++){
+    for (int i=0; i < mapArray.count; i++){
         int idx[3] = {(i*3), (i*3)+1, (i*3)+2};
         addCollisionSurface(
-            (Vect3f){mapArray[mapIndex].data[idx[0]].x, mapArray[mapIndex].data[idx[0]].y, mapArray[mapIndex].data[idx[0]].z},
-            (Vect3f){mapArray[mapIndex].data[idx[1]].x, mapArray[mapIndex].data[idx[1]].y, mapArray[mapIndex].data[idx[1]].z},
-            (Vect3f){mapArray[mapIndex].data[idx[2]].x, mapArray[mapIndex].data[idx[2]].y, mapArray[mapIndex].data[idx[2]].z},
+            (Vect3f){mapArray.data[idx[0]].x, mapArray.data[idx[0]].y, mapArray.data[idx[0]].z},
+            (Vect3f){mapArray.data[idx[1]].x, mapArray.data[idx[1]].y, mapArray.data[idx[1]].z},
+            (Vect3f){mapArray.data[idx[2]].x, mapArray.data[idx[2]].y, mapArray.data[idx[2]].z},
             SURFACE_NONE
         );
     }
 
-    allPointsCount = len;
+    allPointsCount += mapArray.count;
     for (int i=0; i < maxProjs; i++) { allPointsCount += objArray[i].count; }
-    allPoints = realloc(allPoints, allPointsCount * sizeof(worldTris));
+}
+
+static void generateEnts() {
+    if (mapIndex == 0) {
+        addEnt((Vect3f){0.0f, 20.0f, -5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY);
+        addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT);
+    } else if (mapIndex == 1) {
+        addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT);
+    }
+}
+
+static void generateTextures() {
+    textAtlasMem = realloc(textAtlasMem, sizeof(textAtlas) * 1);
+    textAtlasMem[0] = testTexture;
 }
 
 static void generatePoints(int len){
@@ -89,58 +120,37 @@ static int compareRenderTris(const void* a, const void* b) {
 }
 
 static int cLib_init() {
+    allPointsCount = 0;
+    entIndex = 0;
+    entAmt = 0;
+    allAmt = 0;
+    staticAmt = 0;
+
     cam = createCamera(10.0f, 3.0f, 41.0f, 0.0f, 0.0f, 0.0f, 90.0f, 0.1f, 100.0f);
+    player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 1.8f, 0.56f, 0.08f, 0);
 
-    mapArray = realloc(mapArray, sizeof(Mesh_t) * maxMaps);
-    objArray = realloc(objArray, sizeof(Mesh_t) * maxProjs);
-    convertFileToMesh("Objects/map/Castle.obj", &mapArray[0], 0, 0);
+    allPoints = malloc(sizeof(worldTris) * 0);
+    objArray = malloc( sizeof(Mesh_t) * maxProjs);
+    entArray = malloc(sizeof(VertAnims) * entDataCount);
+    static3D = malloc(sizeof(staticPoints) * lengthJoints);
+    allEnts = malloc(sizeof(EntStruct) * MAX_ENTITIES);
+
+    convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1]);
     convertFileToMesh("Objects/proj/ball.obj", &objArray[0], 0, 0);
-    
-    entArray = realloc(entArray, sizeof(VertAnims) * maxEntStored);
 
-    static3D = realloc(static3D, sizeof(staticPoints) * lengthJoints);
-    allEnts = realloc(allEnts, sizeof(EntStruct) * MAX_ENTITIES);
-
-    generateMap(mapArray[mapIndex].count);
-    generatePoints(lengthJoints);
-
-    int jointCount = 2;
-    int* jointData = realloc(NULL, sizeof(int) * jointCount);
-    for (int i = 0; i < jointCount; i++) { jointData[i] = 0; }
-    player = createEntity(10.0f, 3.0f, 41.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 1.8f, 0.56f, 0.08f, 0);
-
-    textAtlasMem = realloc(textAtlasMem, sizeof(textAtlas) * 1);
-    textAtlasMem[0] = testTexture;
-
-    return 0;
-}
-
-static int cLib_addEnt(Vect3f pos, Vect3f rot, Vect3f size, float radius, float height, float frict, float fallFrict, int type, ModelType objType){
-    if (entAmt < MAX_ENTITIES){
-        int jointCount = 2;
-        int* jointData = realloc(NULL, sizeof(int) * jointCount);
-        for (int i = 0; i < jointCount; i++) { jointData[i] = 0; }
-        
-        allEnts[entAmt].type = objType;
-
-        switch(objType) {
-            case ENTITY:
-                allEnts[entAmt].data.ent = createEntity(pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, size.x, size.y, size.z, radius, height, frict, fallFrict, type);
-                break;
-            case OBJECT:
-                allEnts[entAmt].data.obj = createObject(pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, size.x, size.y, size.z, type, 1000);
-                break;
-        }
-        entAmt++;
-
-        int newPoint = (allPointsCount + entArray[type].count);
-        if (newPoint > allPointsCount) {
-            allPoints = realloc(allPoints, newPoint * sizeof(worldTris));
-            allPointsCount = newPoint;
-        }
-    } else {
-        printf("Max entities reached!\n");
+    for (int i=0; i < entDataCount; i++){
+        int highest = allocAnimModel(&entArray[i], entData[i].totalAnims, entData[i].animFrameCounts, entData[i].animNames);
+        allPointsCount += (highest * (entAmt+1));
+        entArray[i].count = highest;
     }
+
+    generateMap();
+    generatePoints(lengthJoints);
+    generateTextures();
+
+    generateEnts();
+
+    allPoints = realloc(allPoints, allPointsCount * sizeof(worldTris));
 
     return 0;
 }
@@ -201,6 +211,9 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
             verts[v].x = allPoints[index].verts[v][0];
             verts[v].y = allPoints[index].verts[v][1];
             verts[v].z = allPoints[index].verts[v][2];
+
+            verts[v].u = allPoints[index].uvs[v][0];
+            verts[v].v = allPoints[index].uvs[v][1];
             
             rotateVertexInPlace(&verts[v], camPos, camMatrix);
             project2D(&check[v][0], (float[]){verts[v].x, verts[v].y, verts[v].z}, fov, nearPlane);
@@ -215,7 +228,7 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
             project2D(&tri1[1][0], (float[3]){clip1.t2.x, clip1.t2.y, clip1.t2.z}, fov, nearPlane);
             project2D(&tri1[2][0], (float[3]){clip1.t3.x, clip1.t3.y, clip1.t3.z}, fov, nearPlane);
 
-            drawTexturedTris(tri1, (float[3][2]){ {0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f} }, textAtlasMem[0].pixels, textAtlasMem[0].w, textAtlasMem[0].h );
+            drawTexturedTris(tri1, (float[3][2]){ {clip1.t1.u, clip1.t1.v}, {clip1.t2.u, clip1.t2.v}, {clip1.t3.u, clip1.t3.v} }, textAtlasMem[0].pixels, textAtlasMem[0].w, textAtlasMem[0].h );
             // drawFilledTris(tri1, color);
             if (allPoints[index].lines == 1) drawTriLines(tri1);
             
@@ -224,7 +237,7 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
                 project2D(&tri2[1][0], (float[3]){clip2.t2.x, clip2.t2.y, clip2.t2.z}, fov, nearPlane);
                 project2D(&tri2[2][0], (float[3]){clip2.t3.x, clip2.t3.y, clip2.t3.z}, fov, nearPlane);
                 
-                drawTexturedTris(tri2, (float[3][2]){ {0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f} }, textAtlasMem[0].pixels, textAtlasMem[0].w, textAtlasMem[0].h );
+                drawTexturedTris(tri2, (float[3][2]){ {clip2.t1.u, clip2.t1.v}, {clip2.t2.u, clip2.t2.v}, {clip2.t3.u, clip2.t3.v} }, textAtlasMem[0].pixels, textAtlasMem[0].w, textAtlasMem[0].h );
                 // drawFilledTris(tri2, color);
                 if (allPoints[index].lines == 1) drawTriLines(tri2);
             }
@@ -232,7 +245,7 @@ static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, flo
     }
 }
 
-static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, int triCount, Vect3f* data, int* backFace, int* colorArray, int lineDraw) {
+static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, int triCount, Vect3f* data, int* backFace, int* colorArray, int lineDraw, int distMod) {
     worldTris tri;
     float rotMat[3][3];
     computeRotScaleMatrix(rotMat, rot.x, rot.y, rot.z, size.x, size.y, size.z);
@@ -270,19 +283,26 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam,
         float cx = sumX * one_third;
         float cy = sumY * one_third;
         float cz = sumZ * one_third;
-
+    
         float dx = cx - camX;
         float dy = cy - camY;
         float dz = cz - camZ;
         float dist = dx*dx + dy*dy + dz*dz;
 
-        if (renderRadius && dist > renderRadiusSq) continue;
-        if (dist <= 1e-8f) continue;
+        if (distMod == 1) {
+            if (renderRadius && dist > renderRadiusSq) continue;
+            if (dist <= 1e-8f) continue;
+        }
 
         tri.color = colorArray[i];
         tri.dist = dist - depthOffset;
         tri.bfc = backFace[i];
         tri.lines = lineDraw;
+
+        tri.uvs[0][0] = 0.0f; tri.uvs[0][1] = 0.0f;
+        tri.uvs[1][0] = 1.0f; tri.uvs[1][1] = 0.0f;
+        tri.uvs[2][0] = 0.0f; tri.uvs[2][1] = 1.0f;
+
         allPoints[allAmt++] = tri;
     }
 
@@ -290,7 +310,7 @@ static void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam,
 }
 
 static void addPlayer() {
-    if (player.type < 0 || player.type >= maxEntStored) return;
+    if (player.type < 0 || player.type >= entDataCount) return;
 
     if (player.currentAnim != player.lastAnim) {
         player.frameCount = 0;
@@ -332,7 +352,7 @@ static void addPlayer() {
             model.data,
             model.bfc,
             model.color,
-            true
+            true, 1
         );
     }
 
@@ -351,7 +371,7 @@ static void addEntities() {
         switch (allEnts[z].type) {
             case ENTITY:
                 EntStruct *ent_ = &allEnts[z].data.ent;
-                if (ent_->type < 0 || ent_->type >= maxEntStored) continue;
+                if (ent_->type < 0 || ent_->type >= entDataCount) continue;
 
                 // if (ent_->currentAnim != ent_->lastAnim) {
                 //     ent_->frameCount = 0;
@@ -393,7 +413,7 @@ static void addEntities() {
                         model.data,
                         model.bfc,
                         model.color,
-                        true
+                        true, 1
                     );
                 }
 
@@ -418,7 +438,7 @@ static void addEntities() {
                     objArray[obj_->type].data,
                     objArray[obj_->type].bfc,
                     objArray[obj_->type].color,
-                    false
+                    false, 1
                 );
                 break;
         }
@@ -429,11 +449,11 @@ static void addMap(){
     addObjectToWorld(
         (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f},
         cam, 0.0f,
-        mapArray[mapIndex].count,
-        mapArray[mapIndex].data,
-        mapArray[mapIndex].bfc,
-        mapArray[mapIndex].color,
-        false
+        mapArray.count,
+        mapArray.data,
+        mapArray.bfc,
+        mapArray.color,
+        false, 1
     );
 }
 
@@ -488,12 +508,6 @@ int main(){
     gameScreen = 1;
 
     cLib_init();
-    cLib_addEnt((Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY);
-    cLib_addEnt((Vect3f){0.0f, 0.0f, -5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT);
-    int highest = allocPlayer(&entArray[player.type], cross_totalAnims, cross_animFrameCounts, cross_animNames);
-
-    allPointsCount += (highest * (entAmt+1));
-    allPoints = realloc(allPoints, allPointsCount * sizeof(worldTris));
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -502,6 +516,12 @@ int main(){
         if (gameScreen == 1) {
             cLib_playerAction();
             cLib_render();
+
+            if (IsKeyPressed(KEY_M)) {
+                mapIndex++;
+                if (mapIndex >= mapObjsCount) mapIndex = 0;
+                cLib_init();
+            }
         }
 
         EndDrawing();

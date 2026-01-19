@@ -122,7 +122,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
     fclose(fptr);
 }
 
-int allocPlayer(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[]) {
+int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[]) {
     int highest = 0;
     allocateMeshes(mesh, maxAnims, framesPerAnim);
     for (int i = 0; i < maxAnims; i++) {

@@ -17,8 +17,9 @@ typedef enum {
 
 typedef struct {
     Vect3f v0, v1, v2;
-    SurfaceType type;
     Vect3f normal;
+    Vect3f center;
+    SurfaceType type;
 } CollisionSurface;
 
 typedef struct {

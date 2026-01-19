@@ -1,4 +1,4 @@
-#include "_3DMATH.h"
+#include "_3DMath.h"
 
 Color shades[] = {
     (Color){50, 50, 50, 255},
@@ -303,24 +303,20 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
     Vertex cross0, cross1;
 
     if (inAmt == 0) {
-        // Entire triangle is outside
         return 0;
     } else if (inAmt == 3) {
-        // Entire triangle is inside
         outTri1->t1 = verts[0];
         outTri1->t2 = verts[1];
         outTri1->t3 = verts[2];
         return 1;
     } else if (inAmt == 1) {
-        // One vertex inside, two outside → create one triangle
         int in0 = inScreen[0];
         int out0 = outScreen[0];
         int out1 = outScreen[1];
 
         float t0 = (nearPlane - verts[out0].z) / (verts[in0].z - verts[out0].z);
         float t1 = (nearPlane - verts[out1].z) / (verts[in0].z - verts[out1].z);
-
-        // Interpolate positions
+        
         cross0.x = verts[out0].x + t0 * (verts[in0].x - verts[out0].x);
         cross0.y = verts[out0].y + t0 * (verts[in0].y - verts[out0].y);
         cross0.z = verts[out0].z + t0 * (verts[in0].z - verts[out0].z);
@@ -329,29 +325,25 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
         cross1.y = verts[out1].y + t1 * (verts[in0].y - verts[out1].y);
         cross1.z = verts[out1].z + t1 * (verts[in0].z - verts[out1].z);
 
-        // Interpolate UVs
         cross0.u = verts[out0].u + t0 * (verts[in0].u - verts[out0].u);
         cross0.v = verts[out0].v + t0 * (verts[in0].v - verts[out0].v);
 
         cross1.u = verts[out1].u + t1 * (verts[in0].u - verts[out1].u);
         cross1.v = verts[out1].v + t1 * (verts[in0].v - verts[out1].v);
-
-        // Assign clipped triangle
-        outTri1->t1 = verts[in0];  // inside vertex
-        outTri1->t2 = cross0;      // clipped vertex
-        outTri1->t3 = cross1;      // clipped vertex
+        
+        outTri1->t1 = verts[in0];
+        outTri1->t2 = cross0;
+        outTri1->t3 = cross1;
 
         return 1;
     } else if (inAmt == 2) {
-        // Two vertices inside, one outside → create two triangles
         int in0 = inScreen[0];
         int in1 = inScreen[1];
         int out0 = outScreen[0];
 
         float t0 = (nearPlane - verts[out0].z) / (verts[in0].z - verts[out0].z);
         float t1 = (nearPlane - verts[out0].z) / (verts[in1].z - verts[out0].z);
-
-        // Interpolate positions
+        
         cross0.x = verts[out0].x + t0 * (verts[in0].x - verts[out0].x);
         cross0.y = verts[out0].y + t0 * (verts[in0].y - verts[out0].y);
         cross0.z = verts[out0].z + t0 * (verts[in0].z - verts[out0].z);
@@ -359,23 +351,20 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
         cross1.x = verts[out0].x + t1 * (verts[in1].x - verts[out0].x);
         cross1.y = verts[out0].y + t1 * (verts[in1].y - verts[out0].y);
         cross1.z = verts[out0].z + t1 * (verts[in1].z - verts[out0].z);
-
-        // Interpolate UVs
+        
         cross0.u = verts[out0].u + t0 * (verts[in0].u - verts[out0].u);
         cross0.v = verts[out0].v + t0 * (verts[in0].v - verts[out0].v);
 
         cross1.u = verts[out0].u + t1 * (verts[in1].u - verts[out0].u);
         cross1.v = verts[out0].v + t1 * (verts[in1].v - verts[out0].v);
-
-        // First clipped triangle
+        
         outTri1->t1 = verts[in0];
         outTri1->t2 = verts[in1];
-        outTri1->t3 = cross1;
+        outTri1->t3 = cross0;
 
-        // Second clipped triangle
-        outTri2->t1 = verts[in0];
-        outTri2->t2 = cross0;
-        outTri2->t3 = cross1;
+        outTri2->t1 = verts[in1];
+        outTri2->t2 = cross1;
+        outTri2->t3 = cross0;
 
         return 2;
     }

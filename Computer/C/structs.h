@@ -39,6 +39,7 @@ typedef struct {
 
 typedef struct {
     float verts[3][3];
+    float uvs[3][2];
     int color;
     float dist;
     int bfc;
@@ -65,6 +66,12 @@ typedef struct {
     Vect3i rotation;
     qfixed32_t fov, nearPlane, farPlane;
 } Camera_t;
+
+typedef struct {
+    const char*** animNames;
+    const int* animFrameCounts;
+    int totalAnims;
+} entData_t;
 
 typedef struct {
     int x0, y0, x1, y1, x2, y2;

@@ -38,8 +38,11 @@ typedef struct {
     MinMax3f* BoxMinMax;
 } OOBArea;
 
+void resetTriggers();
 void resetCollisionSurface();
+void addTriggers(Vect3f pos, Vect3f size, int type, int id);
 void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, SurfaceType type);
 VectMf cylinderInTriangle(Vect3f pos, float radius, float height);
+Triggers cylinderInTrigger(Vect3f pos, float radius, float height);
 
 #endif

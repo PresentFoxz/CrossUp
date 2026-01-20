@@ -44,7 +44,7 @@ Vect3f rotModelSet;
 Vect3f camForward;
 int gameScreen = 0;
 
-static int addEnt(Vect3f pos, Vect3f rot, Vect3f size, float radius, float height, float frict, float fallFrict, int type, ModelType objType){
+static int addEnt(Vect3f pos, Vect3f rot, Vect3f size, float radius, float height, float frict, float fallFrict, int type, ModelType objType) {
     if (entAmt < MAX_ENTITIES){
         allEnts[entAmt].type = objType;
 
@@ -85,6 +85,11 @@ static void generateMap() {
     for (int i=0; i < maxProjs; i++) { allPointsCount += objArray[i].count; }
 }
 
+static void generateTriggers() {
+    resetTriggers();
+    addTriggers((Vect3f){10.0f, -5.0f, 10.0f}, (Vect3f){20.0f, 20.0f, 20.0f}, 1, 2);
+}
+
 static void generateEnts() {
     if (mapIndex == 0) {
         addEnt((Vect3f){0.0f, 20.0f, -5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY);
@@ -111,12 +116,6 @@ static void generatePoints(int len){
             .color = 1
         };
     }
-}
-
-static int compareRenderTris(const void* a, const void* b) {
-    float d1 = ((worldTris*)a)->dist;
-    float d2 = ((worldTris*)b)->dist;
-    return (d1 < d2) - (d1 > d2);
 }
 
 static int cLib_init() {
@@ -151,11 +150,18 @@ static int cLib_init() {
     generateEnts();
 
     allPoints = realloc(allPoints, allPointsCount * sizeof(worldTris));
+    generateTriggers();
 
     return 0;
 }
 
-static void renderLines(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos, Camera_t usedCam){
+static int compareRenderTris(const void* a, const void* b) {
+    float d1 = ((worldTris*)a)->dist;
+    float d2 = ((worldTris*)b)->dist;
+    return (d1 < d2) - (d1 > d2);
+}
+
+static void renderLines(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos, Camera_t usedCam) {
     int point[2][2];
 
     float fov = FROM_FIXED32(usedCam.fov);
@@ -189,7 +195,7 @@ static void renderLines(float CamYDirSin, float CamYDirCos, float CamXDirSin, fl
     }
 }
 
-static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos, Camera_t usedCam){
+static void renderTris(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos, Camera_t usedCam) {
     float fov = FROM_FIXED32(usedCam.fov);
     float nearPlane = FROM_FIXED32(usedCam.nearPlane);
     float farPlane = FROM_FIXED32(usedCam.farPlane);
@@ -367,11 +373,12 @@ static void addPlayer() {
 }
 
 static void addEntities() {
+    float dx, dy, dz;
     for (int z = 0; z < entAmt; z++) {
         switch (allEnts[z].type) {
             case ENTITY:
                 EntStruct *ent_ = &allEnts[z].data.ent;
-                if (ent_->type < 0 || ent_->type >= entDataCount) continue;
+                if (ent_->type < 0 || ent_->type >= entDataCount) break;
 
                 // if (ent_->currentAnim != ent_->lastAnim) {
                 //     ent_->frameCount = 0;
@@ -445,7 +452,7 @@ static void addEntities() {
     }
 }
 
-static void addMap(){
+static void addMap() {
     addObjectToWorld(
         (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f},
         cam, 0.0f,
@@ -501,7 +508,7 @@ static int cLib_playerAction() {
     return 0;
 }
 
-int main(){
+int main() {
     InitWindow(sW, sH, "CrossUp");
     SetTargetFPS(30);
 

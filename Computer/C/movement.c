@@ -101,13 +101,18 @@ static void runColl(EntStruct* p){
     float stepY = p->velocity.y / substeps;
     float stepZ = p->velocity.z / substeps;
 
+    float pRadius = FROM_FIXED32(p->radius);
+    float pHeight = FROM_FIXED32(p->height);
+
+    Triggers hitTrig = {0};
+
     for (int i = 0; i < substeps; i++) {
         pCollisionPos.x = FROM_FIXED32(p->position.x) + stepX;
         pCollisionPos.y = (FROM_FIXED32(p->position.y) - 0.5f) + stepY;
         pCollisionPos.z = FROM_FIXED32(p->position.z) + stepZ;
 
         wrapPositionFloat( &pCollisionPos.x, &pCollisionPos.y, &pCollisionPos.z );
-        VectMf movePlr = cylinderInTriangle(pCollisionPos, FROM_FIXED32(p->radius), FROM_FIXED32(p->height));
+        VectMf movePlr = cylinderInTriangle(pCollisionPos, pRadius, pHeight);
         if (movePlr.floor == -1 && movePlr.ceiling == -1 && movePlr.wall == -1) { break; }
         if (movePlr.floor == 1 && movePlr.ceiling == 1) {
             p->velocity.y = 0.0f;
@@ -138,7 +143,11 @@ static void runColl(EntStruct* p){
             p->position.x += TO_FIXED32(movePlr.pos.x);
             p->position.z += TO_FIXED32(movePlr.pos.z);
         }
+
+        hitTrig = cylinderInTrigger(pCollisionPos, pRadius, pHeight);
     }
+
+    if (hitTrig.id >= 1) { printf("Hit Trigger: [ %d | %d ]\n", hitTrig.type, hitTrig.id); }
 }
 
 void stateMachine(EntStruct* p){

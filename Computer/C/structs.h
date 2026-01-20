@@ -98,7 +98,7 @@ typedef struct {
     int type, grounded, groundTimer;
     int coyote, ifMove, state;
     int countdown, rotDir;
-    float frict, fallFrict;;
+    float frict, fallFrict;
     int frameCount, currentFrame;
     int currentAnim, lastAnim;
     int meshIndex;
@@ -134,5 +134,11 @@ typedef struct {
     int w;
     int h;
 } textAtlas;
+
+typedef struct {
+    Vect3f pos;
+    Vect3f size;
+    int type, id;
+} Triggers;
 
 #endif

@@ -1,11 +1,30 @@
 #include "collisions.h"
 CollisionSurface* collisionSurfaces;
+Triggers* triggers;
+
+int triggerCount = 0;
 int collisionCount = 0;
 
 void resetCollisionSurface() {
     free(collisionSurfaces);
     collisionSurfaces = NULL;
     collisionCount = 0;
+}
+
+void resetTriggers() {
+    free(triggers);
+    triggers = NULL;
+    triggerCount = 0;
+}
+
+void addTriggers(Vect3f pos, Vect3f size, int type, int id) {
+    triggers = realloc(triggers, (triggerCount + 1) * sizeof(Triggers));
+
+    Triggers* trig = &triggers[triggerCount++];
+    trig->pos = pos;
+    trig->size = size;
+    trig->type = type;
+    trig->id = id;
 }
 
 void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, SurfaceType type) {
@@ -53,6 +72,37 @@ void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, SurfaceType type) {
     }
 }
 
+Triggers cylinderInTrigger(Vect3f pos, float radius, float height) {
+    float radius2 = radius * radius;
+
+    for (int i = 0; i < triggerCount; i++) {
+        Triggers *trig = &triggers[i];
+        
+        float minY = trig->pos.y - trig->size.y * 0.5f;
+        float maxY = trig->pos.y + trig->size.y * 0.5f;
+
+        if (pos.y > maxY + height || pos.y + height < minY) continue;
+        
+        float minX = trig->pos.x - trig->size.x * 0.5f;
+        float maxX = trig->pos.x + trig->size.x * 0.5f;
+        float minZ = trig->pos.z - trig->size.z * 0.5f;
+        float maxZ = trig->pos.z + trig->size.z * 0.5f;
+        
+        float closestX = pos.x < minX ? minX : (pos.x > maxX ? maxX : pos.x);
+        float closestZ = pos.z < minZ ? minZ : (pos.z > maxZ ? maxZ : pos.z);
+
+        float dx = pos.x - closestX;
+        float dz = pos.z - closestZ;
+
+        if ((dx * dx + dz * dz) > radius2) continue;
+
+        return *trig;
+    }
+
+    return (Triggers){0};
+}
+
+
 VectMf cylinderInTriangle(Vect3f pos, float radius, float height) {
     VectMf pushPlayer = {0};
     float radius2 = radius * radius;
@@ -70,40 +120,26 @@ VectMf cylinderInTriangle(Vect3f pos, float radius, float height) {
 
         // PADDED broad-phase (important!)
         float pad = radius + 0.01f;
-        if (pos.x + pad < minX || pos.x - pad > maxX ||
-            pos.z + pad < minZ || pos.z - pad > maxZ)
-            continue;
+        if (pos.x + pad < minX || pos.x - pad > maxX || pos.z + pad < minZ || pos.z - pad > maxZ) continue;
 
         float dx = pos.x - tri->center.x;
         float dz = pos.z - tri->center.z;
 
-        float bottomDist =
-            dx * tri->normal.x +
-            (pos.y - tri->center.y) * tri->normal.y +
-            dz * tri->normal.z;
-
-        float topDist =
-            dx * tri->normal.x +
-            (pos.y + height - tri->center.y) * tri->normal.y +
-            dz * tri->normal.z;
+        float bottomDist = dx * tri->normal.x + (pos.y - tri->center.y) * tri->normal.y + dz * tri->normal.z;
+        float topDist = dx * tri->normal.x + (pos.y + height - tri->center.y) * tri->normal.y + dz * tri->normal.z;
 
         if (bottomDist > radius && topDist > radius) continue;
         if (bottomDist < -radius && topDist < -radius) continue;
 
         float t = 0.0f;
-        if (bottomDist * topDist < 0.0f)
-            t = bottomDist / (bottomDist - topDist);
-        else
-            t = (fabsf(bottomDist) < fabsf(topDist)) ? 0.0f : 1.0f;
+        if (bottomDist * topDist < 0.0f) t = bottomDist / (bottomDist - topDist);
+        else t = (fabsf(bottomDist) < fabsf(topDist)) ? 0.0f : 1.0f;
 
         float px = pos.x;
         float py = pos.y + t * height;
         float pz = pos.z;
 
-        float dist =
-            (px - tri->center.x) * tri->normal.x +
-            (py - tri->center.y) * tri->normal.y +
-            (pz - tri->center.z) * tri->normal.z;
+        float dist = (px - tri->center.x) * tri->normal.x + (py - tri->center.y) * tri->normal.y + (pz - tri->center.z) * tri->normal.z;
 
         if (dist * dist > radius2) continue;
 

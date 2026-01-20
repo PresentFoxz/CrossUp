@@ -62,7 +62,7 @@ extern const int blockVerts[8][3];
 extern const int blockTris[12][4];
 
 #define rowStride 52
-#define resolution 2
+#define resolution 4
 
 int randomInt(int a, int b);
 float randomFloat(float a, float b);

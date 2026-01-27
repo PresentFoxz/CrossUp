@@ -1,4 +1,0 @@
-Blender Plugin:
-
-- Needs to be able to store all the frameCount timing for each frame
-- Also needs to store the names of each animation ( will be called by a number in the game )

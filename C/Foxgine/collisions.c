@@ -16,7 +16,7 @@ void resetTriggers() {
 }
 
 void addTriggers(Vect3f pos, Vect3f size, int type, int id) {
-    triggers = realloc(triggers, (triggerCount + 1) * sizeof(Triggers));
+    triggers = pd_realloc(triggers, (triggerCount + 1) * sizeof(Triggers));
 
     Triggers* trig = &triggers[triggerCount++];
     trig->pos = pos;
@@ -26,7 +26,7 @@ void addTriggers(Vect3f pos, Vect3f size, int type, int id) {
 }
 
 void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, SurfaceType type) {
-    collisionSurfaces = realloc(collisionSurfaces, (collisionCount + 1) * sizeof(CollisionSurface));
+    collisionSurfaces = pd_realloc(collisionSurfaces, (collisionCount + 1) * sizeof(CollisionSurface));
 
     CollisionSurface *surf = &collisionSurfaces[collisionCount++];
     surf->v0 = v0;

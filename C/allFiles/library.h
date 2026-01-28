@@ -84,16 +84,34 @@ extern int allAmt;
 extern int mapIndex;
 extern int entIndex;
 
-#ifdef PLAYDATE_API
+#if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
 
-#define realloc(ptr, size) pd->system->realloc(ptr, size)
-#define malloc(size) pd->system->realloc(NULL, size)
-#define free(ptr) pd->system->realloc(ptr, 0)
+#include "pd_api.h"
+extern PlaydateAPI* pd;
+
+static inline void* pd_realloc(void* ptr, size_t size) {
+    if (!pd) return NULL;
+    return pd->system->realloc(ptr, size);
+}
+
+static inline void* pd_malloc(size_t size) {
+    if (!pd) return NULL;
+    return pd->system->realloc(NULL, size);
+}
+
+static inline void pd_free(void* ptr) {
+    if (!pd) return;
+    pd->system->realloc(ptr, 0);
+}
 
 #else
 
 #include <direct.h>
 #include "raylib.h"
+
+#define pd_realloc(ptr, size) realloc(ptr, size)
+#define pd_malloc(size)       malloc(size)
+#define pd_free(ptr)          free(ptr)
 
 #endif
 

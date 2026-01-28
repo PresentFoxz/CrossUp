@@ -74,9 +74,11 @@ DEVICE_CFLAGS = \
 	-ffunction-sections -fdata-sections \
 	-fno-common -fno-exceptions \
 	-mword-relocations \
+	-DTARGET_PLAYDATE=1 \
+	-DTARGET_EXTENSION=1 \
+	-DPLAYDATE_SDK=1 \
 	$(MCFLAGS)
 DEVICE_LFLAGS = \
-	-nostartfiles \
 	$(MCFLAGS) \
 	-flto \
 	-Tlink_map.ld \
@@ -106,7 +108,7 @@ directories:
 # accurate set of header dependencies is more complicated than what we
 # wanted, so we just rebuild everything whenever any header file changes.
 SRCDIR = C
-SRC_FOLDERS = Foxgine playdate textures allFiles
+SRC_FOLDERS = playdate Foxgine allFiles textures
 SRCS = $(foreach dir,$(SRC_FOLDERS), \
 	$(shell find $(SRCDIR)/$(dir) -name "*.c"))
 SIM_OBJS    = $(patsubst %.c,$(SIM_BUILD_DIR)/%.o,$(SRCS))
@@ -222,7 +224,7 @@ $(BUILD_DIR)/inline_constants.test_passed: inline_constants.pl inline_constants_
 $(BUILD_DIR)/strip_lua.test_passed: strip_lua.pl strip_lua_test.sh
 	./strip_lua_test.sh $< && touch $@
 
-CUSFOLDER = CrossUp-sim
+CUSFOLDER = CrossUp-sim.pdx
 CUDFOLDER = CrossUp-dev
 
 OBJ_SRC = C/Objects
@@ -234,15 +236,16 @@ pdx-sim: sim_build/pdex.dll
 	rm -rf $(CUSFOLDER)
 	mkdir -p $(CUSFOLDER)/pdex
 	cp C/pdxinfo $(CUSFOLDER)/
+	cp -r $(OBJ_SRC) $(CUSFOLDER)/
 	cp sim_build/pdex.dll $(CUSFOLDER)/
-	"$(PLAYDATE_SDK_PATH)/bin/pdc.exe" $(CUSFOLDER)
 
 pdx-dev: device_build/pdex.elf
 	@echo "Building device PDX..."
 	rm -rf $(CUDFOLDER)
 	mkdir -p $(CUDFOLDER)/pdex
 	cp C/pdxinfo $(CUDFOLDER)/
+	cp -r $(OBJ_SRC) $(CUDFOLDER)/
 	cp device_build/pdex.elf $(CUDFOLDER)/
-	"$(PLAYDATE_SDK_PATH)/bin/pdc.exe" $(CUDFOLDER)
+	"$(PLAYDATE_SDK_PATH)/bin/pdc.exe" -k $(CUDFOLDER)
 
 # }}}

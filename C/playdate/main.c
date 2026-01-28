@@ -40,6 +40,8 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg)
 	return 0;
 }
 
+void eventHandlerShim(void) {}
+
 static void generateEnts() {
     if (mapIndex == 0) {
         addEnt((Vect3f){0.0f, 20.0f, -5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY, entArray, allEnts);
@@ -58,9 +60,9 @@ static int init() {
     cam = createCamera(10.0f, 3.0f, 41.0f, 0.0f, 0.0f, 0.0f, 90.0f, 0.1f, 100.0f);
     player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 1.8f, 0.56f, 0.08f, 0);
 
-    objArray = malloc( sizeof(Mesh_t) * maxProjs);
-    entArray = malloc(sizeof(VertAnims) * entDataCount);
-    allEnts = malloc(sizeof(EntStruct) * MAX_ENTITIES);
+    objArray = pd_malloc( sizeof(Mesh_t) * maxProjs);
+    entArray = pd_malloc(sizeof(VertAnims) * entDataCount);
+    allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
 
     convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1]);
     convertFileToMesh("Objects/proj/ball.obj", &objArray[0], 0, 0);
@@ -270,17 +272,19 @@ static int update(void* userdata) {
         gameScreen = 1;
 
         init();
-        scnBuf = malloc(sizeof(int) * (sW/resolution * sH/resolution));
+        scnBuf = pd_malloc(sizeof(int) * (sW/resolution * sH/resolution));
         onStart = 1;
 
         pd->system->logToConsole("Init Finished.");
     }
 
     for (int i=0; i < ((sW/resolution)*(sH/resolution)); i++) { scnBuf[i] = -1; }
-
+    
     if (gameScreen == 1) {
         playerAction();
         render();
+
+        pd->system->logToConsole("Player Pos: [ %f | %f | %f ]", FROM_FIXED32(player.position.x), FROM_FIXED32(player.position.y), FROM_FIXED32(player.position.z));
     }
 
     drawScreen();

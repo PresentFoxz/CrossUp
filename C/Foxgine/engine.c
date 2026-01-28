@@ -53,7 +53,7 @@ void generateTriggers(Vect3f pos, Vect3f size) {
 }
 
 void generateTextures(textAtlas** textAtlasMem, int memArea) {
-    *textAtlasMem = realloc(*textAtlasMem, sizeof(textAtlas) * 1);
+    *textAtlasMem = pd_realloc(*textAtlasMem, sizeof(textAtlas) * 1);
     if (!*textAtlasMem) return;
     (*textAtlasMem)[memArea] = testTexture;
 }
@@ -135,7 +135,7 @@ void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float 
     float renderRadiusSq = renderRadius ? (renderRadius * renderRadius) : 0.0f;
     const float one_third = 0.3333333f;
 
-    Vect3f* transformedVerts = realloc(NULL, sizeof(Vect3f) * triCount * 3);
+    Vect3f* transformedVerts = pd_realloc(NULL, sizeof(Vect3f) * triCount * 3);
 
     for (int v = 0; v < triCount * 3; v++) {
         float r[3];
@@ -186,7 +186,7 @@ void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float 
         allPoints[allAmt++] = tri;
     }
 
-    transformedVerts = realloc(transformedVerts, sizeof(Vect3f) * 0);
+    transformedVerts = pd_realloc(transformedVerts, sizeof(Vect3f) * 0);
 }
 
 void shootRender(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos, Camera_t cam, textAtlas* textAtlasMem) {
@@ -197,6 +197,6 @@ void shootRender(float CamYDirSin, float CamYDirCos, float CamXDirSin, float Cam
 
 void resetAllVariables() {
     printf("All Points Count: %d", allPointsCount);
-    allPoints = realloc(allPoints, allPointsCount * sizeof(worldTris));
+    allPoints = pd_realloc(allPoints, allPointsCount * sizeof(worldTris));
     allAmt = 0;
 }

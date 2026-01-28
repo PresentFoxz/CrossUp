@@ -1,14 +1,14 @@
 #include "meshConvert.h"
 
 void allocateMeshes(VertAnims* mesh, int maxAnims, const int* framesPerAnim) {
-    mesh->anims = malloc(sizeof(AnimFrames*) * maxAnims);
+    mesh->anims = pd_malloc(sizeof(AnimFrames*) * maxAnims);
 
     for (int a = 0; a < maxAnims; a++) {
         int frames = framesPerAnim[a];
             
-        mesh->anims[a] = malloc(sizeof(AnimFrames));
+        mesh->anims[a] = pd_malloc(sizeof(AnimFrames));
             
-        mesh->anims[a]->meshModel = malloc(sizeof(Mesh_t) * frames);
+        mesh->anims[a]->meshModel = pd_malloc(sizeof(Mesh_t) * frames);
         for (int f = 0; f < frames; f++) {
             mesh->anims[a]->meshModel[f].data = NULL;
             mesh->anims[a]->meshModel[f].bfc = NULL;
@@ -21,14 +21,29 @@ void allocateMeshes(VertAnims* mesh, int maxAnims, const int* framesPerAnim) {
     printf("Max Anims: %d\n", maxAnims);
 }
 
+static int pd_fgets(char* out, int maxLen, SDFile* file) {
+    int i = 0;
+    char c;
+
+    while (i < maxLen - 1) {
+        int r = pd->file->read(file, &c, 1);
+        if (r <= 0) break;
+        out[i++] = c;
+        if (c == '\n') break;
+    }
+
+    out[i] = '\0';
+    return i > 0;
+}
+
 void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int invert) {
-    SDFile* fptr = pd->file->open(filename, kFileRead);
+    SDFile* fptr = pd->file->open(filename, kFileRead | kFileReadData);
     if (!fptr) {
         printf("Error: Could not open file %s\n", filename);
         return;
     }
     
-    Vect3f* verts;
+    Vect3f* verts = NULL;
     int vertCount = 0;
 
     int (*tris)[3] = NULL;
@@ -37,11 +52,11 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
     int* colorArr = NULL;
 
     char line[256];
-    while (fgets(line, sizeof(line), fptr)) {
+    while (pd_fgets(line, sizeof(line), fptr)) {
         if (strncmp(line, "v ", 2) == 0) {
             float x, y, z;
             if (sscanf(line, "v %f %f %f", &x, &y, &z) == 3) {
-                verts = realloc(verts, sizeof(Vect3f) * (vertCount + 1));
+                verts = pd_realloc(verts, sizeof(Vect3f) * (vertCount + 1));
                 verts[vertCount].x = x;
                 verts[vertCount].y = y;
                 verts[vertCount].z = -z;
@@ -59,8 +74,8 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
             }
 
             if (idx == 3) {
-                tris = realloc(tris, sizeof(int[3]) * (triCount + 1));
-                colorArr = realloc(colorArr, sizeof(int) * (triCount + 1));
+                tris = pd_realloc(tris, sizeof(int[3]) * (triCount + 1));
+                colorArr = pd_realloc(colorArr, sizeof(int) * (triCount + 1));
                 if (invert == 1){
                     tris[triCount][0] = indices[0];
                     tris[triCount][1] = indices[2];
@@ -73,8 +88,8 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                 colorArr[triCount] = randomInt(0, 3);
                 triCount++;
             } else if (idx == 4) {
-                tris = realloc(tris, sizeof(int[3]) * (triCount + 2));
-                colorArr = realloc(colorArr, sizeof(int) * (triCount + 2));
+                tris = pd_realloc(tris, sizeof(int[3]) * (triCount + 2));
+                colorArr = pd_realloc(colorArr, sizeof(int) * (triCount + 2));
 
                 if (invert == 1){
                     tris[triCount][0] = indices[0];
@@ -103,9 +118,9 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
         }
     }
 
-    meshOut->data = malloc(sizeof(Vect3f) * triCount * 3);
-    meshOut->bfc  = malloc(sizeof(int) * triCount);
-    meshOut->color = malloc(sizeof(int) * triCount);
+    meshOut->data = pd_malloc(sizeof(Vect3f) * triCount * 3);
+    meshOut->bfc  = pd_malloc(sizeof(int) * triCount);
+    meshOut->color = pd_malloc(sizeof(int) * triCount);
     meshOut->count = triCount;
 
     for (int t = 0; t < triCount; t++) {
@@ -116,9 +131,9 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
         if (color != -1) { meshOut->color[t] = colorArr[t]; } else { meshOut->color[t] = 3; }
     }
 
-    free(verts);
-    free(tris);
-    free(colorArr);
+    pd_free(verts);
+    pd_free(tris);
+    pd_free(colorArr);
     pd->file->close(fptr);
 }
 

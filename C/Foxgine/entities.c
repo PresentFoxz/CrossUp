@@ -18,7 +18,7 @@ Camera_t createCamera(float x, float y, float z, float rotX, float rotY, float r
 
 void moveCamera(Camera_t* cam, float dx, float dy, float dz) { if (cam) { cam->position.x += TO_FIXED32(dx); cam->position.y += TO_FIXED32(dy); cam->position.z += TO_FIXED32(dz); } }
 void rotateCamera(Camera_t* cam, float rx, float ry, float rz) { if (cam) { cam->rotation.x += TO_FIXED32(rx); cam->rotation.y += TO_FIXED32(ry); cam->rotation.z += TO_FIXED32(rz); } }
-void destroyCamera(Camera_t* cam) { if (cam) { cam = realloc(cam, 0); } }
+void destroyCamera(Camera_t* cam) { if (cam) { cam = pd_realloc(cam, 0); } }
 
 EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, float radius, float height, float frict, float fallFrict, int type) {
     EntStruct p;
@@ -66,7 +66,7 @@ EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float 
 
 void moveEntity(EntStruct* p, float dx, float dy, float dz) { if (p) { p->position.x = TO_FIXED32(dx); p->position.y = TO_FIXED32(dy); p->position.z = TO_FIXED32(dz); } }
 void rotateEntity(EntStruct* p, float rx, float ry, float rz) { if (p) { p->rotation.x = TO_FIXED32(rx); p->rotation.y = TO_FIXED32(ry); p->rotation.z = TO_FIXED32(rz); } }
-void destroyEntity(EntStruct* p) { if (p) { p = realloc(p, 0); } }
+void destroyEntity(EntStruct* p) { if (p) { p = pd_realloc(p, 0); } }
 
 ObjStruct createObject(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, int type, int timer){
     ObjStruct o;

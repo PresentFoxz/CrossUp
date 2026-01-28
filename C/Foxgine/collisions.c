@@ -6,13 +6,11 @@ int triggerCount = 0;
 int collisionCount = 0;
 
 void resetCollisionSurface() {
-    free(collisionSurfaces);
     collisionSurfaces = NULL;
     collisionCount = 0;
 }
 
 void resetTriggers() {
-    free(triggers);
     triggers = NULL;
     triggerCount = 0;
 }

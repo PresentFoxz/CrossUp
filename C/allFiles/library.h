@@ -6,7 +6,6 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
-#include <direct.h>
 
 #include "structs.h"
 #include "mesh.h"
@@ -84,5 +83,18 @@ extern int entAmt;
 extern int allAmt;
 extern int mapIndex;
 extern int entIndex;
+
+#ifdef PLAYDATE_API
+
+#define realloc(ptr, size) pd->system->realloc(ptr, size)
+#define malloc(size) pd->system->realloc(NULL, size)
+#define free(ptr) pd->system->realloc(ptr, 0)
+
+#else
+
+#include <direct.h>
+#include "raylib.h"
+
+#endif
 
 #endif

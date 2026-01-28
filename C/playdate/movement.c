@@ -1,6 +1,4 @@
 #include "movement.h"
-#include "collisions.h"
-#include "libRay.h"
 
 const int detectDist = 15;
 
@@ -158,6 +156,9 @@ void stateMachine(EntStruct* p){
 }
 
 void movePlayerObj(EntStruct* p, Camera_t* c){
+    PDButtons tapped, held;
+    pd->system->getButtonState(&held, &tapped, NULL);
+
     float yawCam = -FROM_FIXED32(c->rotation.y);
     float mainYaw = FROM_FIXED32(p->rotation.y);
     float secondaryStrength = 0.5f;
@@ -165,8 +166,8 @@ void movePlayerObj(EntStruct* p, Camera_t* c){
     if (p->grounded == 1) { p->state = 0; }
 
     // === Movement ===
-    if (IsKeyDown(KEY_K) && p->grounded == 1) { p->state = 1; }
-    if (IsKeyDown(KEY_J) && (p->grounded == 1 || p->coyote <= 10)) {
+    if (held & kButtonB && p->grounded == 1) { p->state = 1; }
+    if (held & kButtonA && (p->grounded == 1 || p->coyote <= 10)) {
         p->grounded = 0;
 
         if (p->state == 1) {
@@ -194,16 +195,16 @@ void movePlayerObj(EntStruct* p, Camera_t* c){
         } else {
             p->velocity.y = 0.54f;
         }
-    }
+    } else if (!(held & kButtonA) && p->grounded == 0 && p->coyote <= 10) { p->coyote = 11; }
 
     // === Compute input vector ===
     float inputX = 0.0f;
     float inputZ = 0.0f;
     
-    if (IsKeyDown(KEY_W)) inputZ += 1.0f;
-    if (IsKeyDown(KEY_S)) inputZ -= 1.0f;
-    if (IsKeyDown(KEY_A)) inputX -= 1.0f;
-    if (IsKeyDown(KEY_D)) inputX += 1.0f;
+    if (held & kButtonUp) inputZ += 1.0f;
+    if (held & kButtonDown) inputZ -= 1.0f;
+    if (held & kButtonLeft) inputX -= 1.0f;
+    if (held & kButtonRight) inputX += 1.0f;
 
     // === Map input to camera-relative movement ===
     float dirX = inputX * cosf(yawCam) + inputZ * sinf(yawCam);
@@ -274,8 +275,8 @@ void updateCamera(Camera_t* cam, EntStruct* ent, float radius) {
 
 void handleCameraInput(Camera_t* cam) {
     float crankDelta = 0.0f;
-    if (IsKeyDown(KEY_I)) { crankDelta += degToRad(5.0f); }
-    if (IsKeyDown(KEY_U)) { crankDelta -= degToRad(5.0f); }
+    // if (IsKeyDown(KEY_I)) { crankDelta += degToRad(5.0f); }
+    // if (IsKeyDown(KEY_U)) { crankDelta -= degToRad(5.0f); }
 
     if (degToRad(crankDelta) > 360.0f) { crankDelta -= degToRad(360.0f); }
     if (degToRad(crankDelta) < 0.0f)   { crankDelta += degToRad(360.0f); }

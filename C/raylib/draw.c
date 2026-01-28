@@ -1,4 +1,3 @@
-#include "../allFiles/library.h"
 #include "draw.h"
 
 static const uint8_t shadeLUT[4][2][2] = {

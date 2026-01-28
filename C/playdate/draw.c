@@ -1,4 +1,3 @@
-#include "../allFiles/library.h"
 #include "draw.h"
 
 static const uint8_t shadeLUT[4][2][2] = {
@@ -22,9 +21,9 @@ static inline void multiPixl(uint gridX, uint gridY, int shade) {
             uint px = colX & 1;
             uint py = rowY & 1;
             
-            Color color;
-            if (shadeLUT[shade][py][px] == 1) { color = (Color){255, 255, 255, 255}; } else { color = (Color){0, 0, 0, 255}; }
-            DrawPixel(colX, rowY, color);
+            int color;
+            if (shade == -1 ) { color = 0; } else if (shadeLUT[shade][py][px] == 1) { color = 1; } else { color = 0; }
+            pd->graphics->setPixel(colX, rowY, color);
         }
     }
 }

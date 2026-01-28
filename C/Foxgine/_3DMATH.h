@@ -1,6 +1,8 @@
 #ifndef _3DMATH_H
 #define _3DMATH_H
-#include "library.h"
+#include "../allFiles/library.h"
+#include "../allFiles/mesh.h"
+#include "../allFiles/structs.h"
 
 void project2D(int point[2], float verts[3], float fov, float nearPlane);
 int windingOrder(int p0[2], int p1[2], int p2[2]);

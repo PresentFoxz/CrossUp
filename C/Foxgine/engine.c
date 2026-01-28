@@ -1,10 +1,5 @@
 
-#include "../allFiles/library.h"
-#include "../allFiles/mesh.h"
-#include "../allFiles/structs.h"
 #include "libEngine.h"
-
-#include "../textures/allTexts.h"
 
 worldTris* allPoints;
 int renderRadius = 85;
@@ -192,7 +187,6 @@ void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float 
     }
 
     transformedVerts = realloc(transformedVerts, sizeof(Vect3f) * 0);
-    free(transformedVerts);
 }
 
 void shootRender(float CamYDirSin, float CamYDirCos, float CamXDirSin, float CamXDirCos, float CamZDirSin, float CamZDirCos, Camera_t cam, textAtlas* textAtlasMem) {

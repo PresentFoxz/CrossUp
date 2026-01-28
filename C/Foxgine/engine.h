@@ -1,5 +1,9 @@
 #ifndef ENGINE_H
 #define ENGINE_H
+#include "../allFiles/library.h"
+#include "../allFiles/mesh.h"
+#include "../allFiles/structs.h"
+#include "../textures/allTexts.h"
 
 void generateMap(Mesh_t mapArray);
 void generateTriggers(Vect3f pos, Vect3f size);

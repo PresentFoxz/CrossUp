@@ -22,13 +22,13 @@ void allocateMeshes(VertAnims* mesh, int maxAnims, const int* framesPerAnim) {
 }
 
 void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int invert) {
-    FILE* fptr = fopen(filename, "r");
+    SDFile* fptr = pd->file->open(filename, kFileRead);
     if (!fptr) {
         printf("Error: Could not open file %s\n", filename);
         return;
     }
     
-    Vect3f* verts = NULL;
+    Vect3f* verts;
     int vertCount = 0;
 
     int (*tris)[3] = NULL;
@@ -119,7 +119,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
     free(verts);
     free(tris);
     free(colorArr);
-    fclose(fptr);
+    pd->file->close(fptr);
 }
 
 int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[]) {

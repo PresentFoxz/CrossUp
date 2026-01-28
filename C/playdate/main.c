@@ -1,10 +1,11 @@
 #include "libRay.h"
-#include "collisions.h"
 #include "movement.h"
 #include "draw.h"
 #include "meshConvert.h"
 
-#include "engine.h"
+#include "../Foxgine/engine.h"
+
+PlaydateAPI* pd;
 
 Camera_t cam;
 worldTris* entModels;
@@ -19,12 +20,32 @@ int gameScreen = 0;
 const int maxProjs = 1;
 const int mapObjsCount = 2;
 
-void generateEnts() {
+int onStart = 0;
+
+static int update(void* userdata);
+
+#ifdef _WINDLL
+__declspec(dllexport)
+#endif
+int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg)
+{
+	if ( event == kEventInit )
+	{
+        pd = playdate;
+
+		pd->display->setRefreshRate(30);
+		pd->system->setUpdateCallback(update, NULL);
+	}
+	
+	return 0;
+}
+
+static void generateEnts() {
     if (mapIndex == 0) {
-        addEnt((Vect3f){0.0f, 20.0f, -5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY, entArray, &allEnts);
-        addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray, &allEnts);
+        addEnt((Vect3f){0.0f, 20.0f, -5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY, entArray, allEnts);
+        addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray, allEnts);
     } else if (mapIndex == 1) {
-        addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray, &allEnts);
+        addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray, allEnts);
     }
 }
 
@@ -53,6 +74,9 @@ static int init() {
     generateMap(mapArray);
     generateTextures(&textAtlasMem, 0);
     generateTriggers((Vect3f){5.0f, 5.0f, 5.0f}, (Vect3f){10.0f, 10.0f, 10.0f});
+    generateEnts();
+
+    resetAllVariables();
 
     return 0;
 }
@@ -110,8 +134,6 @@ static void addPlayer() {
         player.currentFrame++;
         player.frameCount = 0;
     }
-
-    // TraceLog(LOG_INFO, "FrameCount: %d | Animation: %d | Current Frame: %d", player.frameCount, player.currentAnim, player.currentFrame);
 }
 
 static void addEntities() {
@@ -243,36 +265,25 @@ static int playerAction() {
     return 0;
 }
 
-int main() {
-    InitWindow(sW, sH, "CrossUp");
-    SetTargetFPS(30);
+static int update(void* userdata) {
+    if (onStart == 0){
+        gameScreen = 1;
 
-    gameScreen = 1;
+        init();
+        scnBuf = malloc(sizeof(int) * (sW/resolution * sH/resolution));
+        onStart = 1;
 
-    init();
-    scnBuf = malloc(sizeof(int) * (sW/resolution * sH/resolution));
-    resetAllVariables();
-
-    while (!WindowShouldClose()) {
-        BeginDrawing();
-        ClearBackground(BLACK);
-        for (int i=0; i < ((sW/resolution)*(sH/resolution)); i++) { scnBuf[i] = -1; }
-
-        if (gameScreen == 1) {
-            playerAction();
-            render();
-
-            if (IsKeyPressed(KEY_M)) {
-                mapIndex++;
-                if (mapIndex >= mapObjsCount) mapIndex = 0;
-                init();
-            }
-        }
-
-        drawScreen();
-        EndDrawing();
+        pd->system->logToConsole("Init Finished.");
     }
 
-    CloseWindow();
+    for (int i=0; i < ((sW/resolution)*(sH/resolution)); i++) { scnBuf[i] = -1; }
+
+    if (gameScreen == 1) {
+        playerAction();
+        render();
+    }
+
+    drawScreen();
+
     return 0;
 }

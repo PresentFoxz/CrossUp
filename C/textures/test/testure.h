@@ -1,6 +1,6 @@
 #ifndef TESTURE_H
 #define TESTURE_H
-#include "library.h"
+#include "../../allFiles/library.h"
 
 static const textAtlas testTexture = {
     .pixels = (int[]) {

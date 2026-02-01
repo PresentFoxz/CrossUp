@@ -23,15 +23,10 @@ typedef struct {
 } CollisionSurface;
 
 typedef struct {
-    float floorY;
-    int hasFloor;
-
-    float ceilY;
-    int hasCeil;
-
-    float pushX, pushZ;
-    int hasWall;
-} CollisionResult;
+    CollisionSurface* collisions;
+    Vect3f pos;
+    int amt;
+} CollisionChunks;
 
 typedef struct {
     MinMax2f* lineMinMax;
@@ -39,7 +34,7 @@ typedef struct {
 } OOBArea;
 
 void resetTriggers();
-void resetCollisionSurface();
+void resetCollisionSurface(Mesh_t mapArray);
 void addTriggers(Vect3f pos, Vect3f size, int type, int id);
 void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, SurfaceType type);
 VectMf cylinderInTriangle(Vect3f pos, float radius, float height);

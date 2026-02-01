@@ -6,13 +6,13 @@ Camera_t createCamera(float x, float y, float z, float rotX, float rotY, float r
     cam.position.y = TO_FIXED32(y);
     cam.position.z = TO_FIXED32(z);
 
-    cam.rotation.x = TO_FIXED32(rotX);
-    cam.rotation.y = TO_FIXED32(rotY);
-    cam.rotation.z = TO_FIXED32(rotZ);
+    cam.rotation.x = TO_FIXED32(degToRad(rotX));
+    cam.rotation.y = TO_FIXED32(degToRad(rotY));
+    cam.rotation.z = TO_FIXED32(degToRad(rotZ));
 
-    cam.fov =        TO_FIXED32(fov);
-    cam.nearPlane =  TO_FIXED32(near);
-    cam.farPlane =   TO_FIXED32(far);
+    cam.fov =        fov;
+    cam.nearPlane =  near;
+    cam.farPlane =   far;
     return cam;
 }
 
@@ -26,9 +26,9 @@ EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float 
     p.position.y = TO_FIXED32(y);
     p.position.z = TO_FIXED32(z);
     
-    p.rotation.x = TO_FIXED32(rotX);
-    p.rotation.y = TO_FIXED32(rotY);
-    p.rotation.z = TO_FIXED32(rotZ);
+    p.rotation.x = TO_FIXED32(degToRad(rotX));
+    p.rotation.y = TO_FIXED32(degToRad(rotY));
+    p.rotation.z = TO_FIXED32(degToRad(rotZ));
 
     p.size.x = TO_FIXED32(sizeX);
     p.size.y = TO_FIXED32(sizeY);

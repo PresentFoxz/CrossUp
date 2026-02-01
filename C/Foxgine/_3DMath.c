@@ -1,25 +1,4 @@
 #include "_3DMath.h"
-#define LANTERN_RADIUS 80.0f
-
-static const uint8_t bayer4x4[4][4] = {
-    {  0,  8,  2, 10 },
-    { 12,  4, 14,  6 },
-    {  3, 11,  1,  9 },
-    { 15,  7, 13,  5 }
-};
-
-static float ditherThreshold(int x, int y) {
-    int dx = x & 3;
-    int dy = y & 3;
-    return bayer4x4[dy][dx] / 16.0f;
-}
-
-static float lanternFalloff(float z) {
-    float t = 1.0f - (z / LANTERN_RADIUS);
-    if (t < 0.0f) t = 0.0f;
-    if (t > 1.0f) t = 1.0f;
-    return t;
-}
 
 void project2D(int point[2], float verts[3], float fov, float nearPlane) {
     float z = verts[2];
@@ -32,26 +11,18 @@ void project2D(int point[2], float verts[3], float fov, float nearPlane) {
     point[1] = (int)(-verts[1] * scale + (sH_H + sY));
 }
 
-void rotateVertexInPlace(Vertex* v, Vect3f camPos, float rotMat[3][3]) {
+void rotateVertexInPlace(Vertex* v, Vect3f camPos, float camMatrix[3][3]) {
     float x = v->x - camPos.x;
     float y = v->y - camPos.y;
     float z = v->z - camPos.z;
-    
-    float rx = x * rotMat[0][0] + y * rotMat[0][1] + z * rotMat[0][2];
-    float ry = x * rotMat[1][0] + y * rotMat[1][1] + z * rotMat[1][2];
-    float rz = x * rotMat[2][0] + y * rotMat[2][1] + z * rotMat[2][2];
-    
+
+    float rx = x * camMatrix[0][0] + y * camMatrix[1][0] + z * camMatrix[2][0];
+    float ry = x * camMatrix[0][1] + y * camMatrix[1][1] + z * camMatrix[2][1];
+    float rz = x * camMatrix[0][2] + y * camMatrix[1][2] + z * camMatrix[2][2];
+
     v->x = rx;
     v->y = ry;
     v->z = rz;
-}
-
-void multiplyMatrix3x3(float a[3][3], float b[3][3], float out[3][3]) {
-    for(int i=0;i<3;i++){
-        for(int j=0;j<3;j++){
-            out[i][j] = a[i][0]*b[0][j] + a[i][1]*b[1][j] + a[i][2]*b[2][j];
-        }
-    }
 }
 
 void rotateVertex(float x, float y, float z, float rotMat[3][3], float out[3]) {
@@ -60,17 +31,35 @@ void rotateVertex(float x, float y, float z, float rotMat[3][3], float out[3]) {
     out[2] = x * rotMat[2][0] + y * rotMat[2][1] + z * rotMat[2][2];
 }
 
-void computeCamMatrix(float m[3][3], float sinY, float cosY, float sinX, float cosX, float sinZ, float cosZ) {
+int backfaceCullCamera(Vertex* v0, Vertex* v1, Vertex* v2, Vect3f cam, int flipped) {
+    Vect3f e1 = {v1->x - v0->x, v1->y - v0->y, v1->z - v0->z};
+    Vect3f e2 = {v2->x - v0->x, v2->y - v0->y, v2->z - v0->z};
+    
+    Vect3f normal = { e1.y * e2.z - e1.z * e2.y, e1.z * e2.x - e1.x * e2.z, e1.x * e2.y - e1.y * e2.x };
+    Vect3f center = { (v0->x + v1->x + v2->x) / 3.0f, (v0->y + v1->y + v2->y) / 3.0f, (v0->z + v1->z + v2->z) / 3.0f };
+    
+    Vect3f view = { center.x - cam.x, center.y - cam.y, center.z - cam.z };
+    float dot = normal.x * view.x + normal.y * view.y + normal.z * view.z;
+    
+    return flipped ? (dot > 0.0f) : (dot < 0.0f);
+}
+
+
+void computeCamMatrix(float m[3][3], float pitchX, float yawY, float rollZ) {
+    float sinY = sinf(yawY),   cosY = cosf(yawY);
+    float sinX = sinf(pitchX), cosX = cosf(pitchX);
+    float sinZ = sinf(rollZ),  cosZ = cosf(rollZ);
+    
     m[0][0] = cosY * cosZ + sinY * sinX * sinZ;
-    m[0][1] = cosX * sinZ;
-    m[0][2] = -sinY * cosZ + cosY * sinX * sinZ;
+    m[0][1] = -cosY * sinZ + sinY * sinX * cosZ;
+    m[0][2] = sinY * cosX;
 
-    m[1][0] = -cosY * sinZ + sinY * sinX * cosZ;
+    m[1][0] = cosX * sinZ;
     m[1][1] = cosX * cosZ;
-    m[1][2] = sinY * sinZ + cosY * sinX * cosZ;
+    m[1][2] = -sinX;
 
-    m[2][0] = sinY * cosX;
-    m[2][1] = -sinX;
+    m[2][0] = -sinY * cosZ + cosY * sinX * sinZ;
+    m[2][1] = sinY * sinZ + cosY * sinX * cosZ;
     m[2][2] = cosY * cosX;
 }
 
@@ -92,11 +81,14 @@ void computeRotScaleMatrix(float rotMat[3][3], float angleX, float angleY, float
     rotMat[2][2] = (cosX * cosY) * sz;
 }
 
-int windingOrder(int *p0, int *p1, int *p2) { return (p0[0]*p1[1] - p0[1]*p1[0] + p1[0]*p2[1] - p1[1]*p2[0] + p2[0]*p0[1] - p2[1]*p0[0] > 0); }
+int windingOrder(const int p0[2], const int p1[2], const int p2[2]) {
+    long cross = (long)p0[0]*p1[1] - (long)p0[1]*p1[0] + (long)p1[0]*p2[1] - (long)p1[1]*p2[0] + (long)p2[0]*p0[1] - (long)p2[1]*p0[0];
+    return cross > 0;
+}
 
 static inline int edgeFunc(int x0, int y0, int x1, int y1, int px, int py) { return (py - y0) * (x1 - x0) - (px - x0) * (y1 - y0); }
 
-void drawFilledTris(int tris[3][2], int triColor, Vect3f zPos) {
+void drawFilledTris(int tris[3][2], int triColor) {
     int x0 = tris[0][0], y0 = tris[0][1];
     int x1 = tris[1][0], y1 = tris[1][1];
     int x2 = tris[2][0], y2 = tris[2][1];
@@ -125,7 +117,6 @@ void drawFilledTris(int tris[3][2], int triColor, Vect3f zPos) {
     int w2_row = edgeFunc(x0, y0, x1, y1, minX, minY);
 
     int area = edgeFunc(x0, y0, x1, y1, x2, y2);
-    float invArea = 1.0f / fabs((float)area);
 
     if (area < 0) {
         int tmp;
@@ -139,10 +130,6 @@ void drawFilledTris(int tris[3][2], int triColor, Vect3f zPos) {
 
     int32_t w0, w1, w2;
     uint gridX, gridY;
-
-    float l0 = lanternFalloff(zPos.x);
-    float l1 = lanternFalloff(zPos.y);
-    float l2 = lanternFalloff(zPos.z);
 
     if ((maxX - minX) < resolution) maxX = minX + resolution;
     if ((maxY - minY) < resolution) maxY = minY + resolution;
@@ -160,25 +147,13 @@ void drawFilledTris(int tris[3][2], int triColor, Vect3f zPos) {
             if (gridX >= sW) gridX = sW - 1;
 
             if ((w0 | w1 | w2) >= 0) {
-                float a = w0 * invArea;
-                float b = w1 * invArea;
-                float c = w2 * invArea;
-
-                float light = a*l0 + b*l1 + c*l2;
-            
-                float avgThreshold = 0.0f;
-                for (int dy = 0; dy < resolution; dy++) {
-                    for (int dx = 0; dx < resolution; dx++) {
-                        avgThreshold += ditherThreshold(gridX + dx, gridY + dy);
-                    }
-                }
-                avgThreshold /= (resolution * resolution);
-
-                if (light > avgThreshold) {
-                    gridY = y / resolution;
-                    gridX = x / resolution;
-                    scnBuf[gridY * (sW/resolution) + gridX] = triColor;
-                }
+                #if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
+                multiPixl(gridX, gridY, triColor);
+                #else
+                int gx = gridX / resolution;
+                int gy = gridY / resolution;
+                scnBuf[gy * (sW / resolution) + gx] = triColor;
+                #endif
             }
 
             w0 += A12;
@@ -192,7 +167,7 @@ void drawFilledTris(int tris[3][2], int triColor, Vect3f zPos) {
     }
 }
 
-void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, int texH, Vect3f zPos) {
+void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, int texH) {
     int x0 = tris[0][0], y0 = tris[0][1];
     int x1 = tris[1][0], y1 = tris[1][1];
     int x2 = tris[2][0], y2 = tris[2][1];
@@ -228,7 +203,7 @@ void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, i
     int w2_row = edgeFunc(x0, y0, x1, y1, cx, cy);
 
     int area = edgeFunc(x0, y0, x1, y1, x2, y2);
-    float invArea = 1.0f / fabs((float)area);
+    if (area == 0) return;
     
     if (area < 0) {
         area = -area;
@@ -245,10 +220,6 @@ void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, i
 
     int32_t w0, w1, w2;
     uint gridX, gridY;
-
-    float l0 = lanternFalloff(zPos.x);
-    float l1 = lanternFalloff(zPos.y);
-    float l2 = lanternFalloff(zPos.z);
 
     if ((maxX - minX) < resolution) maxX = minX + resolution;
     if ((maxY - minY) < resolution) maxY = minY + resolution;
@@ -272,25 +243,14 @@ void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, i
                 if (u >= 0 && v >= 0 && u < texW && v < texH) {
                     int shade = texture[v * texW + u];
                     if (shade != -1) {
-                        float a = w0 * invArea;
-                        float b = w1 * invArea;
-                        float c = w2 * invArea;
-
-                        float light = a*l0 + b*l1 + c*l2;
-                    
-                        float avgThreshold = 0.0f;
-                        for (int dy = 0; dy < resolution; dy++) {
-                            for (int dx = 0; dx < resolution; dx++) {
-                                avgThreshold += ditherThreshold(gridX + dx, gridY + dy);
-                            }
-                        }
-                        avgThreshold /= (resolution * resolution);
-
-                        if (light > avgThreshold) {
-                            gridY = y / resolution;
-                            gridX = x / resolution;
-                            scnBuf[gridY * (sW/resolution) + gridX] = shade;
-                        }
+                        #if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
+                        multiPixl(gridX, gridY, shade);
+                        #else
+                        int gx = gridX / resolution;
+                        int gy = gridY / resolution;
+                        scnBuf[gy * (sW / resolution) + gx] = shade;
+                        #endif
+                        
                     }
                 }
             }
@@ -317,7 +277,11 @@ void drawTriLines(int tris[3][2]) {
         int err = dx + dy, e2;
 
         while (1) {
-            scnBuf[(y0*resolution) * (sW / resolution) + (x0*resolution)] = 0;
+            #if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
+            return;
+            #else
+            scnBuf[y0 * (sW/resolution) + x0] = 0;
+            #endif
 
             if (x0 == x1 && y0 == y1) break;
             e2 = 2 * err;

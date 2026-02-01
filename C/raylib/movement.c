@@ -157,106 +157,157 @@ void stateMachine(EntStruct* p){
     if (p->grounded == 1 && ((p->velocity.x > 0.02 || p->velocity.x < -0.02) || (p->velocity.z > 0.02 || p->velocity.z < -0.02))) { p->currentAnim = 1; }
 }
 
-void movePlayerObj(EntStruct* p, Camera_t* c){
-    float yawCam = -FROM_FIXED32(c->rotation.y);
+void movePlayerObj(EntStruct* p, Camera_t* c, int canMove){
+    float yawCam = FROM_FIXED32(c->rotation.y);
     float mainYaw = FROM_FIXED32(p->rotation.y);
     float secondaryStrength = 0.5f;
 
     if (p->grounded == 1) { p->state = 0; }
 
     // === Movement ===
-    if (IsKeyDown(KEY_K) && p->grounded == 1) { p->state = 1; }
-    if (IsKeyDown(KEY_J) && (p->grounded == 1 || p->coyote <= 10)) {
-        p->grounded = 0;
+    if (canMove) {
+        if (IsKeyDown(KEY_K) && p->grounded == 1) { p->state = 1; }
+        if (IsKeyDown(KEY_J) && (p->grounded == 1 || p->coyote <= 10)) {
+            p->grounded = 0;
 
-        if (p->state == 1) {
-            p->velocity.x *= 2.5f;
-            p->velocity.z *= 2.5f;
-            p->velocity.y = 0.7f;
+            if (p->state == 1) {
+                p->velocity.x *= 2.5f;
+                p->velocity.z *= 2.5f;
+                p->velocity.y = 0.7f;
 
-            p->coyote = 11;
-            p->state = 2;
+                p->coyote = 11;
+                p->state = 2;
 
-            p->fallFrict = 0.04f;
+                p->fallFrict = 0.04f;
 
-            float forwardX = sinf(mainYaw);
-            float forwardZ = cosf(mainYaw);
-    
-            float forwardVel = p->velocity.x * forwardX + p->velocity.z * forwardZ;
-    
-            float maxForward = 1.2f;
-            if (forwardVel > maxForward){
-                forwardVel = maxForward;
+                float forwardX = sinf(mainYaw);
+                float forwardZ = cosf(mainYaw);
+        
+                float forwardVel = p->velocity.x * forwardX + p->velocity.z * forwardZ;
+        
+                float maxForward = 1.2f;
+                if (forwardVel > maxForward){
+                    forwardVel = maxForward;
 
-                p->velocity.x = forwardVel * forwardX;
-                p->velocity.z = forwardVel * forwardZ;
+                    p->velocity.x = forwardVel * forwardX;
+                    p->velocity.z = forwardVel * forwardZ;
+                }
+            } else {
+                p->velocity.y = 0.54f;
+            }
+        } else if (!IsKeyDown(KEY_J) && p->grounded == 0 && p->coyote <= 10) { p->coyote = 11; }
+
+        // === Compute input vector ===
+        float inputX = 0.0f;
+        float inputZ = 0.0f;
+        
+        if (IsKeyDown(KEY_W)) inputZ += 1.0f;
+        if (IsKeyDown(KEY_S)) inputZ -= 1.0f;
+        if (IsKeyDown(KEY_A)) inputX -= 1.0f;
+        if (IsKeyDown(KEY_D)) inputX += 1.0f;
+
+        // === Map input to camera-relative movement ===
+        float dirX = inputX * cosf(yawCam) + inputZ * sinf(yawCam);
+        float dirZ = inputZ * cosf(yawCam) - inputX * sinf(yawCam);
+        
+        if (dirX != 0.0f || dirZ != 0.0f) {
+            float targetYaw = atan2f(dirX, dirZ);
+
+            if (p->ifMove == 0) {
+                if (p->grounded == 1) p->rotation.y = TO_FIXED32(targetYaw);
+            } else {
+                rotateTowards(p, targetYaw, FROM_FIXED32(p->rotation.y));
+            }
+
+            p->surfRot = TO_FIXED32(targetYaw);
+
+            p->ifMove++;
+        } else {
+            p->ifMove = 0;
+        }
+
+        if (p->ifMove > 0) { moveEnt(p, FROM_FIXED32(p->rotation.y), FROM_FIXED32(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 0); }
+
+        p->velocity.y -= p->fallFrict;
+        if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
+
+        runColl(p);
+        moveEnt(p, FROM_FIXED32(p->rotation.y), FROM_FIXED32(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 1);
+
+        p->coyote++;
+        if (p->grounded == 1) {
+            p->coyote = 0;
+            p->groundTimer++;
+
+            if (p->fallFrict != 0.08f) { p->fallFrict = 0.08f; }
+
+            if (inputX != 0.0f || inputZ != 0.0f){
+                p->groundTimer = 10;
             }
         } else {
-            p->velocity.y = 0.54f;
-        }
-    } else if (!IsKeyDown(KEY_J) && p->grounded == 0 && p->coyote <= 10) { p->coyote = 11; }
-
-    // === Compute input vector ===
-    float inputX = 0.0f;
-    float inputZ = 0.0f;
-    
-    if (IsKeyDown(KEY_W)) inputZ += 1.0f;
-    if (IsKeyDown(KEY_S)) inputZ -= 1.0f;
-    if (IsKeyDown(KEY_A)) inputX -= 1.0f;
-    if (IsKeyDown(KEY_D)) inputX += 1.0f;
-
-    // === Map input to camera-relative movement ===
-    float dirX = inputX * cosf(yawCam) + inputZ * sinf(yawCam);
-    float dirZ = inputZ * cosf(yawCam) - inputX * sinf(yawCam);
-    
-    if (dirX != 0.0f || dirZ != 0.0f) {
-        float targetYaw = atan2f(dirX, dirZ);
-
-        if (p->ifMove == 0) {
-            if (p->grounded == 1) p->rotation.y = TO_FIXED32(targetYaw);
-        } else {
-            rotateTowards(p, targetYaw, FROM_FIXED32(p->rotation.y));
+            if (inputX != 0.0f || inputZ != 0.0f){
+                p->groundTimer = 10;
+            } else {
+                p->groundTimer = 0;
+            }
         }
 
-        p->surfRot = TO_FIXED32(targetYaw);
-
-        p->ifMove++;
+        stateMachine(p);
     } else {
-        p->ifMove = 0;
+        p->velocity.y -= p->fallFrict;
+        if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
+
+        runColl(p);
+        moveEnt(p, FROM_FIXED32(p->rotation.y), FROM_FIXED32(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 1);
+
+        stateMachine(p);
+    }
+}
+
+void handleCameraFreeInput(Camera_t* cam) {
+    float camYaw = FROM_FIXED32(cam->rotation.y);
+    float groundFrict = 0.35f;
+    float crankDelta = 0.0f;
+    float crankTilda = 0.0f;
+
+    if (IsKeyDown(KEY_I)) { crankTilda += degToRad(5.0f); }
+    if (IsKeyDown(KEY_U)) { crankTilda -= degToRad(5.0f); }
+
+    if (IsKeyDown(KEY_W)) { 
+        cam->position.x += TO_FIXED32(groundFrict * sin(camYaw));
+        cam->position.z += TO_FIXED32(groundFrict * cos(camYaw));
+    }
+    if (IsKeyDown(KEY_S)) { 
+        cam->position.x -= TO_FIXED32(groundFrict * sin(camYaw));
+        cam->position.z -= TO_FIXED32(groundFrict * cos(camYaw));
     }
 
-    if (p->ifMove > 0) { moveEnt(p, FROM_FIXED32(p->rotation.y), FROM_FIXED32(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 0); }
+    if (IsKeyDown(KEY_A)) { crankDelta += degToRad(5.0f); }
+    if (IsKeyDown(KEY_D)) { crankDelta -= degToRad(5.0f); }
 
-    p->velocity.y -= p->fallFrict;
-    if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
+    if (IsKeyDown(KEY_J)) { cam->position.y += TO_FIXED32(0.35f); }
+    if (IsKeyDown(KEY_K)) { cam->position.y -= TO_FIXED32(0.35f); }
 
-    runColl(p);
-    moveEnt(p, FROM_FIXED32(p->rotation.y), FROM_FIXED32(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 1);
+    if (degToRad(crankDelta) > 360.0f) { crankDelta -= degToRad(360.0f); }
+    if (degToRad(crankDelta) < 0.0f)   { crankDelta += degToRad(360.0f); }
 
-    p->coyote++;
-    if (p->grounded == 1) {
-        p->coyote = 0;
-        p->groundTimer++;
-
-        if (p->fallFrict != 0.08f) { p->fallFrict = 0.08f; }
-
-        if (inputX != 0.0f || inputZ != 0.0f){
-            p->groundTimer = 10;
-        }
-    } else {
-        if (inputX != 0.0f || inputZ != 0.0f){
-            p->groundTimer = 10;
-        } else {
-            p->groundTimer = 0;
-        }
-    }
-
-    stateMachine(p);
+    cam->rotation.y += TO_FIXED32(crankDelta);
+    cam->rotation.x +=  TO_FIXED32(crankTilda);
+    
+    qfixed32_t minPitchY = TO_FIXED32(degToRad(  0.0f));
+    qfixed32_t maxPitchY = TO_FIXED32(degToRad(360.0f));
+    if (cam->rotation.y < minPitchY) cam->rotation.y += maxPitchY;
+    if (cam->rotation.y > maxPitchY) cam->rotation.y -= maxPitchY;
+    
+    qfixed32_t minPitchX = TO_FIXED32(degToRad(-90.0f));
+    qfixed32_t maxPitchX = TO_FIXED32(degToRad( 90.0f));
+    if (cam->rotation.x < minPitchX) cam->rotation.x = minPitchX;
+    if (cam->rotation.x > maxPitchX) cam->rotation.x = maxPitchX;
 }
 
 void updateCamera(Camera_t* cam, EntStruct* ent, float radius) {
     float pitch = FROM_FIXED32(cam->rotation.x);
-    float yaw   = -FROM_FIXED32(cam->rotation.y);
+    float yaw   = FROM_FIXED32(cam->rotation.y);
     float smoothOrbit = 0.1f;
 
     float offsetX = cosf(pitch) * sinf(yaw) * radius;
@@ -264,7 +315,7 @@ void updateCamera(Camera_t* cam, EntStruct* ent, float radius) {
     float offsetZ = cosf(pitch) * cosf(yaw) * radius;
 
     float targetX = FROM_FIXED32(ent->position.x) - offsetX;
-    float targetY = FROM_FIXED32(ent->position.y) - offsetY;
+    float targetY = FROM_FIXED32(ent->position.y) + offsetY;
     float targetZ = FROM_FIXED32(ent->position.z) - offsetZ;
 
     cam->position.x += TO_FIXED32((targetX - FROM_FIXED32(cam->position.x)) * smoothOrbit);
@@ -281,7 +332,7 @@ void handleCameraInput(Camera_t* cam) {
     if (degToRad(crankDelta) < 0.0f)   { crankDelta += degToRad(360.0f); }
 
     cam->rotation.y += TO_FIXED32(crankDelta);
-    cam->rotation.x =  TO_FIXED32(degToRad(-30.0f));
+    cam->rotation.x =  TO_FIXED32(degToRad(40.0f));
     
     qfixed32_t minPitchY = TO_FIXED32(degToRad(  0.0f));
     qfixed32_t maxPitchY = TO_FIXED32(degToRad(360.0f));

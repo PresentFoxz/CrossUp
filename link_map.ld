@@ -90,4 +90,8 @@ SECTIONS
    {
       *(.ARM.exidx)
    }
+
+    /* End of program image — required by libnosys / sbrk */
+   end = .;
+   PROVIDE(end = .);
 }

@@ -21,7 +21,7 @@ void allocateMeshes(VertAnims* mesh, int maxAnims, const int* framesPerAnim) {
     printf("Max Anims: %d\n", maxAnims);
 }
 
-void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int invert) {
+void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int invert, int outline) {
     FILE* fptr = fopen(filename, "r");
     if (!fptr) {
         printf("Error: Could not open file %s\n", filename);
@@ -116,26 +116,30 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
         if (color != -1) { meshOut->color[t] = colorArr[t]; } else { meshOut->color[t] = 3; }
     }
 
+    meshOut->flipped = invert;
+    meshOut->outline = outline;
+
     pd_free(verts);
     pd_free(tris);
     pd_free(colorArr);
     fclose(fptr);
 }
 
-int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[]) {
+int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[], int color, int invert, int outline) {
     int highest = 0;
     allocateMeshes(mesh, maxAnims, framesPerAnim);
     for (int i = 0; i < maxAnims; i++) {
         mesh->anims[i]->frames = framesPerAnim[i];
         for (int f = 0; f < framesPerAnim[i]; f++) {
-            convertFileToMesh(names[i][f], &mesh->anims[i]->meshModel[f], -1, 1);
+            convertFileToMesh(names[i][f], &mesh->anims[i]->meshModel[f], color, invert, outline);
 
             int triCount = mesh->anims[i]->meshModel[f].count;
             if (triCount > highest) highest = triCount;
 
-            printf("Cross Tri Count: %d\n", triCount);
+            printf("Tri Count: %d\n", triCount);
         }
     }
 
+    if (outline) highest *= 2;
     return highest;
 }

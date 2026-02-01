@@ -1,6 +1,4 @@
 name=CrossUp
 author=PresentFox
-version=0.1
+version=2.6
 bundleID=com.presentfox.crossup
-extension=1
-binary=pdex/pdex.dll

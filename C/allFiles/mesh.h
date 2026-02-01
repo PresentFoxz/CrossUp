@@ -7,6 +7,8 @@ typedef struct {
     int* color;
     int* bfc;
     int count;
+    int flipped;
+    int outline;
 } Mesh_t;
 
 typedef struct {

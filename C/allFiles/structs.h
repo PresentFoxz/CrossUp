@@ -44,6 +44,7 @@ typedef struct {
     float dist;
     int bfc;
     int lines;
+    int textID;
 } worldTris;
 
 typedef struct {
@@ -58,7 +59,7 @@ typedef struct {
 typedef struct {
     Vect3i position;
     Vect3i rotation;
-    qfixed32_t fov, nearPlane, farPlane;
+    float fov, nearPlane, farPlane;
 } Camera_t;
 
 typedef struct {

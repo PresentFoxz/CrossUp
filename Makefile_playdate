@@ -81,9 +81,10 @@ DEVICE_CFLAGS = \
 DEVICE_LFLAGS = \
 	$(MCFLAGS) \
 	-flto \
+	-specs=nosys.specs \
 	-Tlink_map.ld \
 	"-Wl,-Map=$(DEVICE_BUILD_DIR)/game.map,--cref,--gc-sections,--no-warn-mismatch,--emit-relocs" \
-	--entry eventHandlerShim
+	--entry eventHandler
 
 # Tool settings for various binaries that are not directly included in the
 # final executables.
@@ -224,8 +225,9 @@ $(BUILD_DIR)/inline_constants.test_passed: inline_constants.pl inline_constants_
 $(BUILD_DIR)/strip_lua.test_passed: strip_lua.pl strip_lua_test.sh
 	./strip_lua_test.sh $< && touch $@
 
-CUSFOLDER = CrossUp-sim.pdx
+CUSFOLDER = CrossUp-sim
 CUDFOLDER = CrossUp-dev
+PDC = $(PLAYDATE_SDK_PATH)/bin/pdc.exe
 
 OBJ_SRC = C/Objects
 IMG_SRC = C/images
@@ -235,17 +237,31 @@ pdx-sim: sim_build/pdex.dll
 	@echo "Building simulator PDX..."
 	rm -rf $(CUSFOLDER)
 	mkdir -p $(CUSFOLDER)/pdex
+
 	cp C/pdxinfo $(CUSFOLDER)/
 	cp -r $(OBJ_SRC) $(CUSFOLDER)/
 	cp sim_build/pdex.dll $(CUSFOLDER)/
+	$(PDC) $(CUSFOLDER) CrossUp-sim.pdx
+
+	rm -rf $(CUSFOLDER)
+	rm -rf sim_build
 
 pdx-dev: device_build/pdex.elf
 	@echo "Building device PDX..."
 	rm -rf $(CUDFOLDER)
 	mkdir -p $(CUDFOLDER)/pdex
+	mkdir -p save_elf
+
 	cp C/pdxinfo $(CUDFOLDER)/
 	cp -r $(OBJ_SRC) $(CUDFOLDER)/
 	cp device_build/pdex.elf $(CUDFOLDER)/
-	"$(PLAYDATE_SDK_PATH)/bin/pdc.exe" -k $(CUDFOLDER)
+	cp device_build/pdex_unstripped.elf save_elf
+
+
+	$(PDC) $(CUDFOLDER) CrossUp-dev.pdx
+	zip -r CrossUp-dev.pdx.zip CrossUp-dev.pdx
+
+	rm -rf $(CUDFOLDER)
+	rm -rf device_build
 
 # }}}

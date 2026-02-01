@@ -145,8 +145,6 @@ static void runColl(EntStruct* p){
 
         hitTrig = cylinderInTrigger(pCollisionPos, pRadius, pHeight);
     }
-
-    if (hitTrig.id >= 1) { printf("Hit Trigger: [ %d | %d ]\n", hitTrig.type, hitTrig.id); }
 }
 
 void stateMachine(EntStruct* p){
@@ -159,7 +157,7 @@ void movePlayerObj(EntStruct* p, Camera_t* c){
     PDButtons tapped, held;
     pd->system->getButtonState(&held, &tapped, NULL);
 
-    float yawCam = -FROM_FIXED32(c->rotation.y);
+    float yawCam = FROM_FIXED32(c->rotation.y);
     float mainYaw = FROM_FIXED32(p->rotation.y);
     float secondaryStrength = 0.5f;
 
@@ -257,7 +255,7 @@ void movePlayerObj(EntStruct* p, Camera_t* c){
 
 void updateCamera(Camera_t* cam, EntStruct* ent, float radius) {
     float pitch = FROM_FIXED32(cam->rotation.x);
-    float yaw   = -FROM_FIXED32(cam->rotation.y);
+    float yaw   = FROM_FIXED32(cam->rotation.y);
     float smoothOrbit = 0.1f;
 
     float offsetX = cosf(pitch) * sinf(yaw) * radius;
@@ -265,7 +263,7 @@ void updateCamera(Camera_t* cam, EntStruct* ent, float radius) {
     float offsetZ = cosf(pitch) * cosf(yaw) * radius;
 
     float targetX = FROM_FIXED32(ent->position.x) - offsetX;
-    float targetY = FROM_FIXED32(ent->position.y) - offsetY;
+    float targetY = FROM_FIXED32(ent->position.y) + offsetY;
     float targetZ = FROM_FIXED32(ent->position.z) - offsetZ;
 
     cam->position.x += TO_FIXED32((targetX - FROM_FIXED32(cam->position.x)) * smoothOrbit);
@@ -274,15 +272,12 @@ void updateCamera(Camera_t* cam, EntStruct* ent, float radius) {
 }
 
 void handleCameraInput(Camera_t* cam) {
-    float crankDelta = 0.0f;
-    // if (IsKeyDown(KEY_I)) { crankDelta += degToRad(5.0f); }
-    // if (IsKeyDown(KEY_U)) { crankDelta -= degToRad(5.0f); }
-
-    if (degToRad(crankDelta) > 360.0f) { crankDelta -= degToRad(360.0f); }
-    if (degToRad(crankDelta) < 0.0f)   { crankDelta += degToRad(360.0f); }
-
-    cam->rotation.y += TO_FIXED32(crankDelta);
-    cam->rotation.x =  TO_FIXED32(degToRad(-30.0f));
+    float rotY_delta = -0.03f;
+    float rotX_delta = -0.1f;
+    
+    float crankDelta = pd->system->getCrankChange();
+    cam->rotation.y += TO_FIXED32(crankDelta * rotY_delta);
+    cam->rotation.x =  TO_FIXED32(degToRad(40.0f));
     
     qfixed32_t minPitchY = TO_FIXED32(degToRad(  0.0f));
     qfixed32_t maxPitchY = TO_FIXED32(degToRad(360.0f));

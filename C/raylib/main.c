@@ -1,6 +1,5 @@
 #include "libRay.h"
 #include "movement.h"
-#include "draw.h"
 #include "meshConvert.h"
 
 #include "../Foxgine/engine.h"
@@ -18,6 +17,8 @@ int gameScreen = 0;
 const int maxProjs = 1;
 const int mapObjsCount = 2;
 
+int* scnBuf;
+
 void generateEnts() {
     if (mapIndex == 0) {
         addEnt((Vect3f){0.0f, 20.0f, -5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY, entArray, allEnts);
@@ -29,22 +30,20 @@ void generateEnts() {
 
 static int init() {
     allPointsCount = 0;
-    entIndex = 0;
     entAmt = 0;
-    allAmt = 0;
 
-    cam = createCamera(10.0f, 3.0f, 41.0f, 0.0f, 0.0f, 0.0f, 90.0f, 0.1f, 100.0f);
+    cam = createCamera(0.0f, 3.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 100.0f);
     player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 1.8f, 0.56f, 0.08f, 0);
 
     objArray = pd_malloc( sizeof(Mesh_t) * maxProjs);
     entArray = pd_malloc(sizeof(VertAnims) * entDataCount);
     allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
 
-    convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1]);
-    convertFileToMesh("Objects/proj/ball.obj", &objArray[0], 0, 0);
+    convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0);
+    convertFileToMesh("Objects/proj/ball.obj", &objArray[0], 0, 0, 1);
 
     for (int i=0; i < entDataCount; i++){
-        int highest = allocAnimModel(&entArray[i], entData[i].totalAnims, entData[i].animFrameCounts, entData[i].animNames);
+        int highest = allocAnimModel(&entArray[i], entData[i].totalAnims, entData[i].animFrameCounts, entData[i].animNames, -1, 1, 1);
         allPointsCount += (highest * (entAmt+1));
         entArray[i].count = highest;
     }
@@ -102,6 +101,8 @@ static void addPlayer() {
             model.data,
             model.bfc,
             model.color,
+            model.flipped,
+            model.outline,
             true, 1
         );
     }
@@ -120,6 +121,8 @@ static void addEntities() {
         switch (allEnts[z].type) {
             case ENTITY:
                 EntStruct *ent_ = &allEnts[z].data.ent;
+
+                moveEntObj(ent_, &player);
                 if (ent_->type < 0 || ent_->type >= entDataCount) break;
 
                 // if (ent_->currentAnim != ent_->lastAnim) {
@@ -162,6 +165,8 @@ static void addEntities() {
                         model.data,
                         model.bfc,
                         model.color,
+                        model.flipped,
+                        model.outline,
                         true, 1
                     );
                 }
@@ -187,6 +192,8 @@ static void addEntities() {
                     objArray[obj_->type].data,
                     objArray[obj_->type].bfc,
                     objArray[obj_->type].color,
+                    objArray[obj_->type].flipped,
+                    objArray[obj_->type].outline,
                     false, 1
                 );
                 break;
@@ -202,43 +209,28 @@ static void addMap() {
         mapArray.data,
         mapArray.bfc,
         mapArray.color,
+        mapArray.flipped,
+        mapArray.outline,
         false, 1
     );
 }
 
 static int render() {
-    const float CamXDirSin = -sinf(FROM_FIXED32(cam.rotation.x));
-    const float CamXDirCos = cosf(FROM_FIXED32(cam.rotation.x));
-    const float CamYDirSin = -sinf(FROM_FIXED32(cam.rotation.y));
-    const float CamYDirCos = cosf(FROM_FIXED32(cam.rotation.y));
-    const float CamZDirSin = -sinf(FROM_FIXED32(cam.rotation.z));
-    const float CamZDirCos = cosf(FROM_FIXED32(cam.rotation.z));
+    int camType = 0;
+    movePlayerObj(&player, &cam, camType);
+    if (camType){
+        handleCameraInput(&cam);
+        updateCamera(&cam, &player, 7.0f);
+    } else {
+        handleCameraFreeInput(&cam);
+    }
 
     addMap();
     addPlayer();
-    addEntities();
+    // addEntities();
 
-    shootRender(CamYDirSin, CamYDirCos, CamXDirSin, CamXDirCos, CamZDirSin, CamZDirCos, cam, textAtlasMem);
+    shootRender(cam, textAtlasMem);
     drawScreen();
-
-    return 0;
-}
-
-static int playerAction() {
-    movePlayerObj(&player, &cam);
-    handleCameraInput(&cam);
-    updateCamera(&cam, &player, 7.0f);
-
-    for(int i=0; i < entAmt; i++){
-        switch (allEnts[i].type) {
-            case ENTITY:
-                EntStruct *ent_ = &allEnts[i].data.ent;
-                moveEntObj(ent_, &player);
-                break;
-            case OBJECT:
-                break;
-        }
-    }
 
     return 0;
 }
@@ -258,7 +250,6 @@ int main() {
         for (int i=0; i < ((sW/resolution)*(sH/resolution)); i++) { scnBuf[i] = -1; }
 
         if (gameScreen == 1) {
-            playerAction();
             render();
 
             if (IsKeyPressed(KEY_M)) {

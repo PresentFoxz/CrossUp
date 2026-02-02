@@ -84,6 +84,15 @@ typedef struct {
 } RasterTri;
 
 typedef struct {
+    int actionUsed;
+    int timer;
+} Action;
+
+typedef struct {
+    Action spin;
+} PlayerActions;
+
+typedef struct {
     Vect3i position;
     Vect3i rotation;
     Vect3i size;
@@ -91,12 +100,16 @@ typedef struct {
     qfixed32_t surfRot;
     qfixed32_t radius, height;
     int type, grounded, groundTimer;
-    int coyote, ifMove, state;
+    int coyote, ifMove;
     int countdown, rotDir;
     float frict, fallFrict;
     int frameCount, currentFrame;
     int currentAnim, lastAnim;
     int meshIndex;
+
+    union {
+        PlayerActions plr;
+    } actions;
 } EntStruct;
 
 typedef struct {

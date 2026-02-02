@@ -266,31 +266,6 @@ void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, i
     }
 }
 
-void drawTriLines(int tris[3][2]) {
-    for (int i = 0; i < 3; i++) {
-        int next = (i + 1) % 3;
-        int x0 = tris[i][0], y0 = tris[i][1];
-        int x1 = tris[next][0], y1 = tris[next][1];
-
-        int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-        int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-        int err = dx + dy, e2;
-
-        while (1) {
-            #if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
-            return;
-            #else
-            scnBuf[y0 * (sW/resolution) + x0] = 0;
-            #endif
-
-            if (x0 == x1 && y0 == y1) break;
-            e2 = 2 * err;
-            if (e2 >= dy) { err += dy; x0 += sx; }
-            if (e2 <= dx) { err += dx; y0 += sy; }
-        }
-    }
-}
-
 int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, float nearPlane, float farPlane) {
     int inScreen[3], outScreen[3];
     int inAmt = 0, outAmt = 0;

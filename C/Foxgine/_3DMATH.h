@@ -20,7 +20,6 @@ void staticLineDrawing(int p0[2], int p1[2], int color);
 
 void drawFilledTris(int tris[3][2], int triColor);
 void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, int texH);
-void drawTriLines(int tris[3][2]);
 
 int backfaceCullCamera(Vertex* v0, Vertex* v1, Vertex* v2, Vect3f cam, int flipped);
 

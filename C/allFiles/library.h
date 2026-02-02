@@ -88,14 +88,10 @@ static inline qfixed16_t divide16(qfixed16_t a, qfixed16_t b) { return (qfixed16
 #define worldUnit 16.0f
 
 #define rowStride 52
-#define resolution 2
-
-extern const float fovX;
-extern const float fovY;
+#define resolution 4
 
 float unitToMeter(float x);
 float meterToUnit(float x);
-
 
 int randomInt(int a, int b);
 float randomFloat(float a, float b);

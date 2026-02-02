@@ -18,10 +18,11 @@ const int maxProjs = 1;
 const int mapObjsCount = 2;
 
 int* scnBuf;
+int freeFly = 0;
 
 void generateEnts() {
     if (mapIndex == 0) {
-        addEnt((Vect3f){0.0f, 20.0f, -5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY, entArray, allEnts);
+        addEnt((Vect3f){0.0f, 20.0f, -5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY, entArray, allEnts);
         addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray, allEnts);
     } else if (mapIndex == 1) {
         addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray, allEnts);
@@ -33,17 +34,17 @@ static int init() {
     entAmt = 0;
 
     cam = createCamera(0.0f, 3.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 100.0f);
-    player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 1.8f, 0.56f, 0.08f, 0);
+    player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.55f, 0.08f, 0);
 
     objArray = pd_malloc( sizeof(Mesh_t) * maxProjs);
     entArray = pd_malloc(sizeof(VertAnims) * entDataCount);
     allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
 
     convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0);
-    convertFileToMesh("Objects/proj/ball.obj", &objArray[0], 0, 0, 1);
+    convertFileToMesh("Objects/proj/ball.obj", &objArray[0], 0, 0, 0);
 
     for (int i=0; i < entDataCount; i++){
-        int highest = allocAnimModel(&entArray[i], entData[i].totalAnims, entData[i].animFrameCounts, entData[i].animNames, -1, 1, 1);
+        int highest = allocAnimModel(&entArray[i], entData[i].totalAnims, entData[i].animFrameCounts, entData[i].animNames, 0, 1, 0);
         allPointsCount += (highest * (entAmt+1));
         entArray[i].count = highest;
     }
@@ -215,8 +216,7 @@ static void addMap() {
     );
 }
 
-static int render() {
-    int camType = 0;
+static int render(int camType) {
     movePlayerObj(&player, &cam, camType);
     if (camType){
         handleCameraInput(&cam);
@@ -240,6 +240,7 @@ int main() {
     SetTargetFPS(30);
 
     gameScreen = 1;
+    freeFly = 0;
 
     init();
     scnBuf = pd_malloc(sizeof(int) * (sW/resolution * sH/resolution));
@@ -250,12 +251,18 @@ int main() {
         for (int i=0; i < ((sW/resolution)*(sH/resolution)); i++) { scnBuf[i] = -1; }
 
         if (gameScreen == 1) {
-            render();
+            render(freeFly);
 
             if (IsKeyPressed(KEY_M)) {
                 mapIndex++;
                 if (mapIndex >= mapObjsCount) mapIndex = 0;
                 init();
+            }
+
+            if (IsKeyPressed(KEY_N)) {
+                freeFly++;
+
+                if (freeFly > 1) freeFly = 0;
             }
         }
 

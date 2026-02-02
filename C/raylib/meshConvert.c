@@ -70,7 +70,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                     tris[triCount][1] = indices[1];
                     tris[triCount][2] = indices[2];
                 }
-                colorArr[triCount] = randomInt(0, 3);
+                colorArr[triCount] = randomInt(0, 15);
                 triCount++;
             } else if (idx == 4) {
                 tris = pd_realloc(tris, sizeof(int[3]) * (triCount + 2));
@@ -85,7 +85,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                     tris[triCount][1] = indices[1];
                     tris[triCount][2] = indices[2];
                 }
-                colorArr[triCount] = randomInt(0, 3);
+                colorArr[triCount] = randomInt(0, 15);
 
                 if (invert == 1){
                     tris[triCount + 1][0] = indices[0];
@@ -96,7 +96,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                     tris[triCount + 1][1] = indices[2];
                     tris[triCount + 1][2] = indices[3];
                 }
-                colorArr[triCount + 1] = randomInt(0, 3);
+                colorArr[triCount + 1] = randomInt(0, 15);
 
                 triCount += 2;
             }
@@ -113,7 +113,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
             meshOut->data[t * 3 + v] = verts[tris[t][v]];
         }
         meshOut->bfc[t] = 1;
-        if (color != -1) { meshOut->color[t] = colorArr[t]; } else { meshOut->color[t] = 3; }
+        if (color != -1) { meshOut->color[t] = colorArr[t]; } else { meshOut->color[t] = 15; }
     }
 
     meshOut->flipped = invert;

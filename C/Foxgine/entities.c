@@ -51,7 +51,6 @@ EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float 
     p.groundTimer = 0;
     p.coyote = 0;
     p.ifMove = 0;
-    p.state = 0;
 
     p.countdown = 0;
     p.rotDir = 0;

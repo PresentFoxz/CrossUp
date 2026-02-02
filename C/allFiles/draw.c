@@ -1,11 +1,24 @@
 #include "draw.h"
 
-static const uint8_t shadeLUT[4][2][2] = {
-    {{0,1},{0,0}},
-    {{0,1},{1,0}},
-    {{0,0},{1,1}},
-    {{1,1},{1,1}}
+static const uint8_t shadeLUT[16][4][4] = {
+    {{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}},
+    {{1,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}},
+    {{1,0,1,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}},
+    {{1,0,1,0},{1,0,0,0},{0,0,0,0},{0,0,0,0}},
+    {{1,0,1,0},{1,0,1,0},{0,0,0,0},{0,0,0,0}},
+    {{1,0,1,0},{1,0,1,0},{1,0,0,0},{0,0,0,0}},
+    {{1,0,1,0},{1,0,1,0},{1,0,1,0},{0,0,0,0}},
+    {{1,0,1,0},{1,0,1,0},{1,0,1,0},{1,0,0,0}},
+    {{1,0,1,0},{1,0,1,0},{1,0,1,0},{1,0,1,0}},
+    {{1,1,1,0},{1,0,1,0},{1,0,1,0},{1,0,1,0}},
+    {{1,1,1,0},{1,1,1,0},{1,0,1,0},{1,0,1,0}},
+    {{1,1,1,0},{1,1,1,0},{1,1,1,0},{1,0,1,0}},
+    {{1,1,1,0},{1,1,1,0},{1,1,1,0},{1,1,1,0}},
+    {{1,1,1,1},{1,1,1,0},{1,1,1,0},{1,1,1,0}},
+    {{1,1,1,1},{1,1,1,1},{1,1,1,0},{1,1,1,0}},
+    {{1,1,1,1},{1,1,1,1},{1,1,1,1},{1,1,1,1}}
 };
+
 
 #if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
 void setPixelRaw(uint x, uint8_t* row, int color) {
@@ -20,25 +33,48 @@ void setPixelRaw(uint x, uint8_t* row, int color) {
 
 void multiPixl(uint gridX, uint gridY, int shade) {
     if (gridX >= sW || gridY >= sH) return;
-    
+
+    uint8_t colorMask[2][2] = {
+        {0x00, 0xFF},
+        {0xFF, 0x00}
+    };
+
     for (int dy = 0; dy < resolution; dy++) {
-        uint rowY = gridY + dy;
-        if (rowY >= sH) break;
+        uint y = gridY + dy;
+        if (y >= sH) break;
 
-        uint8_t* rowPtr = buf + rowY * rowStride;
+        uint8_t* row = buf + y * rowStride;
 
-        for (int dx = 0; dx < resolution; dx++) {
-            uint colX = gridX + dx;
-            if (colX >= sW) break;
-            
-            uint px = colX & 1;
-            uint py = rowY & 1;
-            
-            int color; if (shade == -1 ) { color = 0; } else if (shadeLUT[shade][py][px] == 1) { color = 1; } else { color = 0; }
-            setPixelRaw(colX, rowPtr, color);
+        int py = (y & 3);
+
+        uint x = gridX;
+        uint endX = gridX + resolution;
+        if (endX > sW) endX = sW;
+        
+        while ((x & 7) && x < endX) {
+            int px = (x & 3);
+            int color = (shade != -1) && shadeLUT[shade][py][px];
+            setPixelRaw(x, row, color);
+            x++;
+        }
+        
+        while (x + 8 <= endX) {
+            int px = (x & 3);
+            uint8_t pattern = shadeLUT[shade][py][px] ? 0xFF : 0x00;
+            row[x >> 3] = pattern;
+            x += 8;
+        }
+
+        // Tail
+        while (x < endX) {
+            int px = (x & 3);
+            int color = (shade != -1) && shadeLUT[shade][py][px];
+            setPixelRaw(x, row, color);
+            x++;
         }
     }
 }
+
 #else
 static inline void multiPixl(uint gridX, uint gridY, int shade) {
     if (gridX >= sW || gridY >= sH) return;
@@ -51,8 +87,8 @@ static inline void multiPixl(uint gridX, uint gridY, int shade) {
             uint colX = gridX + dx;
             if (colX >= sW) break;
             
-            uint px = colX & 1;
-            uint py = rowY & 1;
+            uint px = (colX & 3);
+            uint py = (rowY & 3);
             
             Color color;
             if (shadeLUT[shade][py][px] == 1) { color = (Color){255, 255, 255, 255}; } else { color = (Color){0, 0, 0, 255}; }

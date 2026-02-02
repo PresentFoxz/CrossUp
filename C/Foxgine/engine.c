@@ -57,7 +57,7 @@ void generateTextures(textAtlas** textAtlasMem, int memArea) {
     (*textAtlasMem)[memArea] = testTexture;
 }
 
-static int compareRenderTris(const void* a, const void* b) {
+static inline int compareRenderTris(const void* a, const void* b) {
     float d = ((worldTris*)b)->dist - ((worldTris*)a)->dist;
     return (d > 0) - (d < 0);
 }
@@ -69,9 +69,9 @@ static void renderTriData(int tri[3][2], clippedTri clip, textAtlas* textAtlasMe
         drawTexturedTris(
             tri,
             (float[3][2]){{clip.t1.u, clip.t1.v}, {clip.t2.u, clip.t2.v}, {clip.t3.u, clip.t3.v}},
-            textAtlasMem[0].pixels,
-            textAtlasMem[0].w,
-            textAtlasMem[0].h
+            textAtlasMem[t].pixels,
+            textAtlasMem[t].w,
+            textAtlasMem[t].h
         );
     } else {
         drawFilledTris(tri, color);
@@ -179,36 +179,49 @@ void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float 
             tri.verts[j][1] = tv[j].y;
             tri.verts[j][2] = tv[j].z;
 
-            verts[j].x = tri.verts[j][0];
-            verts[j].y = tri.verts[j][1];
-            verts[j].z = tri.verts[j][2];
+            verts[j].x = tv[j].x;
+            verts[j].y = tv[j].y;
+            verts[j].z = tv[j].z;
 
             rotateVertexInPlace(&verts[j], camPos, camMatrix);
             project2D(&triScn[j][0], (float[3]){verts[j].x, verts[j].y, verts[j].z}, cCam.fov, cCam.nearPlane);
         }
 
         int bfc = windingOrder(triScn[0], triScn[1], triScn[2]);
-        if (outline && bfc) {
+        if (outline && !bfc) {
             worldTris outTri = tri;
-            float outlineScale = 0.05f;
-            
-            float objCenterX = pos.x;
-            float objCenterY = pos.y;
-            float objCenterZ = pos.z;
+            float outScale = 0.2f;
 
+            float outMat[3][3];
+            computeRotScaleMatrix(outMat, rot.x, rot.y, rot.z, size.x + outScale, size.y + outScale, size.z + outScale);
+
+            Vect3f tt[3];
             for (int j = 0; j < 3; j++) {
-                outTri.verts[j][0] = tv[j].x + (tv[j].x - objCenterX) * outlineScale;
-                outTri.verts[j][1] = tv[j].y + (tv[j].y - objCenterY) * outlineScale;
-                outTri.verts[j][2] = tv[j].z + (tv[j].z - objCenterZ) * outlineScale;
+                int idx = i * 3 + j;
+                float r[3];
+
+                rotateVertex(
+                    data[idx].x,
+                    data[idx].y,
+                    data[idx].z,
+                    outMat,
+                    r
+                );
+
+                tt[j].x = r[0] + pos.x;
+                tt[j].y = r[1] + pos.y;
+                tt[j].z = r[2] + pos.z;
+
+                outTri.verts[j][0] = tt[j].x;
+                outTri.verts[j][1] = tt[j].y - outScale;
+                outTri.verts[j][2] = tt[j].z;
             }
 
             outTri.color = 3;
             outTri.lines = 0;
             outTri.textID = -1;
             allPoints[allAmt++] = outTri;
-        }
-
-        if (backFace[i] && !bfc) continue;
+        } if (backFace[i] && !bfc) continue;
         
         float cx = sumX * one_third;
         float cy = sumY * one_third;
@@ -225,7 +238,7 @@ void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float 
         tri.dist  = dist - depthOffset;
         tri.bfc   = backFace[i];
         tri.lines = lineDraw;
-        tri.textID = 0;
+        tri.textID = -1;
 
         tri.uvs[0][0] = 0.0f; tri.uvs[0][1] = 0.0f;
         tri.uvs[1][0] = 1.0f; tri.uvs[1][1] = 0.0f;

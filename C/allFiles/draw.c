@@ -21,7 +21,28 @@ static const uint8_t shadeLUT[16][4][4] = {
 
 
 #if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
-void setPixelRaw(uint x, uint8_t* row, int color) {
+static uint8_t ditherByte[16][4][4];
+
+void initDitherByteLUT() {
+    for (int s = 0; s < 16; s++) {
+        for (int py = 0; py < 4; py++) {
+            for (int px0 = 0; px0 < 4; px0++) {
+                uint8_t mask = 0;
+                for (int i = 0; i < 8; i++) {
+                    int px = (px0 + i) & 3;
+                    if (shadeLUT[s][py][px]) {
+                        mask |= (1 << (7 - i));
+                    }
+                }
+                ditherByte[s][py][px0] = mask;
+            }
+        }
+    }
+}
+
+void setPixelRaw(uint x, uint y, int color) {
+    uint8_t* row = buf + y * rowStride;
+
     int bitIndex = 7 - (x % 8);
     uint8_t mask = 1 << bitIndex;
 
@@ -31,49 +52,53 @@ void setPixelRaw(uint x, uint8_t* row, int color) {
         row[x / 8] &= ~mask;
 }
 
-void multiPixl(uint gridX, uint gridY, int shade) {
-    if (gridX >= sW || gridY >= sH) return;
+void upscaleToScreen() {
+    for (uint ly = 0; ly < sH_L; ly++) {
+        uint baseY = ly * resolution;
 
-    uint8_t colorMask[2][2] = {
-        {0x00, 0xFF},
-        {0xFF, 0x00}
-    };
+        for (uint dy = 0; dy < resolution; dy++) {
+            uint y = baseY + dy;
+            if (y >= sH) break;
 
-    for (int dy = 0; dy < resolution; dy++) {
-        uint y = gridY + dy;
-        if (y >= sH) break;
+            uint8_t* row = buf + y * rowStride;
+            uint py = y & 3;
 
-        uint8_t* row = buf + y * rowStride;
+            for (uint lx = 0; lx < sW_L; lx++) {
+                int shade = scnBuf[ly * sW_L + lx];
+                if (shade <= 0) continue;
 
-        int py = (y & 3);
-
-        uint x = gridX;
-        uint endX = gridX + resolution;
-        if (endX > sW) endX = sW;
-        
-        while ((x & 7) && x < endX) {
-            int px = (x & 3);
-            int color = (shade != -1) && shadeLUT[shade][py][px];
-            setPixelRaw(x, row, color);
-            x++;
-        }
-        
-        while (x + 8 <= endX) {
-            int px = (x & 3);
-            uint8_t pattern = shadeLUT[shade][py][px] ? 0xFF : 0x00;
-            row[x >> 3] = pattern;
-            x += 8;
-        }
-
-        // Tail
-        while (x < endX) {
-            int px = (x & 3);
-            int color = (shade != -1) && shadeLUT[shade][py][px];
-            setPixelRaw(x, row, color);
-            x++;
+                uint baseX = lx * resolution;
+                uint x = baseX;
+                uint endX = baseX + resolution;
+                if (endX > sW) endX = sW;
+                
+                while ((x & 7) && x < endX) {
+                    uint px = x & 3;
+                    if (shadeLUT[shade][py][px]) {
+                        row[x >> 3] |= (1 << (7 - (x & 7)));
+                    }
+                    x++;
+                }
+                
+                uint byteEnd = endX & ~7;
+                while (x < byteEnd) {
+                    uint px0 = x & 3;
+                    row[x >> 3] |= ditherByte[shade][py][px0];
+                    x += 8;
+                }
+                
+                while (x < endX) {
+                    uint px = x & 3;
+                    if (shadeLUT[shade][py][px]) {
+                        row[x >> 3] |= (1 << (7 - (x & 7)));
+                    }
+                    x++;
+                }
+            }
         }
     }
 }
+
 
 #else
 static inline void multiPixl(uint gridX, uint gridY, int shade) {
@@ -110,3 +135,18 @@ void drawScreen() {
     }
 }
 #endif
+
+void skybox(int col1, int col2, int count) {
+    for (int y = 0; y < sH_L; y++) {
+        for (int x = 0; x < sW_L; x++) {
+            int checkerX = x / count;
+            int checkerY = y / count;
+            
+            if ((checkerX + checkerY) % 2 == 0) {
+                scnBuf[y * sW_L + x] = col1;
+            } else {
+                scnBuf[y * sW_L + x] = col2;
+            }
+        }
+    }
+}

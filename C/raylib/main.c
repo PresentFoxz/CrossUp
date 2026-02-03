@@ -17,7 +17,6 @@ int gameScreen = 0;
 const int maxProjs = 1;
 const int mapObjsCount = 2;
 
-int* scnBuf;
 int freeFly = 0;
 
 void generateEnts() {
@@ -44,7 +43,7 @@ static int init() {
     convertFileToMesh("Objects/proj/ball.obj", &objArray[0], 0, 0, 0);
 
     for (int i=0; i < entDataCount; i++){
-        int highest = allocAnimModel(&entArray[i], entData[i].totalAnims, entData[i].animFrameCounts, entData[i].animNames, 0, 1, 0);
+        int highest = allocAnimModel(&entArray[i], entData[i].totalAnims, entData[i].animFrameCounts, entData[i].animNames, 0, 1, 1);
         allPointsCount += (highest * (entAmt+1));
         entArray[i].count = highest;
     }
@@ -235,6 +234,15 @@ static int render(int camType) {
     return 0;
 }
 
+static inline void scnBufFix() {
+    int8_t* p = scnBuf;
+    int count = sW_L * sH_L;
+
+    while (count--) {
+        *p++ = -1;
+    }
+}
+
 int main() {
     InitWindow(sW, sH, "CrossUp");
     SetTargetFPS(30);
@@ -243,12 +251,13 @@ int main() {
     freeFly = 0;
 
     init();
-    scnBuf = pd_malloc(sizeof(int) * (sW/resolution * sH/resolution));
+    scnBuf = pd_malloc(sizeof(int8_t) * (sW_L * sH_L));
 
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(BLACK);
-        for (int i=0; i < ((sW/resolution)*(sH/resolution)); i++) { scnBuf[i] = -1; }
+        scnBufFix();
+        skybox(5, 10, 10);
 
         if (gameScreen == 1) {
             render(freeFly);

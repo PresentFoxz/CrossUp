@@ -188,41 +188,8 @@ void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float 
         }
 
         int bfc = windingOrder(triScn[0], triScn[1], triScn[2]);
-        if (outline && !bfc) {
-            worldTris outTri = tri;
-            float outScale = 0.2f;
+        if (backFace[i] && !bfc) continue;
 
-            float outMat[3][3];
-            computeRotScaleMatrix(outMat, rot.x, rot.y, rot.z, size.x + outScale, size.y + outScale, size.z + outScale);
-
-            Vect3f tt[3];
-            for (int j = 0; j < 3; j++) {
-                int idx = i * 3 + j;
-                float r[3];
-
-                rotateVertex(
-                    data[idx].x,
-                    data[idx].y,
-                    data[idx].z,
-                    outMat,
-                    r
-                );
-
-                tt[j].x = r[0] + pos.x;
-                tt[j].y = r[1] + pos.y;
-                tt[j].z = r[2] + pos.z;
-
-                outTri.verts[j][0] = tt[j].x;
-                outTri.verts[j][1] = tt[j].y - outScale;
-                outTri.verts[j][2] = tt[j].z;
-            }
-
-            outTri.color = 3;
-            outTri.lines = 0;
-            outTri.textID = -1;
-            allPoints[allAmt++] = outTri;
-        } if (backFace[i] && !bfc) continue;
-        
         float cx = sumX * one_third;
         float cy = sumY * one_third;
         float cz = sumZ * one_third;

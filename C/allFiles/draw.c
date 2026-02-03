@@ -31,6 +31,22 @@ void setPixelRaw(uint x, uint8_t* row, int color) {
         row[x / 8] &= ~mask;
 }
 
+void setPixelLow(uint gridX, uint gridY, int shade) {
+    if (gridX >= sW || gridY >= sH) return;
+
+    uint8_t colorMask[2][2] = {
+        {0x00, 0xFF},
+        {0xFF, 0x00}
+    };
+
+    int px = (gridX & 3);
+    int py = (gridY & 3);
+    uint8_t* row = lowBuf + y * rowStride;
+
+    int color = (shade != -1) && shadeLUT[shade][py][px];
+    setPixelRaw(gridX, row, color)
+}
+
 void multiPixl(uint gridX, uint gridY, int shade) {
     if (gridX >= sW || gridY >= sH) return;
 

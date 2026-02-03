@@ -6,6 +6,7 @@
 
 PlaydateAPI* pd;
 uint8_t* buf = NULL;
+uint8_t* lowBuf = NULL;
 
 Camera_t cam;
 worldTris* entModels;
@@ -260,6 +261,7 @@ static int update(void* userdata) {
 
     pd->graphics->clear(kColorBlack);
     buf = pd->graphics->getFrame();
+    lowBuf = pd->graphics->getFrame();
     
     if (gameScreen == 1) {
         render();

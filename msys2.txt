@@ -1,4 +1,7 @@
 cd E:/PlaydateSDK/C_API/CrossUp
+cd C:/PlaydateSDK/C_API/CrossUp
+
+
 make -f Makefile_playdate pdx-sim
 make -f Makefile_playdate pdx-dev
 make raylib

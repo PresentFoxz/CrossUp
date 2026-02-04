@@ -9,6 +9,9 @@ typedef struct {
     int (*tris)[3];
     int triCount;
 
+    float (*uvs)[2];
+    int uvCount;
+
     int* color;
     int* bfc;
     int flipped;

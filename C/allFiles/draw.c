@@ -58,7 +58,6 @@ void upscaleToScreen() {
 
         for (uint dy = 0; dy < resolution; dy++) {
             uint y = baseY + dy;
-            if (y >= sH) break;
 
             uint8_t* row = buf + y * rowStride;
             uint py = y & 3;

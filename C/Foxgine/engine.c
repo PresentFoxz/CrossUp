@@ -4,6 +4,7 @@
 worldTris* allPoints;
 int chnkAmt = 0;
 
+const float one_third = 0.3333333f;
 int renderRadius = 85;
 int entAmt = 0;
 int mapIndex = 0;
@@ -33,17 +34,17 @@ void addEnt(Vect3f pos, Vect3f rot, Vect3f size, float radius, float height, flo
 
 void generateMap(Mesh_t mapArray) {
     resetCollisionSurface(mapArray);
-    for (int i=0; i < mapArray.count; i++){
-        int idx[3] = {(i*3), (i*3)+1, (i*3)+2};
+    for (int i=0; i < mapArray.triCount; i++){
+        int* triNum = mapArray.tris[i];
         addCollisionSurface(
-            (Vect3f){mapArray.data[idx[0]].x, mapArray.data[idx[0]].y, mapArray.data[idx[0]].z},
-            (Vect3f){mapArray.data[idx[1]].x, mapArray.data[idx[1]].y, mapArray.data[idx[1]].z},
-            (Vect3f){mapArray.data[idx[2]].x, mapArray.data[idx[2]].y, mapArray.data[idx[2]].z},
+            (Vect3f){mapArray.verts[triNum[0]].x, mapArray.verts[triNum[0]].y, mapArray.verts[triNum[0]].z},
+            (Vect3f){mapArray.verts[triNum[1]].x, mapArray.verts[triNum[1]].y, mapArray.verts[triNum[1]].z},
+            (Vect3f){mapArray.verts[triNum[2]].x, mapArray.verts[triNum[2]].y, mapArray.verts[triNum[2]].z},
             SURFACE_NONE
         );
     }
 
-    allPointsCount += mapArray.count;
+    allPointsCount += mapArray.triCount;
 }
 
 void generateTriggers(Vect3f pos, Vect3f size) {
@@ -133,15 +134,23 @@ static void renderTris(Camera_t usedCam, textAtlas* textAtlasMem) {
     }
 }
 
-void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, int triCount, Vect3f* data, int* backFace, int* colorArray, int flipped, int outline, int lineDraw, int distMod) {
+void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, Mesh_t model, int lineDraw, int distMod) {
     if (allAmt >= allPointsCount) return;
 
-    worldTris tri;
+    int vertCount = model.vertCount;
+    int triCount = model.triCount;
+    Vect3f* verticies = model.verts;
+    int (*tris)[3] = model.tris;
+    int* backFace = model.bfc;
+    int* colorArray = model.color;
+    int flipped = model.flipped;
+    int outline = model.outline;
+
+    worldTris wTris;
     float rotMat[3][3];
     computeRotScaleMatrix(rotMat, rot.x, rot.y, rot.z, size.x, size.y, size.z);
 
     float renderRadiusSq = renderRadius ? (renderRadius * renderRadius) : 0.0f;
-    const float one_third = 0.3333333f;
 
     float camMatrix[3][3];
     Vect3f camPos = {FROM_FIXED32(cCam.position.x), FROM_FIXED32(cCam.position.y), FROM_FIXED32(cCam.position.z)};
@@ -156,13 +165,13 @@ void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float 
         int triScn[3][2];
         float sumX = 0.0f, sumY = 0.0f, sumZ = 0.0f;
         for (int j = 0; j < 3; j++) {
-            int idx = i * 3 + j;
+            int idx = tris[i][j];
             float r[3];
 
             rotateVertex(
-                data[idx].x,
-                data[idx].y,
-                data[idx].z,
+                verticies[idx].x,
+                verticies[idx].y,
+                verticies[idx].z,
                 rotMat,
                 r
             );
@@ -175,9 +184,9 @@ void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float 
             sumY += tv[j].y;
             sumZ += tv[j].z;
 
-            tri.verts[j][0] = tv[j].x;
-            tri.verts[j][1] = tv[j].y;
-            tri.verts[j][2] = tv[j].z;
+            wTris.verts[j][0] = tv[j].x;
+            wTris.verts[j][1] = tv[j].y;
+            wTris.verts[j][2] = tv[j].z;
 
             verts[j].x = tv[j].x;
             verts[j].y = tv[j].y;
@@ -201,17 +210,17 @@ void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float 
 
         if (renderRadius && dist > renderRadiusSq) continue;
         
-        tri.color = colorArray[i];
-        tri.dist  = dist - depthOffset;
-        tri.bfc   = backFace[i];
-        tri.lines = lineDraw;
-        tri.textID = -1;
+        wTris.color = colorArray[i];
+        wTris.dist  = dist - depthOffset;
+        wTris.bfc   = backFace[i];
+        wTris.lines = lineDraw;
+        wTris.textID = -1;
 
-        tri.uvs[0][0] = 0.0f; tri.uvs[0][1] = 0.0f;
-        tri.uvs[1][0] = 1.0f; tri.uvs[1][1] = 0.0f;
-        tri.uvs[2][0] = 0.0f; tri.uvs[2][1] = 1.0f;
+        wTris.uvs[0][0] = 0.0f; wTris.uvs[0][1] = 0.0f;
+        wTris.uvs[1][0] = 1.0f; wTris.uvs[1][1] = 0.0f;
+        wTris.uvs[2][0] = 0.0f; wTris.uvs[2][1] = 1.0f;
 
-        allPoints[allAmt++] = tri;
+        allPoints[allAmt++] = wTris;
     }
 }
 

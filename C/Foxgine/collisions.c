@@ -15,9 +15,9 @@ void resetCollisionSurface(Mesh_t mapArray) {
     collisionChunkSurfaces = NULL;
     chunkAmt = 0;
 
-    Vect3f v0 = mapArray.data[0];
-    Vect3f v1 = mapArray.data[1];
-    Vect3f v2 = mapArray.data[2];
+    Vect3f v0 = mapArray.verts[0];
+    Vect3f v1 = mapArray.verts[1];
+    Vect3f v2 = mapArray.verts[2];
 
     int minX = (int)floorf(fminf(v0.x, fminf(v1.x, v2.x)));
     int minY = (int)floorf(fminf(v0.y, fminf(v1.y, v2.y)));
@@ -27,11 +27,11 @@ void resetCollisionSurface(Mesh_t mapArray) {
     int maxY = (int)ceilf (fmaxf(v0.y, fmaxf(v1.y, v2.y)));
     int maxZ = (int)ceilf (fmaxf(v0.z, fmaxf(v1.z, v2.z)));
 
-    for (int i=0; i < mapArray.count; i++){
-        int idx[3] = {(i*3), (i*3)+1, (i*3)+2};
-        v0 = mapArray.data[idx[0]];
-        v1 = mapArray.data[idx[1]];
-        v2 = mapArray.data[idx[2]];
+    for (int i=0; i < mapArray.triCount; i++){
+        int* tris = mapArray.tris[i];
+        v0 = mapArray.verts[tris[0]];
+        v1 = mapArray.verts[tris[1]];
+        v2 = mapArray.verts[tris[2]];
 
         int minX_ = (int)(fminf(v0.x, fminf(v1.x, v2.x)));
         int minY_ = (int)(fminf(v0.y, fminf(v1.y, v2.y)));

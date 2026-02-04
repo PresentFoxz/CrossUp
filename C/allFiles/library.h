@@ -6,7 +6,6 @@
 
 extern PlaydateAPI* pd;
 extern uint8_t* buf;
-extern uint8_t* lowBuf;
 
 static inline void* pd_realloc(void* ptr, size_t size) {
     if (!pd) return NULL;
@@ -71,6 +70,13 @@ static inline qfixed16_t divide16(qfixed16_t a, qfixed16_t b) { return (qfixed16
 
 #define SIGN_MASK 0x80000000u
 
+#define sX  0
+#define sY  0
+#define sW  400
+#define sH  240
+#define sW_H  (sW / 2)
+#define sH_H  (sH / 2)
+
 #define BASE_FPS 30.0f
 
 #define MAX_ENTITIES 240
@@ -92,15 +98,6 @@ static inline qfixed16_t divide16(qfixed16_t a, qfixed16_t b) { return (qfixed16
 #define sH_L  (sH / resolution)
 
 extern int8_t* scnBuf;
-
-#define sX  0
-#define sY  0
-#define sW  400
-#define sH  240
-#define sW_H  (sW / 2)
-#define sH_H  (sH / 2)
-#define sW_L  (sW / resolution)
-#define sH_L  (sH / resolution)
 
 float unitToMeter(float x);
 float meterToUnit(float x);

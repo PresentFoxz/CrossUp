@@ -3,10 +3,14 @@
 #include "library.h"
 
 typedef struct {
-    Vect3f* data;
+    Vect3f* verts;
+    int vertCount;
+
+    int (*tris)[3];
+    int triCount;
+
     int* color;
     int* bfc;
-    int count;
     int flipped;
     int outline;
 } Mesh_t;

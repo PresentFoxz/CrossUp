@@ -10,10 +10,12 @@ void allocateMeshes(VertAnims* mesh, int maxAnims, const int* framesPerAnim) {
             
         mesh->anims[a]->meshModel = pd_malloc(sizeof(Mesh_t) * frames);
         for (int f = 0; f < frames; f++) {
-            mesh->anims[a]->meshModel[f].data = NULL;
+            mesh->anims[a]->meshModel[f].verts = NULL;
+            mesh->anims[a]->meshModel[f].tris = NULL;
             mesh->anims[a]->meshModel[f].bfc = NULL;
             mesh->anims[a]->meshModel[f].color = NULL;
-            mesh->anims[a]->meshModel[f].count = 0;
+            mesh->anims[a]->meshModel[f].triCount = 0;
+            mesh->anims[a]->meshModel[f].vertCount = 0;
         }
         pd->system->logToConsole("Frames per Anim: %d\n", framesPerAnim[a]);
     }
@@ -62,55 +64,44 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                 verts[vertCount].z = -z;
                 vertCount++;
             }
-        } else if (strncmp(line, "f ", 2) == 0) {
+        }
+        
+        else if (strncmp(line, "f ", 2) == 0) {
             char* token = strtok(line + 2, " \t\n");
             int indices[4];
             int idx = 0;
+
             while (token && idx < 4) {
                 char* slash = strchr(token, '/');
                 if (slash) *slash = 0;
                 indices[idx++] = atoi(token) - 1;
                 token = strtok(NULL, " \t\n");
             }
-
+            
             if (idx == 3) {
                 tris = pd_realloc(tris, sizeof(int[3]) * (triCount + 1));
                 colorArr = pd_realloc(colorArr, sizeof(int) * (triCount + 1));
-                if (invert == 1){
-                    tris[triCount][0] = indices[0];
-                    tris[triCount][1] = indices[2];
-                    tris[triCount][2] = indices[1];
-                } else {
-                    tris[triCount][0] = indices[0];
-                    tris[triCount][1] = indices[1];
-                    tris[triCount][2] = indices[2];
-                }
+
+                tris[triCount][0] = indices[0];
+                tris[triCount][1] = invert ? indices[2] : indices[1];
+                tris[triCount][2] = invert ? indices[1] : indices[2];
+
                 colorArr[triCount] = randomInt(0, 15);
                 triCount++;
-            } else if (idx == 4) {
+            }
+            
+            else if (idx == 4) {
                 tris = pd_realloc(tris, sizeof(int[3]) * (triCount + 2));
                 colorArr = pd_realloc(colorArr, sizeof(int) * (triCount + 2));
-
-                if (invert == 1){
-                    tris[triCount][0] = indices[0];
-                    tris[triCount][1] = indices[2];
-                    tris[triCount][2] = indices[1];
-                } else {
-                    tris[triCount][0] = indices[0];
-                    tris[triCount][1] = indices[1];
-                    tris[triCount][2] = indices[2];
-                }
+                
+                tris[triCount][0] = indices[0];
+                tris[triCount][1] = invert ? indices[2] : indices[1];
+                tris[triCount][2] = invert ? indices[1] : indices[2];
                 colorArr[triCount] = randomInt(0, 15);
-
-                if (invert == 1){
-                    tris[triCount + 1][0] = indices[0];
-                    tris[triCount + 1][1] = indices[3];
-                    tris[triCount + 1][2] = indices[2];
-                } else {
-                    tris[triCount + 1][0] = indices[0];
-                    tris[triCount + 1][1] = indices[2];
-                    tris[triCount + 1][2] = indices[3];
-                }
+                
+                tris[triCount + 1][0] = indices[0];
+                tris[triCount + 1][1] = invert ? indices[3] : indices[2];
+                tris[triCount + 1][2] = invert ? indices[2] : indices[3];
                 colorArr[triCount + 1] = randomInt(0, 15);
 
                 triCount += 2;
@@ -118,26 +109,24 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
         }
     }
 
-    meshOut->data = pd_malloc(sizeof(Vect3f) * triCount * 3);
-    meshOut->bfc  = pd_malloc(sizeof(int) * triCount);
-    meshOut->color = pd_malloc(sizeof(int) * triCount);
-    meshOut->count = triCount;
+    pd->file->close(fptr);
 
-    for (int t = 0; t < triCount; t++) {
-        for (int v = 0; v < 3; v++) {
-            meshOut->data[t * 3 + v] = verts[tris[t][v]];
-        }
-        meshOut->bfc[t] = 1;
-        if (color != -1) { meshOut->color[t] = colorArr[t]; } else { meshOut->color[t] = 3; }
+    meshOut->verts = verts;
+    meshOut->vertCount = vertCount;
+
+    meshOut->tris = tris;
+    meshOut->triCount = triCount;
+
+    meshOut->color = pd_malloc(sizeof(int) * triCount);
+    meshOut->bfc   = pd_malloc(sizeof(int) * triCount);
+
+    for (int i = 0; i < triCount; i++) {
+        meshOut->color[i] = colorArr[i];
+        meshOut->bfc[i] = 1;
     }
 
     meshOut->flipped = invert;
     meshOut->outline = outline;
-
-    pd_free(verts);
-    pd_free(tris);
-    pd_free(colorArr);
-    pd->file->close(fptr);
 }
 
 int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[], int color, int invert, int outline) {
@@ -148,7 +137,7 @@ int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, cons
         for (int f = 0; f < framesPerAnim[i]; f++) {
             convertFileToMesh(names[i][f], &mesh->anims[i]->meshModel[f], color, invert, outline);
 
-            int triCount = mesh->anims[i]->meshModel[f].count;
+            int triCount = mesh->anims[i]->meshModel[f].triCount;
             if (triCount > highest) highest = triCount;
 
             pd->system->logToConsole("Tri Count: %d\n", triCount);

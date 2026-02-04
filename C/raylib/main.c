@@ -5,7 +5,6 @@
 #include "../Foxgine/engine.h"
 
 Camera_t cam;
-worldTris* entModels;
 textAtlas* textAtlasMem;
 Objects* allEnts;
 EntStruct player;
@@ -75,7 +74,7 @@ static void addPlayer() {
     }
 
     Mesh_t model = anims->meshModel[player.currentFrame];
-    if (model.data != NULL && model.count > 0 && model.bfc != NULL) {
+    if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) {
         Vect3f objectPos = {
             FROM_FIXED32(player.position.x),
             FROM_FIXED32(player.position.y),
@@ -97,12 +96,7 @@ static void addPlayer() {
         addObjectToWorld(
             objectPos, objectRot, objectSize,
             cam, 10.0f,
-            model.count,
-            model.data,
-            model.bfc,
-            model.color,
-            model.flipped,
-            model.outline,
+            model,
             true, 1
         );
     }
@@ -139,7 +133,7 @@ static void addEntities() {
                 // }
             
                 Mesh_t model = anims->meshModel[ent_->currentFrame];
-                if (model.data != NULL && model.count > 0 && model.bfc != NULL) {
+                if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) {
                     Vect3f objectPos = {
                         FROM_FIXED32(ent_->position.x),
                         FROM_FIXED32(ent_->position.y),
@@ -161,12 +155,7 @@ static void addEntities() {
                     addObjectToWorld(
                         objectPos, objectRot, objectSize,
                         cam, 10.0f,
-                        model.count,
-                        model.data,
-                        model.bfc,
-                        model.color,
-                        model.flipped,
-                        model.outline,
+                        model,
                         true, 1
                     );
                 }
@@ -188,12 +177,7 @@ static void addEntities() {
                     (Vect3f){FROM_FIXED32(obj_->rotation.x), FROM_FIXED32(obj_->rotation.y), FROM_FIXED32(obj_->rotation.z)},
                     (Vect3f){FROM_FIXED32(obj_->size.x), FROM_FIXED32(obj_->size.y), FROM_FIXED32(obj_->size.z)},
                     cam, 0.0f,
-                    objArray[obj_->type].count,
-                    objArray[obj_->type].data,
-                    objArray[obj_->type].bfc,
-                    objArray[obj_->type].color,
-                    objArray[obj_->type].flipped,
-                    objArray[obj_->type].outline,
+                    objArray[obj_->type],
                     false, 1
                 );
                 break;
@@ -205,12 +189,7 @@ static void addMap() {
     addObjectToWorld(
         (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f},
         cam, 0.0f,
-        mapArray.count,
-        mapArray.data,
-        mapArray.bfc,
-        mapArray.color,
-        mapArray.flipped,
-        mapArray.outline,
+        mapArray,
         false, 1
     );
 }

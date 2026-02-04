@@ -147,13 +147,10 @@ void drawFilledTris(int tris[3][2], int triColor) {
             if (gridX >= sW) gridX = sW - 1;
 
             if ((w0 | w1 | w2) >= 0) {
-                #if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
-                setPixelLow(gridX, gridY, triColor);
-                #else
                 int gx = gridX / resolution;
                 int gy = gridY / resolution;
+
                 scnBuf[gy * (sW / resolution) + gx] = triColor;
-                #endif
             }
 
             w0 += A12;
@@ -243,14 +240,10 @@ void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, i
                 if (u >= 0 && v >= 0 && u < texW && v < texH) {
                     int shade = texture[v * texW + u];
                     if (shade != -1) {
-                        #if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
-                        setPixelLow(gridX, gridY, shade);
-                        #else
                         int gx = gridX / resolution;
                         int gy = gridY / resolution;
+
                         scnBuf[gy * (sW / resolution) + gx] = shade;
-                        #endif
-                        
                     }
                 }
             }

@@ -244,11 +244,20 @@ static int render() {
     
     addMap();
     addPlayer();
-    addEntities();
+    // addEntities();
 
     shootRender(cam, textAtlasMem);
 
     return 0;
+}
+
+static inline void scnBufFix() {
+    int8_t* p = scnBuf;
+    int count = sW_L * sH_L;
+
+    while (count--) {
+        *p++ = -1;
+    }
 }
 
 static int update(void* userdata) {
@@ -256,15 +265,20 @@ static int update(void* userdata) {
         gameScreen = 1;
 
         init();
+        initDitherByteLUT();
+        scnBuf = pd_malloc(sizeof(int8_t) * (sW_L * sH_L));
         onStart = 1;
     }
 
     pd->graphics->clear(kColorBlack);
     buf = pd->graphics->getFrame();
-    lowBuf = pd->graphics->getFrame();
+    scnBufFix();
+    skybox(5, 10, 10);
     
     if (gameScreen == 1) {
         render();
+
+        upscaleToScreen();
     }
 
     pd->graphics->fillRect(0, 0, 20, 20, kColorWhite);

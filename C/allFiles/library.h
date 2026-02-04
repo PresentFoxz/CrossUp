@@ -33,8 +33,6 @@ static inline void pd_free(void* ptr) {
 #include <direct.h>
 #include "raylib.h"
 
-extern int* scnBuf;
-
 #define pd_realloc(ptr, size) realloc(ptr, size)
 #define pd_malloc(size)       malloc(size)
 #define pd_free(ptr)          free(ptr)
@@ -82,7 +80,18 @@ static inline qfixed16_t divide16(qfixed16_t a, qfixed16_t b) { return (qfixed16
 #define worldUnit 16.0f
 
 #define rowStride 52
-#define resolution 4
+#define resolution 2
+
+#define sX  0
+#define sY  0
+#define sW  400
+#define sH  240
+#define sW_H  (sW / 2)
+#define sH_H  (sH / 2)
+#define sW_L  (sW / resolution)
+#define sH_L  (sH / resolution)
+
+extern int8_t* scnBuf;
 
 #define sX  0
 #define sY  0

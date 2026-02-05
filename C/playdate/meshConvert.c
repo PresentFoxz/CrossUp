@@ -23,6 +23,21 @@ void allocateMeshes(VertAnims* mesh, int maxAnims, const int* framesPerAnim) {
     pd->system->logToConsole("Max Anims: %d\n", maxAnims);
 }
 
+static void buildTriangleEdges(Mesh_t* mesh) {
+    mesh->edgeCount = mesh->triCount * 3;
+    mesh->edges = pd_malloc(sizeof(Edge) * mesh->edgeCount);
+
+    int ei = 0;
+
+    for (int t = 0; t < mesh->triCount; t++) {
+        int* tri = mesh->tris[t];
+
+        mesh->edges[ei++] = (Edge){ .v0 = tri[0], .v1 = tri[1] };
+        mesh->edges[ei++] = (Edge){ .v0 = tri[1], .v1 = tri[2] };
+        mesh->edges[ei++] = (Edge){ .v0 = tri[2], .v1 = tri[1] };
+    }
+}
+
 static int pd_fgets(char* out, int maxLen, SDFile* file) {
     int i = 0;
     char c;
@@ -127,6 +142,8 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
 
     meshOut->flipped = invert;
     meshOut->outline = outline;
+
+    // buildTriangleEdges(meshOut);
 }
 
 int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[], int color, int invert, int outline) {

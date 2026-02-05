@@ -23,6 +23,21 @@ void allocateMeshes(VertAnims* mesh, int maxAnims, const int* framesPerAnim) {
     printf("Max Anims: %d\n", maxAnims);
 }
 
+static inline void buildTriangleEdges(Mesh_t* mesh) {
+    mesh->edgeCount = mesh->triCount * 3;
+    mesh->edges = pd_malloc(sizeof(Edge) * mesh->edgeCount);
+
+    int ei = 0;
+
+    for (int t = 0; t < mesh->triCount; t++) {
+        int* tri = mesh->tris[t];
+
+        mesh->edges[ei++] = (Edge){ .v0 = tri[0], .v1 = tri[1] };
+        mesh->edges[ei++] = (Edge){ .v0 = tri[1], .v1 = tri[2] };
+        mesh->edges[ei++] = (Edge){ .v0 = tri[2], .v1 = tri[1] };
+    }
+}
+
 void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int invert, int outline) {
     FILE* fptr = fopen(filename, "r");
     if (!fptr) {
@@ -71,7 +86,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                 tris[triCount][1] = invert ? indices[2] : indices[1];
                 tris[triCount][2] = invert ? indices[1] : indices[2];
 
-                colorArr[triCount] = (color != -1) ? color : randomInt(0, 15);
+                colorArr[triCount] = randomInt(0, 15);
                 triCount++;
             }
             
@@ -82,12 +97,12 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                 tris[triCount][0] = indices[0];
                 tris[triCount][1] = invert ? indices[2] : indices[1];
                 tris[triCount][2] = invert ? indices[1] : indices[2];
-                colorArr[triCount] = (color != -1) ? color : randomInt(0, 15);
+                colorArr[triCount] = randomInt(0, 15);
                 
                 tris[triCount + 1][0] = indices[0];
                 tris[triCount + 1][1] = invert ? indices[3] : indices[2];
                 tris[triCount + 1][2] = invert ? indices[2] : indices[3];
-                colorArr[triCount + 1] = (color != -1) ? color : randomInt(0, 15);
+                colorArr[triCount + 1] = randomInt(0, 15);
 
                 triCount += 2;
             }
@@ -112,6 +127,8 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
 
     meshOut->flipped = invert;
     meshOut->outline = outline;
+
+    buildTriangleEdges(meshOut);
 }
 
 int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[], int color, int invert, int outline) {

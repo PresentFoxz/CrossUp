@@ -3,6 +3,14 @@
 #include "library.h"
 
 typedef struct {
+    int v0;
+    int v1;
+
+    int tri0;
+    int tri1;
+} Edge;
+
+typedef struct {
     Vect3f* verts;
     int vertCount;
 
@@ -11,6 +19,9 @@ typedef struct {
 
     float (*uvs)[2];
     int uvCount;
+
+    Edge* edges;
+    int edgeCount;
 
     int* color;
     int* bfc;

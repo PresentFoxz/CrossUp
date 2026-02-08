@@ -69,21 +69,6 @@ typedef struct {
 } entData_t;
 
 typedef struct {
-    int x0, y0, x1, y1, x2, y2;
-    float z0, z1, z2;
-    
-    int32_t A01, B01, C01;
-    int32_t A12, B12, C12;
-    int32_t A20, B20, C20;
-
-    int minX, maxX, minY, maxY;
-    int flip;
-
-    float invZStepX, invZStepY;
-    float invZ_row;
-} RasterTri;
-
-typedef struct {
     int actionUsed;
     int timer;
 } Action;
@@ -91,6 +76,10 @@ typedef struct {
 typedef struct {
     Action spin;
 } PlayerActions;
+
+typedef struct {
+    int countdown;
+} EntityActions;
 
 typedef struct {
     Vect3i position;
@@ -101,7 +90,7 @@ typedef struct {
     qfixed32_t radius, height;
     int type, grounded, groundTimer;
     int coyote, ifMove;
-    int countdown, rotDir;
+    int countdown;
     float frict, fallFrict;
     int frameCount, currentFrame;
     int currentAnim, lastAnim;
@@ -109,6 +98,7 @@ typedef struct {
 
     union {
         PlayerActions plr;
+        EntityActions ent;
     } actions;
 } EntStruct;
 

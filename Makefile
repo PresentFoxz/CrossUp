@@ -7,7 +7,8 @@ raylib:
 	$(MAKE) -f Makefile_raylib all
 
 all:
-	$(MAKE) -f Makefile_playdate all
+	$(MAKE) -f Makefile_playdate pdx-sim
+	$(MAKE) -f Makefile_playdate pdx-dev
 	$(MAKE) -f Makefile_raylib all
 
 

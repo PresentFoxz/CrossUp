@@ -22,5 +22,6 @@ void drawFilledTris(int tris[3][2], int triColor);
 void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, int texH);
 
 int backfaceCullCamera(Vertex* v0, Vertex* v1, Vertex* v2, Vect3f cam, int flipped);
+void drawLine(int x0, int y0, int x1, int y1, int8_t color);
 
 #endif

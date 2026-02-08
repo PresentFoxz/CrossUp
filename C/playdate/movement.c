@@ -148,15 +148,7 @@ void movePlayerObj(EntStruct* p, Camera_t* c){
     float secondaryStrength = 0.5f;
     float jumpFrict = 0.54f;
 
-    if (p->grounded == 1 && p->actions.plr.spin.timer <= 0) { p->actions.plr.spin.actionUsed = 0; p->actions.plr.spin.timer = -1; }
-
     // === Movement ===
-    if (tapped & kButtonB && p->actions.plr.spin.timer <= 0 && p->actions.plr.spin.actionUsed == 0) {
-        if (p->grounded == 0) { if (p->velocity.y < 0.0f) { p->velocity.y = 0.54f; } else { p->velocity.y += 0.65f; } }
-        p->actions.plr.spin.actionUsed = 1; p->actions.plr.spin.timer = 15;
-    }
-    if (p->actions.plr.spin.timer > 0 && p->actions.plr.spin.actionUsed == 1) { p->coyote = 11; p->fallFrict = 0.05f; jumpFrict = 1.0f; }
-
     if (held & kButtonA && (p->grounded == 1 || p->coyote <= 10)) {
         p->grounded = 0;
         p->velocity.y = jumpFrict;
@@ -285,11 +277,11 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
         float targetYaw = atan2f(inputX, inputZ);
 
         e->rotation.y = TO_FIXED32(targetYaw);
-        e->countdown = 10;
+        e->actions.ent.countdown = 10;
     }
 
-    e->countdown--;
-    if (e->countdown <= 0) {
+    e->actions.ent.countdown--;
+    if (e->actions.ent.countdown <= 0) {
         float inputX = randomFloat(-1.0f, 1.0f);
         float inputZ = randomFloat(-1.0f, 1.0f);
         float targetYaw = atan2f(inputX, inputZ);
@@ -297,7 +289,7 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
         e->rotation.y = TO_FIXED32(targetYaw);
         if (randomInt(0, 100) > 99 && (e->grounded == 1 || e->coyote <= 10)) { e->velocity.y = 0.94f; e->grounded = 0; }
 
-        e->countdown = randomInt(30, 100);
+        e->actions.ent.countdown = randomInt(30, 100);
     }
 
     moveEnt(e, FROM_FIXED32(e->rotation.y), FROM_FIXED32(e->surfRot), secondaryStrength, e->frict, 0.13f, 0.0f, 1);

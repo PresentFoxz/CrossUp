@@ -77,6 +77,10 @@ static void renderTriData(int tri[3][2], clippedTri clip, textAtlas* textAtlasMe
     } else {
         drawFilledTris(tri, color);
     }
+
+    drawLine(tri[0][0], tri[0][1], tri[1][0], tri[1][1], 0);
+    drawLine(tri[1][0], tri[1][1], tri[2][0], tri[2][1], 0);
+    drawLine(tri[2][0], tri[2][1], tri[0][0], tri[0][1], 0);
 }
 
 static void renderTris(Camera_t usedCam, textAtlas* textAtlasMem) {

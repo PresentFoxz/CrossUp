@@ -141,7 +141,6 @@ void stateMachine(EntStruct* p){
     p->currentAnim = 0;
 
     if (p->grounded == 1 && ((p->velocity.x > 0.02 || p->velocity.x < -0.02) || (p->velocity.z > 0.02 || p->velocity.z < -0.02))) { p->currentAnim = 1; }
-    else if (p->actions.plr.spin.actionUsed > 0) { p->currentAnim = 1; }
 }
 
 void movePlayerObj(EntStruct* p, Camera_t* c, int canMove){
@@ -150,16 +149,8 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int canMove){
     float secondaryStrength = 0.5f;
     float jumpFrict = 0.54f;
 
-    if (p->grounded == 1 && p->actions.plr.spin.timer <= 0) { p->actions.plr.spin.actionUsed = 0; p->actions.plr.spin.timer = -1; }
-
     // === Movement ===
     if (canMove) {
-        if (IsKeyPressed(KEY_K) && p->actions.plr.spin.timer <= 0 && p->actions.plr.spin.actionUsed == 0) {
-            if (p->grounded == 0) { if (p->velocity.y < 0.0f) { p->velocity.y = 0.54f; } else { p->velocity.y += 0.65f; } }
-            p->actions.plr.spin.actionUsed = 1; p->actions.plr.spin.timer = 15;
-        }
-        if (p->actions.plr.spin.timer > 0 && p->actions.plr.spin.actionUsed == 1) { p->coyote = 11; p->fallFrict = 0.05f; jumpFrict = 1.0f; }
-
         if (IsKeyDown(KEY_J) && (p->grounded == 1 || p->coyote <= 10)) {
             p->grounded = 0;
             p->velocity.y = jumpFrict;
@@ -340,23 +331,25 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
         float targetYaw = atan2f(inputX, inputZ);
         
         e->rotation.y = TO_FIXED32(targetYaw);
-        e->countdown = 10;
+        e->surfRot = e->rotation.y;
+        e->actions.ent.countdown = 10;
     }
 
-    e->countdown--;
-    if (e->countdown <= 0) {
+    e->actions.ent.countdown--;
+    if (e->actions.ent.countdown <= 0) {
         float inputX = randomFloat(-1.0f, 1.0f);
         float inputZ = randomFloat(-1.0f, 1.0f);
         float targetYaw = atan2f(inputX, inputZ);
 
         e->rotation.y = TO_FIXED32(targetYaw);
+        e->surfRot = e->rotation.y;
         if (randomInt(0, 100) > 99 && (e->grounded == 1 || e->coyote <= 10)) { e->velocity.y = 0.94f; e->grounded = 0; }
 
-        e->countdown = randomInt(30, 100);
+        e->actions.ent.countdown = randomInt(30, 100);
     }
 
     moveEnt(e, FROM_FIXED32(e->rotation.y), FROM_FIXED32(e->surfRot), secondaryStrength, e->frict, 0.13f, 0.0f, 1);
-    stateMachine(p);
+    // stateMachine(e);
 }
 
 static void objectTypes(ObjStruct obj){

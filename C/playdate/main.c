@@ -130,11 +130,12 @@ static void addPlayer() {
     }
 }
 
-static void addEntities() {
+static void addEntities(int ents, int objs) {
     float dx, dy, dz;
     for (int z = 0; z < entAmt; z++) {
         switch (allEnts[z].type) {
             case ENTITY:
+                if (!ents) break;
                 EntStruct *ent_ = &allEnts[z].data.ent;
 
                 moveEntObj(ent_, &player);
@@ -190,6 +191,7 @@ static void addEntities() {
 
                 break;
             case OBJECT:
+                if (!objs) break;
                 ObjStruct *obj_ = &allEnts[z].data.obj;
                 // objectTypes(obj_);
                 
@@ -222,7 +224,7 @@ static int render() {
     
     addMap();
     addPlayer();
-    // addEntities();
+    addEntities(1, 0);
 
     shootRender(cam, textAtlasMem);
 

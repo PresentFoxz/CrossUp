@@ -150,7 +150,7 @@ void drawFilledTris(int tris[3][2], int triColor) {
                 int gx = gridX / resolution;
                 int gy = gridY / resolution;
 
-                scnBuf[gy * (sW / resolution) + gx] = triColor;
+                setPixScnBuf(gx, gy, triColor);
             }
 
             w0 += A12;
@@ -243,7 +243,7 @@ void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, i
                         int gx = gridX / resolution;
                         int gy = gridY / resolution;
 
-                        scnBuf[gy * (sW / resolution) + gx] = shade;
+                        setPixScnBuf(gx, gy, shade);
                     }
                 }
             }
@@ -256,6 +256,43 @@ void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, i
         w0_row += B12;
         w1_row += B20;
         w2_row += B01;
+    }
+}
+
+void drawLine(int x0, int y0, int x1, int y1, int8_t color) {
+    x0 /= resolution;
+    y0 /= resolution;
+    x1 /= resolution;
+    y1 /= resolution;
+
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+
+    int sx = (dx >= 0) ? 1 : -1;
+    int sy = (dy >= 0) ? 1 : -1;
+
+    dx = dx >= 0 ? dx : -dx;
+    dy = dy >= 0 ? dy : -dy;
+
+    int err = dx - dy;
+
+    while (1) {
+        if ((unsigned)x0 < sW_L && (unsigned)y0 < sH_L) {
+            scnBuf[y0 * sW_L + x0] = color;
+        }
+
+        if (x0 == x1 && y0 == y1) break;
+
+        int e2 = err << 1;
+
+        if (e2 > -dy) {
+            err -= dy;
+            x0 += sx;
+        }
+        if (e2 < dx) {
+            err += dx;
+            y0 += sy;
+        }
     }
 }
 

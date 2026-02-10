@@ -45,6 +45,7 @@ typedef struct {
     int bfc;
     int lines;
     int textID;
+    int dimentions;
 } worldTris;
 
 typedef struct {

@@ -9,7 +9,7 @@ void generateMap(Mesh_t mapArray);
 void generateTriggers(Vect3f pos, Vect3f size);
 void generateTextures(textAtlas** textAtlasMem, int memArea);
 
-void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, Mesh_t model, int lineDraw, int distMod);
+void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, Mesh_t* model, int lineDraw, int distMod);
 void shootRender(Camera_t cam, textAtlas* textAtlasMem);
 void resetAllVariables();
 

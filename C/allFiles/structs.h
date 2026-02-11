@@ -1,9 +1,7 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-typedef int16_t qfixed8_t;
-typedef int32_t qfixed16_t;
-typedef int64_t qfixed32_t;
+typedef int64_t qfixed24x8_t;
 typedef unsigned int uint;
 
 typedef enum {
@@ -13,7 +11,7 @@ typedef enum {
 } EntTypes;
 
 typedef struct {
-    qfixed32_t x, y, z;
+    qfixed24x8_t x, y, z;
 } Vect3i;
 
 typedef struct {
@@ -87,8 +85,8 @@ typedef struct {
     Vect3i rotation;
     Vect3i size;
     Vect3f velocity;
-    qfixed32_t surfRot;
-    qfixed32_t radius, height;
+    qfixed24x8_t surfRot;
+    qfixed24x8_t radius, height;
     int type, grounded, groundTimer;
     int coyote, ifMove;
     int countdown;
@@ -139,5 +137,11 @@ typedef struct {
     Vect3f size;
     int type, id;
 } Triggers;
+
+typedef struct {
+    int** chunkIndex;
+    int chunkAmt;
+    int* amt;
+} ChunkCount;
 
 #endif

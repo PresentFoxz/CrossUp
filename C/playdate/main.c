@@ -97,27 +97,27 @@ static void addPlayer() {
     Mesh_t model = anims->meshModel[player.currentFrame];
     if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) {
         Vect3f objectPos = {
-            FROM_FIXED32(player.position.x),
-            FROM_FIXED32(player.position.y),
-            FROM_FIXED32(player.position.z)
+            FROM_FIXED24_8(player.position.x),
+            FROM_FIXED24_8(player.position.y),
+            FROM_FIXED24_8(player.position.z)
         };
     
         Vect3f objectRot = {
-            FROM_FIXED32(player.rotation.x),
-            FROM_FIXED32(player.rotation.y),
-            FROM_FIXED32(player.rotation.z)
+            FROM_FIXED24_8(player.rotation.x),
+            FROM_FIXED24_8(player.rotation.y),
+            FROM_FIXED24_8(player.rotation.z)
         };
     
         Vect3f objectSize = {
-            FROM_FIXED32(player.size.x),
-            FROM_FIXED32(player.size.y),
-            FROM_FIXED32(player.size.z)
+            FROM_FIXED24_8(player.size.x),
+            FROM_FIXED24_8(player.size.y),
+            FROM_FIXED24_8(player.size.z)
         };
     
         addObjectToWorld(
             objectPos, objectRot, objectSize,
             cam, 10.0f,
-            model,
+            &model,
             true, 1
         );
     }
@@ -157,27 +157,27 @@ static void addEntities(int ents, int objs) {
                 Mesh_t model = anims->meshModel[ent_->currentFrame];
                 if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) {
                     Vect3f objectPos = {
-                        FROM_FIXED32(ent_->position.x),
-                        FROM_FIXED32(ent_->position.y),
-                        FROM_FIXED32(ent_->position.z)
+                        FROM_FIXED24_8(ent_->position.x),
+                        FROM_FIXED24_8(ent_->position.y),
+                        FROM_FIXED24_8(ent_->position.z)
                     };
 
                     Vect3f objectRot = {
-                        FROM_FIXED32(ent_->rotation.x),
-                        FROM_FIXED32(ent_->rotation.y),
-                        FROM_FIXED32(ent_->rotation.z)
+                        FROM_FIXED24_8(ent_->rotation.x),
+                        FROM_FIXED24_8(ent_->rotation.y),
+                        FROM_FIXED24_8(ent_->rotation.z)
                     };
 
                     Vect3f objectSize = {
-                        FROM_FIXED32(ent_->size.x),
-                        FROM_FIXED32(ent_->size.y),
-                        FROM_FIXED32(ent_->size.z)
+                        FROM_FIXED24_8(ent_->size.x),
+                        FROM_FIXED24_8(ent_->size.y),
+                        FROM_FIXED24_8(ent_->size.z)
                     };
 
                     addObjectToWorld(
                         objectPos, objectRot, objectSize,
                         cam, 10.0f,
-                        model,
+                        &model,
                         true, 1
                     );
                 }
@@ -196,11 +196,11 @@ static void addEntities(int ents, int objs) {
                 // objectTypes(obj_);
                 
                 addObjectToWorld(
-                    (Vect3f){FROM_FIXED32(obj_->position.x), FROM_FIXED32(obj_->position.y), FROM_FIXED32(obj_->position.z)},
-                    (Vect3f){FROM_FIXED32(obj_->rotation.x), FROM_FIXED32(obj_->rotation.y), FROM_FIXED32(obj_->rotation.z)},
-                    (Vect3f){FROM_FIXED32(obj_->size.x), FROM_FIXED32(obj_->size.y), FROM_FIXED32(obj_->size.z)},
+                    (Vect3f){FROM_FIXED24_8(obj_->position.x), FROM_FIXED24_8(obj_->position.y), FROM_FIXED24_8(obj_->position.z)},
+                    (Vect3f){FROM_FIXED24_8(obj_->rotation.x), FROM_FIXED24_8(obj_->rotation.y), FROM_FIXED24_8(obj_->rotation.z)},
+                    (Vect3f){FROM_FIXED24_8(obj_->size.x), FROM_FIXED24_8(obj_->size.y), FROM_FIXED24_8(obj_->size.z)},
                     cam, 0.0f,
-                    objArray[obj_->type],
+                    &objArray[obj_->type],
                     false, 1
                 );
                 break;
@@ -212,7 +212,7 @@ static void addMap() {
     addObjectToWorld(
         (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f},
         cam, 0.0f,
-        mapArray,
+        &mapArray,
         false, 1
     );
 }

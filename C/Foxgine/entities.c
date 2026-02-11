@@ -2,13 +2,13 @@
 
 Camera_t createCamera(float x, float y, float z, float rotX, float rotY, float rotZ, float fov, float near, float far) {
     Camera_t cam;
-    cam.position.x = TO_FIXED32(x);
-    cam.position.y = TO_FIXED32(y);
-    cam.position.z = TO_FIXED32(z);
+    cam.position.x = TO_FIXED24_8(x);
+    cam.position.y = TO_FIXED24_8(y);
+    cam.position.z = TO_FIXED24_8(z);
 
-    cam.rotation.x = TO_FIXED32(degToRad(rotX));
-    cam.rotation.y = TO_FIXED32(degToRad(rotY));
-    cam.rotation.z = TO_FIXED32(degToRad(rotZ));
+    cam.rotation.x = TO_FIXED24_8(degToRad(rotX));
+    cam.rotation.y = TO_FIXED24_8(degToRad(rotY));
+    cam.rotation.z = TO_FIXED24_8(degToRad(rotZ));
 
     cam.fov =        fov;
     cam.nearPlane =  near;
@@ -16,23 +16,23 @@ Camera_t createCamera(float x, float y, float z, float rotX, float rotY, float r
     return cam;
 }
 
-void moveCamera(Camera_t* cam, float dx, float dy, float dz) { if (cam) { cam->position.x += TO_FIXED32(dx); cam->position.y += TO_FIXED32(dy); cam->position.z += TO_FIXED32(dz); } }
-void rotateCamera(Camera_t* cam, float rx, float ry, float rz) { if (cam) { cam->rotation.x += TO_FIXED32(rx); cam->rotation.y += TO_FIXED32(ry); cam->rotation.z += TO_FIXED32(rz); } }
+void moveCamera(Camera_t* cam, float dx, float dy, float dz) { if (cam) { cam->position.x += TO_FIXED24_8(dx); cam->position.y += TO_FIXED24_8(dy); cam->position.z += TO_FIXED24_8(dz); } }
+void rotateCamera(Camera_t* cam, float rx, float ry, float rz) { if (cam) { cam->rotation.x += TO_FIXED24_8(rx); cam->rotation.y += TO_FIXED24_8(ry); cam->rotation.z += TO_FIXED24_8(rz); } }
 void destroyCamera(Camera_t* cam) { if (cam) { cam = pd_realloc(cam, 0); } }
 
 EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, float radius, float height, float frict, float fallFrict, int type) {
     EntStruct p;
-    p.position.x = TO_FIXED32(x);
-    p.position.y = TO_FIXED32(y);
-    p.position.z = TO_FIXED32(z);
+    p.position.x = TO_FIXED24_8(x);
+    p.position.y = TO_FIXED24_8(y);
+    p.position.z = TO_FIXED24_8(z);
     
-    p.rotation.x = TO_FIXED32(degToRad(rotX));
-    p.rotation.y = TO_FIXED32(degToRad(rotY));
-    p.rotation.z = TO_FIXED32(degToRad(rotZ));
+    p.rotation.x = TO_FIXED24_8(degToRad(rotX));
+    p.rotation.y = TO_FIXED24_8(degToRad(rotY));
+    p.rotation.z = TO_FIXED24_8(degToRad(rotZ));
 
-    p.size.x = TO_FIXED32(sizeX);
-    p.size.y = TO_FIXED32(sizeY);
-    p.size.z = TO_FIXED32(sizeZ);
+    p.size.x = TO_FIXED24_8(sizeX);
+    p.size.y = TO_FIXED24_8(sizeY);
+    p.size.z = TO_FIXED24_8(sizeZ);
 
     p.velocity.x = 0.0f;
     p.velocity.y = 0.0f;
@@ -41,10 +41,10 @@ EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float 
     p.frict = frict;
     p.fallFrict = fallFrict;
 
-    p.surfRot =    TO_FIXED32(rotY);
+    p.surfRot =    TO_FIXED24_8(rotY);
 
-    p.radius =     TO_FIXED32(radius);
-    p.height =     TO_FIXED32(height);
+    p.radius =     TO_FIXED24_8(radius);
+    p.height =     TO_FIXED24_8(height);
 
     p.type = type;
     p.grounded = 0;
@@ -62,23 +62,23 @@ EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float 
     return p;
 }
 
-void moveEntity(EntStruct* p, float dx, float dy, float dz) { if (p) { p->position.x = TO_FIXED32(dx); p->position.y = TO_FIXED32(dy); p->position.z = TO_FIXED32(dz); } }
-void rotateEntity(EntStruct* p, float rx, float ry, float rz) { if (p) { p->rotation.x = TO_FIXED32(rx); p->rotation.y = TO_FIXED32(ry); p->rotation.z = TO_FIXED32(rz); } }
+void moveEntity(EntStruct* p, float dx, float dy, float dz) { if (p) { p->position.x = TO_FIXED24_8(dx); p->position.y = TO_FIXED24_8(dy); p->position.z = TO_FIXED24_8(dz); } }
+void rotateEntity(EntStruct* p, float rx, float ry, float rz) { if (p) { p->rotation.x = TO_FIXED24_8(rx); p->rotation.y = TO_FIXED24_8(ry); p->rotation.z = TO_FIXED24_8(rz); } }
 void destroyEntity(EntStruct* p) { if (p) { p = pd_realloc(p, 0); } }
 
 ObjStruct createObject(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, int type, int timer){
     ObjStruct o;
-    o.position.x = TO_FIXED32(x);
-    o.position.y = TO_FIXED32(y);
-    o.position.z = TO_FIXED32(z);
+    o.position.x = TO_FIXED24_8(x);
+    o.position.y = TO_FIXED24_8(y);
+    o.position.z = TO_FIXED24_8(z);
     
-    o.rotation.x = TO_FIXED32(rotX);
-    o.rotation.y = TO_FIXED32(rotY);
-    o.rotation.z = TO_FIXED32(rotZ);
+    o.rotation.x = TO_FIXED24_8(rotX);
+    o.rotation.y = TO_FIXED24_8(rotY);
+    o.rotation.z = TO_FIXED24_8(rotZ);
 
-    o.size.x = TO_FIXED32(sizeX);
-    o.size.y = TO_FIXED32(sizeY);
-    o.size.z = TO_FIXED32(sizeZ);
+    o.size.x = TO_FIXED24_8(sizeX);
+    o.size.y = TO_FIXED24_8(sizeY);
+    o.size.z = TO_FIXED24_8(sizeZ);
 
     o.velocity.x = 0.0f;
     o.velocity.y = 0.0f;

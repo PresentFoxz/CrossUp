@@ -4,8 +4,8 @@
 worldTris* allPoints;
 int chnkAmt = 0;
 
-const float one_third = 0.3333333f;
 int renderRadius = 85;
+const float one_third = 0.3333333f;
 int entAmt = 0;
 int mapIndex = 0;
 int allPointsCount = 0;
@@ -33,7 +33,7 @@ void addEnt(Vect3f pos, Vect3f rot, Vect3f size, float radius, float height, flo
 }
 
 void generateMap(Mesh_t mapArray) {
-    resetCollisionSurface(mapArray);
+    resetCollisionSurface(mapArray); 
     for (int i=0; i < mapArray.triCount; i++){
         int* triNum = mapArray.tris[i];
         addCollisionSurface(
@@ -78,9 +78,9 @@ static void renderTriData(int tri[3][2], clippedTri clip, textAtlas* textAtlasMe
             drawFilledTris(tri, color);
         }
 
-        drawLine(tri[0][0], tri[0][1], tri[1][0], tri[1][1], 0);
-        drawLine(tri[1][0], tri[1][1], tri[2][0], tri[2][1], 0);
-        drawLine(tri[2][0], tri[2][1], tri[0][0], tri[0][1], 0);
+        // drawLine(tri[0][0], tri[0][1], tri[1][0], tri[1][1], 0);
+        // drawLine(tri[1][0], tri[1][1], tri[2][0], tri[2][1], 0);
+        // drawLine(tri[2][0], tri[2][1], tri[0][0], tri[0][1], 0);
     }
 }
 
@@ -88,10 +88,10 @@ static void renderTris(Camera_t usedCam, textAtlas* textAtlasMem) {
     float fov = usedCam.fov;
     float nearPlane = usedCam.nearPlane;
     float farPlane = usedCam.farPlane;
-    Vect3f camPos = {FROM_FIXED32(usedCam.position.x), FROM_FIXED32(usedCam.position.y), FROM_FIXED32(usedCam.position.z)};
+    Vect3f camPos = {FROM_FIXED24_8(usedCam.position.x), FROM_FIXED24_8(usedCam.position.y), FROM_FIXED24_8(usedCam.position.z)};
 
     float camMatrix[3][3];
-    computeCamMatrix(camMatrix, FROM_FIXED32(usedCam.rotation.x), FROM_FIXED32(usedCam.rotation.y), FROM_FIXED32(usedCam.rotation.z));
+    computeCamMatrix(camMatrix, FROM_FIXED24_8(usedCam.rotation.x), FROM_FIXED24_8(usedCam.rotation.y), FROM_FIXED24_8(usedCam.rotation.z));
 
     int tri1[3][2];
     int tri2[3][2];
@@ -140,18 +140,18 @@ static void renderTris(Camera_t usedCam, textAtlas* textAtlasMem) {
     }
 }
 
-void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, Mesh_t model, int lineDraw, int distMod) {
+void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, Mesh_t* model, int lineDraw, int distMod) {
     if (allAmt >= allPointsCount) return;
 
     worldTris wTris;
     float renderRadiusSq = renderRadius ? (renderRadius * renderRadius) : 0.0f;
-
+    
     float camMatrix[3][3];
-    Vect3f camPos = {FROM_FIXED32(cCam.position.x), FROM_FIXED32(cCam.position.y), FROM_FIXED32(cCam.position.z)};
-    Vect3f camRot = {FROM_FIXED32(cCam.rotation.x), FROM_FIXED32(cCam.rotation.y), FROM_FIXED32(cCam.rotation.z)};
+    Vect3f camPos = {FROM_FIXED24_8(cCam.position.x), FROM_FIXED24_8(cCam.position.y), FROM_FIXED24_8(cCam.position.z)};
+    Vect3f camRot = {FROM_FIXED24_8(cCam.rotation.x), FROM_FIXED24_8(cCam.rotation.y), FROM_FIXED24_8(cCam.rotation.z)};
     computeCamMatrix(camMatrix, camRot.x, camRot.y, camRot.z);
 
-    if (176model) {
+    if (!model) {
         float cx = pos.x * one_third;
         float cy = pos.y * one_third;
         float cz = pos.z * one_third;
@@ -172,14 +172,14 @@ void addObjectToWorld(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float 
 
         allPoints[allAmt++] = wTris;
     } else {
-        int vertCount = model.vertCount;
-        int triCount = model.triCount;
-        Vect3f* verticies = model.verts;
-        int (*tris)[3] = model.tris;
-        int* backFace = model.bfc;
-        int* colorArray = model.color;
-        int flipped = model.flipped;
-        int outline = model.outline;
+        int vertCount = model->vertCount;
+        int triCount = model->triCount;
+        Vect3f* verticies = model->verts;
+        int (*tris)[3] = model->tris;
+        int* backFace = model->bfc;
+        int* colorArray = model->color;
+        int flipped = model->flipped;
+        int outline = model->outline;
 
         float rotMat[3][3];
         computeRotScaleMatrix(rotMat, rot.x, rot.y, rot.z, size.x, size.y, size.z);

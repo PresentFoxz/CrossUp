@@ -1,11 +1,21 @@
 #include "_3DMath.h"
+const float epsilon = 0.5f;
+
+int RES_SHIFT = 0;
+void resShiftFix() {
+    RES_SHIFT = 0;
+    int r = resolution;
+    while (r > 1) {
+        r >>= 1;
+        RES_SHIFT++;
+    }
+}
 
 void project2D(int point[2], float verts[3], float fov, float nearPlane) {
     float z = verts[2];
-    if (z < nearPlane) z = nearPlane;
+    if (z < nearPlane + epsilon) z = nearPlane + epsilon;
 
-    float invZ = 1.0f / z;
-    float scale = fov * invZ;
+    float scale = fov / z;
 
     point[0] = (int)(verts[0] * scale + (sW_H + sX));
     point[1] = (int)(-verts[1] * scale + (sH_H + sY));
@@ -43,7 +53,6 @@ int backfaceCullCamera(Vertex* v0, Vertex* v1, Vertex* v2, Vect3f cam, int flipp
     
     return flipped ? (dot > 0.0f) : (dot < 0.0f);
 }
-
 
 void computeCamMatrix(float m[3][3], float pitchX, float yawY, float rollZ) {
     float sinY = sinf(yawY),   cosY = cosf(yawY);
@@ -86,69 +95,55 @@ int windingOrder(const int p0[2], const int p1[2], const int p2[2]) {
     return cross > 0;
 }
 
-static inline int edgeFunc(int x0, int y0, int x1, int y1, int px, int py) { return (py - y0) * (x1 - x0) - (px - x0) * (y1 - y0); }
+static inline qfixed32_t edgeFuncF(qfixed32_t x0, qfixed32_t y0, qfixed32_t x1, qfixed32_t y1, qfixed32_t px, qfixed32_t py) { return (py - y0) * (x1 - x0) - (px - x0) * (y1 - y0); }
 
 void drawFilledTris(int tris[3][2], int triColor) {
-    int x0 = tris[0][0], y0 = tris[0][1];
-    int x1 = tris[1][0], y1 = tris[1][1];
-    int x2 = tris[2][0], y2 = tris[2][1];
-    
-    int minX = x0 < x1 ? (x0 < x2 ? x0 : x2) : (x1 < x2 ? x1 : x2);
-    int maxX = x0 > x1 ? (x0 > x2 ? x0 : x2) : (x1 > x2 ? x1 : x2);
-    int minY = y0 < y1 ? (y0 < y2 ? y0 : y2) : (y1 < y2 ? y1 : y2);
-    int maxY = y0 > y1 ? (y0 > y2 ? y0 : y2) : (y1 > y2 ? y1 : y2);
-    
+    qfixed32_t x0 = TO_FIXED32(tris[0][0]), y0 = TO_FIXED32(tris[0][1]);
+    qfixed32_t x1 = TO_FIXED32(tris[1][0]), y1 = TO_FIXED32(tris[1][1]);
+    qfixed32_t x2 = TO_FIXED32(tris[2][0]), y2 = TO_FIXED32(tris[2][1]);
+
+    qfixed32_t minX = x0 < x1 ? (x0 < x2 ? x0 : x2) : (x1 < x2 ? x1 : x2);
+    qfixed32_t maxX = x0 > x1 ? (x0 > x2 ? x0 : x2) : (x1 > x2 ? x1 : x2);
+    qfixed32_t minY = y0 < y1 ? (y0 < y2 ? y0 : y2) : (y1 < y2 ? y1 : y2);
+    qfixed32_t maxY = y0 > y1 ? (y0 > y2 ? y0 : y2) : (y1 > y2 ? y1 : y2);
+
     if (minX < 0) minX = 0;
     if (minY < 0) minY = 0;
-    if (maxX >= sW) maxX = sW - 1;
-    if (maxY >= sH) maxY = sH - 1;
-    
-    minX = (minX / resolution) * resolution;
-    minY = (minY / resolution) * resolution;
-    maxX = ((maxX + resolution - 1) / resolution) * resolution;
-    maxY = ((maxY + resolution - 1) / resolution) * resolution;
+    if (maxX >= TO_FIXED32(sW)) maxX = TO_FIXED32(sW - 1);
+    if (maxY >= TO_FIXED32(sH)) maxY = TO_FIXED32(sH - 1);
 
-    int A01 = (y0 - y1) * resolution, B01 = (x1 - x0) * resolution;
-    int A12 = (y1 - y2) * resolution, B12 = (x2 - x1) * resolution;
-    int A20 = (y2 - y0) * resolution, B20 = (x0 - x2) * resolution;
+    qfixed32_t A01 = TO_FIXED32((y0 - y1) * resolution), B01 = TO_FIXED32((x1 - x0) * resolution);
+    qfixed32_t A12 = TO_FIXED32((y1 - y2) * resolution), B12 = TO_FIXED32((x2 - x1) * resolution);
+    qfixed32_t A20 = TO_FIXED32((y2 - y0) * resolution), B20 = TO_FIXED32((x0 - x2) * resolution);
 
-    int w0_row = edgeFunc(x1, y1, x2, y2, minX, minY);
-    int w1_row = edgeFunc(x2, y2, x0, y0, minX, minY);
-    int w2_row = edgeFunc(x0, y0, x1, y1, minX, minY);
+    qfixed32_t w0_row = edgeFuncF(x1, y1, x2, y2, minX, minY);
+    qfixed32_t w1_row = edgeFuncF(x2, y2, x0, y0, minX, minY);
+    qfixed32_t w2_row = edgeFuncF(x0, y0, x1, y1, minX, minY);
 
-    int area = edgeFunc(x0, y0, x1, y1, x2, y2);
+    qfixed32_t area = edgeFuncF(x0, y0, x1, y1, x2, y2);
+    if (area == 0) return;
 
     if (area < 0) {
-        int tmp;
-        tmp = A01; A01 = -A01; B01 = -B01;
-        tmp = A12; A12 = -A12; B12 = -B12;
-        tmp = A20; A20 = -A20; B20 = -B20;
+        A01 = -A01; B01 = -B01;
+        A12 = -A12; B12 = -B12;
+        A20 = -A20; B20 = -B20;
         w0_row = -w0_row;
         w1_row = -w1_row;
         w2_row = -w2_row;
     }
 
-    int32_t w0, w1, w2;
-    uint gridX, gridY;
+    for (qfixed32_t y = minY; y <= maxY; y += TO_FIXED32(resolution)) {
+        qfixed32_t w0 = w0_row;
+        qfixed32_t w1 = w1_row;
+        qfixed32_t w2 = w2_row;
 
-    if ((maxX - minX) < resolution) maxX = minX + resolution;
-    if ((maxY - minY) < resolution) maxY = minY + resolution;
-
-    for (int y = minY; y <= maxY && y < sH; y += resolution) {
-        gridY = (y & ~(resolution - 1));
-        if (gridY >= sH) gridY = sH - 1;
-
-        w0 = w0_row;
-        w1 = w1_row;
-        w2 = w2_row;
-
-        for (int x = minX; x <= maxX && x < sW; x += resolution) {
-            gridX = (x & ~(resolution - 1));
-            if (gridX >= sW) gridX = sW - 1;
-
+        for (qfixed32_t x = minX; x <= maxX; x += TO_FIXED32(resolution)) {
             if ((w0 | w1 | w2) >= 0) {
-                int gx = gridX / resolution;
-                int gy = gridY / resolution;
+                int gx = FROM_FIXED32(x) / resolution;
+                int gy = FROM_FIXED32(y) / resolution;
+
+                if (gx < 0) gx = 0; if (gy < 0) gy = 0;
+                if (gx >= sW_L) gx = sW_L - 1; if (gy >= sH_L) gy = sH_L - 1;
 
                 setPixScnBuf(gx, gy, triColor);
             }
@@ -165,87 +160,80 @@ void drawFilledTris(int tris[3][2], int triColor) {
 }
 
 void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, int texH) {
-    int x0 = tris[0][0], y0 = tris[0][1];
-    int x1 = tris[1][0], y1 = tris[1][1];
-    int x2 = tris[2][0], y2 = tris[2][1];
+    qfixed32_t x0 = TO_FIXED32(tris[0][0]), y0 = TO_FIXED32(tris[0][1]);
+    qfixed32_t x1 = TO_FIXED32(tris[1][0]), y1 = TO_FIXED32(tris[1][1]);
+    qfixed32_t x2 = TO_FIXED32(tris[2][0]), y2 = TO_FIXED32(tris[2][1]);
 
-    int u0 = (int)(uvs[0][0] * (texW - 1)), v0 = (int)(uvs[0][1] * (texH - 1));
-    int u1 = (int)(uvs[1][0] * (texW - 1)), v1 = (int)(uvs[1][1] * (texH - 1));
-    int u2 = (int)(uvs[2][0] * (texW - 1)), v2 = (int)(uvs[2][1] * (texH - 1));
+    qfixed32_t u0 = TO_FIXED32(uvs[0][0] * (texW - 1));
+    qfixed32_t v0 = TO_FIXED32(uvs[0][1] * (texH - 1));
+    qfixed32_t u1 = TO_FIXED32(uvs[1][0] * (texW - 1));
+    qfixed32_t v1 = TO_FIXED32(uvs[1][1] * (texH - 1));
+    qfixed32_t u2 = TO_FIXED32(uvs[2][0] * (texW - 1));
+    qfixed32_t v2 = TO_FIXED32(uvs[2][1] * (texH - 1));
+
+    qfixed32_t minX = x0 < x1 ? (x0 < x2 ? x0 : x2) : (x1 < x2 ? x1 : x2);
+    qfixed32_t maxX = x0 > x1 ? (x0 > x2 ? x0 : x2) : (x1 > x2 ? x1 : x2);
+    qfixed32_t minY = y0 < y1 ? (y0 < y2 ? y0 : y2) : (y1 < y2 ? y1 : y2);
+    qfixed32_t maxY = y0 > y1 ? (y0 > y2 ? y0 : y2) : (y1 > y2 ? y1 : y2);
     
-    int minX = x0 < x1 ? (x0 < x2 ? x0 : x2) : (x1 < x2 ? x1 : x2);
-    int maxX = x0 > x1 ? (x0 > x2 ? x0 : x2) : (x1 > x2 ? x1 : x2);
-    int minY = y0 < y1 ? (y0 < y2 ? y0 : y2) : (y1 < y2 ? y1 : y2);
-    int maxY = y0 > y1 ? (y0 > y2 ? y0 : y2) : (y1 > y2 ? y1 : y2);
-
     if (minX < 0) minX = 0;
     if (minY < 0) minY = 0;
-    if (maxX >= sW) maxX = sW - 1;
-    if (maxY >= sH) maxY = sH - 1;
+    if (maxX >= TO_FIXED32(sW)) maxX = TO_FIXED32(sW - 1);
+    if (maxY >= TO_FIXED32(sH)) maxY = TO_FIXED32(sH - 1);
 
-    minX = (minX / resolution) * resolution;
-    minY = (minY / resolution) * resolution;
-    maxX = ((maxX + resolution - 1) / resolution) * resolution;
-    maxY = ((maxY + resolution - 1) / resolution) * resolution;
-    
-    int A01 = (y0 - y1) * resolution, B01 = (x1 - x0) * resolution;
-    int A12 = (y1 - y2) * resolution, B12 = (x2 - x1) * resolution;
-    int A20 = (y2 - y0) * resolution, B20 = (x0 - x2) * resolution;
-    
-    int cx = minX + (resolution >> 1);
-    int cy = minY + (resolution >> 1);
+    qfixed32_t A01 = TO_FIXED32((y0 - y1) * resolution), B01 = TO_FIXED32((x1 - x0) * resolution);
+    qfixed32_t A12 = TO_FIXED32((y1 - y2) * resolution), B12 = TO_FIXED32((x2 - x1) * resolution);
+    qfixed32_t A20 = TO_FIXED32((y2 - y0) * resolution), B20 = TO_FIXED32((x0 - x2) * resolution);
 
-    int w0_row = edgeFunc(x1, y1, x2, y2, cx, cy);
-    int w1_row = edgeFunc(x2, y2, x0, y0, cx, cy);
-    int w2_row = edgeFunc(x0, y0, x1, y1, cx, cy);
+    qfixed32_t w0_row = edgeFuncF(x1, y1, x2, y2, minX, minY);
+    qfixed32_t w1_row = edgeFuncF(x2, y2, x0, y0, minX, minY);
+    qfixed32_t w2_row = edgeFuncF(x0, y0, x1, y1, minX, minY);
 
-    int area = edgeFunc(x0, y0, x1, y1, x2, y2);
+    qfixed32_t area = edgeFuncF(x0, y0, x1, y1, x2, y2);
     if (area == 0) return;
-    
+
     if (area < 0) {
-        area = -area;
-
-        int tmp;
-        tmp = A01; A01 = -A01; B01 = -B01;
-        tmp = A12; A12 = -A12; B12 = -B12;
-        tmp = A20; A20 = -A20; B20 = -B20;
-
+        A01 = -A01; B01 = -B01;
+        A12 = -A12; B12 = -B12;
+        A20 = -A20; B20 = -B20;
         w0_row = -w0_row;
         w1_row = -w1_row;
         w2_row = -w2_row;
     }
 
-    int32_t w0, w1, w2;
-    uint gridX, gridY;
+    qfixed32_t areaFP = TO_FIXED32(area);
 
-    if ((maxX - minX) < resolution) maxX = minX + resolution;
-    if ((maxY - minY) < resolution) maxY = minY + resolution;
+    for (qfixed32_t y = minY; y <= maxY; y += TO_FIXED32(resolution)) {
+        qfixed32_t w0 = w0_row;
+        qfixed32_t w1 = w1_row;
+        qfixed32_t w2 = w2_row;
 
-    for (int y = minY; y <= maxY && y < sH; y += resolution) {
-        gridY = (y & ~(resolution - 1));
-        if (gridY >= sH) gridY = sH - 1;
-
-        w0 = w0_row;
-        w1 = w1_row;
-        w2 = w2_row;
-
-        for (int x = minX; x <= maxX && x < sW; x += resolution) {
-            gridX = (x & ~(resolution - 1));
-            if (gridX >= sW) gridX = sW - 1;
-
+        for (qfixed32_t x = minX; x <= maxX; x += TO_FIXED32(resolution)) {
             if ((w0 | w1 | w2) >= 0) {
-                int u = (int)(((int64_t)w0 * u0 + (int64_t)w1 * u1 + (int64_t)w2 * u2) / area);
-                int v = (int)(((int64_t)w0 * v0 + (int64_t)w1 * v1 + (int64_t)w2 * v2) / area);
+                int64_t u_acc = (int64_t)multiply32(w0, u0) + multiply32(w1, u1) + multiply32(w2, u2);
+                int64_t v_acc = (int64_t)multiply32(w0, v0) + multiply32(w1, v1) + multiply32(w2, v2);
 
-                if (u >= 0 && v >= 0 && u < texW && v < texH) {
-                    int shade = texture[v * texW + u];
-                    if (shade != -1) {
-                        int gx = gridX / resolution;
-                        int gy = gridY / resolution;
+                qfixed32_t u = divide32(u_acc, areaFP);
+                qfixed32_t v = divide32(v_acc, areaFP);
 
-                        setPixScnBuf(gx, gy, shade);
-                    }
-                }
+                int iu = FROM_FIXED32(u);
+                int iv = FROM_FIXED32(v);
+
+                if (iu < 0) iu = 0;
+                if (iv < 0) iv = 0;
+                if (iu >= texW) iu = texW - 1;
+                if (iv >= texH) iv = texH - 1;
+
+                int gx = FROM_FIXED32(x) / resolution;
+                int gy = FROM_FIXED32(y) / resolution;
+                
+                if (gx < 0) gx = 0;
+                if (gy < 0) gy = 0;
+                if (gx >= sW_L) gx = sW_L - 1;
+                if (gy >= sH_L) gy = sH_L - 1;
+
+                int shade = texture[iv * texW + iu];
+                if (shade != -1) setPixScnBuf(gx, gy, shade);
             }
 
             w0 += A12;
@@ -260,26 +248,26 @@ void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, i
 }
 
 void drawLine(int x0, int y0, int x1, int y1, int8_t color) {
-    x0 /= resolution;
-    y0 /= resolution;
-    x1 /= resolution;
-    y1 /= resolution;
+    x0 >>= RES_SHIFT;
+    y0 >>= RES_SHIFT;
+    x1 >>= RES_SHIFT;
+    y1 >>= RES_SHIFT;
 
     int dx = x1 - x0;
     int dy = y1 - y0;
 
     int sx = (dx >= 0) ? 1 : -1;
     int sy = (dy >= 0) ? 1 : -1;
-
+    
     dx = dx >= 0 ? dx : -dx;
     dy = dy >= 0 ? dy : -dy;
-
+    
     int err = dx - dy;
 
+    int index = y0 * sW_L + x0;
+
     while (1) {
-        if ((unsigned)x0 < sW_L && (unsigned)y0 < sH_L) {
-            scnBuf[y0 * sW_L + x0] = color;
-        }
+        if ((unsigned)x0 < sW_L && (unsigned)y0 < sH_L) scnBuf[index] = color;
 
         if (x0 == x1 && y0 == y1) break;
 
@@ -288,10 +276,12 @@ void drawLine(int x0, int y0, int x1, int y1, int8_t color) {
         if (e2 > -dy) {
             err -= dy;
             x0 += sx;
+            index += sx;
         }
         if (e2 < dx) {
             err += dx;
             y0 += sy;
+            index += sy * sW_L;
         }
     }
 }
@@ -310,21 +300,24 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
 
     Vertex cross0, cross1;
 
-    if (inAmt == 0) {
-        return 0;
-    } else if (inAmt == 3) {
-        outTri1->t1 = verts[0];
-        outTri1->t2 = verts[1];
-        outTri1->t3 = verts[2];
+    if (inAmt == 0) return 0;
+
+    if (inAmt == 3) {
+        *outTri1 = (clippedTri){verts[0], verts[1], verts[2]};
         return 1;
-    } else if (inAmt == 1) {
+    }
+
+    if (inAmt == 1) {
         int in0 = inScreen[0];
         int out0 = outScreen[0];
         int out1 = outScreen[1];
 
-        float t0 = (nearPlane - verts[out0].z) / (verts[in0].z - verts[out0].z);
-        float t1 = (nearPlane - verts[out1].z) / (verts[in0].z - verts[out1].z);
-        
+        float plane0 = (verts[out0].z < nearPlane) ? nearPlane : farPlane;
+        float plane1 = (verts[out1].z < nearPlane) ? nearPlane : farPlane;
+
+        float t0 = (plane0 - verts[out0].z) / (verts[in0].z - verts[out0].z);
+        float t1 = (plane1 - verts[out1].z) / (verts[in0].z - verts[out1].z);
+
         cross0.x = verts[out0].x + t0 * (verts[in0].x - verts[out0].x);
         cross0.y = verts[out0].y + t0 * (verts[in0].y - verts[out0].y);
         cross0.z = verts[out0].z + t0 * (verts[in0].z - verts[out0].z);
@@ -333,25 +326,20 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
         cross1.y = verts[out1].y + t1 * (verts[in0].y - verts[out1].y);
         cross1.z = verts[out1].z + t1 * (verts[in0].z - verts[out1].z);
 
-        cross0.u = verts[out0].u + t0 * (verts[in0].u - verts[out0].u);
-        cross0.v = verts[out0].v + t0 * (verts[in0].v - verts[out0].v);
-
-        cross1.u = verts[out1].u + t1 * (verts[in0].u - verts[out1].u);
-        cross1.v = verts[out1].v + t1 * (verts[in0].v - verts[out1].v);
-        
-        outTri1->t1 = verts[in0];
-        outTri1->t2 = cross0;
-        outTri1->t3 = cross1;
-
+        *outTri1 = (clippedTri){verts[in0], cross0, cross1};
         return 1;
-    } else if (inAmt == 2) {
+    }
+    
+    if (inAmt == 2) {
         int in0 = inScreen[0];
         int in1 = inScreen[1];
         int out0 = outScreen[0];
 
-        float t0 = (nearPlane - verts[out0].z) / (verts[in0].z - verts[out0].z);
-        float t1 = (nearPlane - verts[out0].z) / (verts[in1].z - verts[out0].z);
-        
+        float plane = (verts[out0].z < nearPlane) ? nearPlane : farPlane;
+
+        float t0 = (plane - verts[out0].z) / (verts[in0].z - verts[out0].z);
+        float t1 = (plane - verts[out0].z) / (verts[in1].z - verts[out0].z);
+
         cross0.x = verts[out0].x + t0 * (verts[in0].x - verts[out0].x);
         cross0.y = verts[out0].y + t0 * (verts[in0].y - verts[out0].y);
         cross0.z = verts[out0].z + t0 * (verts[in0].z - verts[out0].z);
@@ -359,21 +347,9 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
         cross1.x = verts[out0].x + t1 * (verts[in1].x - verts[out0].x);
         cross1.y = verts[out0].y + t1 * (verts[in1].y - verts[out0].y);
         cross1.z = verts[out0].z + t1 * (verts[in1].z - verts[out0].z);
-        
-        cross0.u = verts[out0].u + t0 * (verts[in0].u - verts[out0].u);
-        cross0.v = verts[out0].v + t0 * (verts[in0].v - verts[out0].v);
 
-        cross1.u = verts[out0].u + t1 * (verts[in1].u - verts[out0].u);
-        cross1.v = verts[out0].v + t1 * (verts[in1].v - verts[out0].v);
-        
-        outTri1->t1 = verts[in0];
-        outTri1->t2 = verts[in1];
-        outTri1->t3 = cross0;
-
-        outTri2->t1 = verts[in1];
-        outTri2->t2 = cross1;
-        outTri2->t3 = cross0;
-
+        *outTri1 = (clippedTri){verts[in0], verts[in1], cross0};
+        *outTri2 = (clippedTri){verts[in1], cross1, cross0};
         return 2;
     }
 

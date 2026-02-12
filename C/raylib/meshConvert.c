@@ -32,13 +32,30 @@ static inline void buildTriangleEdges(Mesh_t* mesh) {
     for (int t = 0; t < mesh->triCount; t++) {
         int* tri = mesh->tris[t];
 
-        mesh->edges[ei++] = (Edge){ .v0 = tri[0], .v1 = tri[1] };
-        mesh->edges[ei++] = (Edge){ .v0 = tri[1], .v1 = tri[2] };
-        mesh->edges[ei++] = (Edge){ .v0 = tri[2], .v1 = tri[1] };
+        mesh->edges[ei++] = (Edge){ 
+            .v0 = tri[0], 
+            .v1 = tri[1],
+            .tri0 = t,
+            .tri1 = -1
+        };
+
+        mesh->edges[ei++] = (Edge){ 
+            .v0 = tri[1], 
+            .v1 = tri[2],
+            .tri0 = t,
+            .tri1 = -1
+        };
+
+        mesh->edges[ei++] = (Edge){ 
+            .v0 = tri[2], 
+            .v1 = tri[0],
+            .tri0 = t,
+            .tri1 = -1
+        };
     }
 }
 
-void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int invert, int outline) {
+void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int invert, int outline, Vect3f size) {
     FILE* fptr = fopen(filename, "r");
     if (!fptr) {
         printf("Error: Could not open file %s\n", filename);
@@ -59,9 +76,9 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
             float x, y, z;
             if (sscanf(line, "v %f %f %f", &x, &y, &z) == 3) {
                 verts = pd_realloc(verts, sizeof(Vect3f) * (vertCount + 1));
-                verts[vertCount].x = x;
-                verts[vertCount].y = y;
-                verts[vertCount].z = -z;
+                verts[vertCount].x = x  * size.x;
+                verts[vertCount].y = y  * size.y;
+                verts[vertCount].z = -z * size.z;
                 vertCount++;
             }
         }
@@ -131,13 +148,13 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
     buildTriangleEdges(meshOut);
 }
 
-int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[], int color, int invert, int outline) {
+int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[], int color, int invert, int outline, Vect3f size) {
     int highest = 0;
     allocateMeshes(mesh, maxAnims, framesPerAnim);
     for (int i = 0; i < maxAnims; i++) {
         mesh->anims[i]->frames = framesPerAnim[i];
         for (int f = 0; f < framesPerAnim[i]; f++) {
-            convertFileToMesh(names[i][f], &mesh->anims[i]->meshModel[f], color, invert, outline);
+            convertFileToMesh(names[i][f], &mesh->anims[i]->meshModel[f], color, invert, outline, size);
 
             int triCount = mesh->anims[i]->meshModel[f].triCount;
             if (triCount > highest) highest = triCount;

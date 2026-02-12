@@ -48,3 +48,20 @@ float fastInvSqrt(float x) {
     float y = conv.f;
     return y * (1.5f - 0.5f * x * y * y);
 }
+
+int intSqrt(int x) {
+    int res = 0;
+    int bit = 1 << 30; // The second-to-top bit
+    while (bit > x) bit >>= 2;
+
+    while (bit != 0) {
+        if (x >= res + bit) {
+            x -= res + bit;
+            res = (res >> 1) + bit;
+        } else {
+            res >>= 1;
+        }
+        bit >>= 2;
+    }
+    return res;
+}

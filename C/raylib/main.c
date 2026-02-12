@@ -33,18 +33,18 @@ static int init() {
     allPointsCount = 0;
     entAmt = 0;
 
-    cam = createCamera(0.0f, 3.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 100.0f);
+    cam = createCamera(0.0f, 3.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
     player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.55f, 0.08f, 0);
 
     objArray = pd_malloc( sizeof(Mesh_t) * maxProjs);
     entArray = pd_malloc(sizeof(VertAnims) * entDataCount);
     allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
 
-    convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0);
-    convertFileToMesh("Objects/proj/ball.obj", &objArray[0], 0, 0, 0);
+    convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, (Vect3f){2.0f, 2.0f, 2.0f});
+    convertFileToMesh("Objects/proj/ball.obj", &objArray[0], 0, 0, 0, (Vect3f){1.0f, 1.0f, 1.0f});
 
     for (int i=0; i < entDataCount; i++){
-        int highest = allocAnimModel(&entArray[i], entData[i].totalAnims, entData[i].animFrameCounts, entData[i].animNames, 0, 1, 1);
+        int highest = allocAnimModel(&entArray[i], entData[i].totalAnims, entData[i].animFrameCounts, entData[i].animNames, 0, 1, 1, (Vect3f){1.0f, 1.0f, 1.0f});
         allPointsCount += (highest * (entAmt+1));
         entArray[i].count = highest;
     }
@@ -227,14 +227,19 @@ static inline void scnBufFix() {
 }
 
 int main() {
-    InitWindow(sW, sH, "CrossUp");
+    InitWindow(RAYSCREEN_WIDTH, RAYSCREEN_HEIGHT, "CrossUp");
     SetTargetFPS(30);
 
     gameScreen = 1;
     freeFly = 0;
 
     init();
+    raylibShadeLUTCreate();
     scnBuf = pd_malloc(sizeof(int8_t) * (sW_L * sH_L));
+
+    Image img = GenImageColor(sW_L, sH_L, BLACK);
+    screenTex = LoadTextureFromImage(img);
+    UnloadImage(img);
 
     while (!WindowShouldClose()) {
         BeginDrawing();

@@ -11,6 +11,18 @@ typedef struct {
 } Edge;
 
 typedef struct {
+    float verts[3][3];
+    Edge edges[3];
+    float uvs[3][2];
+    int color;
+    int32_t dist;
+    int bfc;
+    int lines;
+    int textID;
+    int dimentions;
+} worldTris;
+
+typedef struct {
     Vect3f* verts;
     int vertCount;
 

@@ -19,7 +19,6 @@ static const uint8_t shadeLUT[16][4][4] = {
     {{1,1,1,1},{1,1,1,1},{1,1,1,1},{1,1,1,1}}
 };
 
-
 #if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
 static uint8_t ditherByte[16][4][4];
 
@@ -100,38 +99,38 @@ void upscaleToScreen() {
 
 
 #else
-static inline void multiPixl(uint gridX, uint gridY, int shade) {
-    if (gridX >= sW || gridY >= sH) return;
-    
-    for (int dy = 0; dy < resolution; dy++) {
-        uint rowY = gridY + dy;
-        if (rowY >= sH) break;
+Texture2D screenTex;
+Color raylibShadeLUT[16];
 
-        for (int dx = 0; dx < resolution; dx++) {
-            uint colX = gridX + dx;
-            if (colX >= sW) break;
-            
-            uint px = (colX & 3);
-            uint py = (rowY & 3);
-            
-            Color color;
-            if (shadeLUT[shade][py][px] == 1) { color = (Color){255, 255, 255, 255}; } else { color = (Color){0, 0, 0, 255}; }
-            
-            DrawPixel(colX, rowY, color);
-        }
+void raylibShadeLUTCreate() {
+    for (int shade = 0; shade < 16; shade++) {
+        uint8_t gray = (shade * 255) / 15;
+        raylibShadeLUT[shade] = (Color){gray, gray, gray, 255};
     }
 }
 
 void drawScreen() {
-    for (int y = 0; y < sH; y += resolution) {
-        for (int x = 0; x < sW; x += resolution) {
-            int bx = x / resolution;
-            int by = y / resolution;
+    Color* framebufferPixels = pd_malloc(sizeof(Color) * sW_L * sH_L);
+    for (int y = 0; y < sH_L; y++) {
+        for (int x = 0; x < sW_L; x++) {
+            int col = scnBuf[y * sW_L + x];
+            if (col < 0) col = 0;
+            if (col > 15) col = 15;
 
-            int col = scnBuf[by * (sW / resolution) + bx];
-            if (col >= 0) multiPixl(x, y, col);
+            framebufferPixels[y * sW_L + x] = raylibShadeLUT[col];
         }
     }
+    
+    UpdateTexture(screenTex, framebufferPixels);
+    
+    DrawTexturePro(
+        screenTex,
+        (Rectangle){0,0,(float)sW_L,(float)sH_L},
+        (Rectangle){0,0, (float)RAYSCREEN_WIDTH, (float)RAYSCREEN_HEIGHT},
+        (Vector2){0,0},
+        0.0f,
+        WHITE
+    );
 }
 #endif
 

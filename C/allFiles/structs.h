@@ -1,7 +1,9 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-typedef int64_t qfixed24x8_t;
+typedef int32_t qfixed16_t;
+typedef int32_t qfixed24x8_t;
+typedef int64_t qfixed32_t;
 typedef unsigned int uint;
 
 typedef enum {
@@ -34,17 +36,6 @@ typedef struct {
 typedef struct {
     Vect2f min, max;
 } MinMax2f;
-
-typedef struct {
-    float verts[3][3];
-    float uvs[3][2];
-    int color;
-    float dist;
-    int bfc;
-    int lines;
-    int textID;
-    int dimentions;
-} worldTris;
 
 typedef struct {
     float x, y, z;

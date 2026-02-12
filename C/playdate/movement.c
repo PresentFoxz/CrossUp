@@ -33,8 +33,8 @@ static void moveEnt(EntStruct* p, float mainYaw, float secondaryYaw, float secon
             p->velocity.x *= landFrict;
             p->velocity.z *= landFrict;
         } else {
-            float forwardX = sinf(mainYaw);
-            float forwardZ = cosf(mainYaw);
+            float forwardX = sinf(secondaryYaw);
+            float forwardZ = cosf(secondaryYaw);
 
             float forwardVel = p->velocity.x * forwardX + p->velocity.z * forwardZ;
 
@@ -170,10 +170,10 @@ void movePlayerObj(EntStruct* p, Camera_t* c){
     if (dirX != 0.0f || dirZ != 0.0f) {
         float targetYaw = atan2f(dirX, dirZ);
 
-        if (p->grounded == 1) {
-            p->rotation.y = TO_FIXED24_8(targetYaw);
-            rotateTowards(p, FROM_FIXED24_8(p->rotation.y), 0.45f);
-        } else { rotateTowards(p, targetYaw, 0.3f); }
+        p->rotation.y = TO_FIXED24_8(targetYaw);
+
+        if (p->grounded == 1) { rotateTowards(p, FROM_FIXED24_8(p->rotation.y), 0.5f); }
+        else { rotateTowards(p, targetYaw, 0.2f); }
 
         p->ifMove++;
     } else {
@@ -275,8 +275,9 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
         float inputX = (FROM_FIXED24_8(p->position.x) - FROM_FIXED24_8(e->position.x));
         float inputZ = (FROM_FIXED24_8(p->position.z) - FROM_FIXED24_8(e->position.z));
         float targetYaw = atan2f(inputX, inputZ);
-
+        
         e->rotation.y = TO_FIXED24_8(targetYaw);
+        e->surfRot = e->rotation.y;
         e->actions.ent.countdown = 10;
     }
 
@@ -287,13 +288,14 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
         float targetYaw = atan2f(inputX, inputZ);
 
         e->rotation.y = TO_FIXED24_8(targetYaw);
+        e->surfRot = e->rotation.y;
         if (randomInt(0, 100) > 99 && (e->grounded == 1 || e->coyote <= 10)) { e->velocity.y = 0.94f; e->grounded = 0; }
 
         e->actions.ent.countdown = randomInt(30, 100);
     }
 
     moveEnt(e, FROM_FIXED24_8(e->rotation.y), FROM_FIXED24_8(e->surfRot), secondaryStrength, e->frict, 0.13f, 0.0f, 1);
-    stateMachine(p);
+    // stateMachine(e);
 }
 
 static void objectTypes(ObjStruct obj){

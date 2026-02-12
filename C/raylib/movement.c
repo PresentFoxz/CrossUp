@@ -71,7 +71,6 @@ static void rotateTowards(EntStruct* p, float rot, float step){
     if (fabsf(delta) > degToRad(120.0f)) {
         p->surfRot = TO_FIXED24_8(rot);
     } else {
-        // Clamp step
         if (delta > step)  delta = step;
         if (delta < -step) delta = -step;
         

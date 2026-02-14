@@ -57,8 +57,8 @@ static inline void pd_free(void* ptr) {
 #define pd_malloc(size)       malloc(size)
 #define pd_free(ptr)          free(ptr)
 
-#define RAYSCREEN_WIDTH   1200
-#define RAYSCREEN_HEIGHT  720
+#define RAYSCREEN_WIDTH   700
+#define RAYSCREEN_HEIGHT  460
 
 #define resolution 1
 #define MAX_TRIS 0

@@ -246,6 +246,7 @@ int main() {
         ClearBackground(BLACK);
         scnBufFix();
         skybox(5, 10, 10);
+        runInputBuffer();
 
         if (gameScreen == 1) {
             render(freeFly);

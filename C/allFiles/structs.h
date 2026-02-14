@@ -65,6 +65,8 @@ typedef struct {
 
 typedef struct {
     Action spin;
+    Action dive;
+    Action punch;
 } PlayerActions;
 
 typedef struct {
@@ -134,5 +136,14 @@ typedef struct {
     int chunkAmt;
     int* amt;
 } ChunkCount;
+
+typedef struct {
+    uint8_t UP;
+    uint8_t DOWN;
+    uint8_t LEFT;
+    uint8_t RIGHT;
+    uint8_t A;
+    uint8_t B;
+} InputBuffer;
 
 #endif

@@ -23,4 +23,6 @@ void handleCameraInput(Camera_t* cam);
 void handleCameraFreeInput(Camera_t* cam);
 void updateCamera(Camera_t* cam, EntStruct* ent, float radius);
 
+void runInputBuffer();
+
 #endif

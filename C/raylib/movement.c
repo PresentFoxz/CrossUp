@@ -3,6 +3,7 @@
 #include "libRay.h"
 
 const int detectDist = 15;
+InputBuffer inpBuf = {0};
 
 static float wrapFloat(float value, float min, float max) {
     float range = max - min;
@@ -142,26 +143,48 @@ void stateMachine(EntStruct* p){
     if (p->grounded == 1 && ((p->velocity.x > 0.02 || p->velocity.x < -0.02) || (p->velocity.z > 0.02 || p->velocity.z < -0.02))) { p->currentAnim = 1; }
 }
 
+void runInputBuffer() {
+    inpBuf.UP = 0;
+    inpBuf.DOWN = 0;
+    inpBuf.LEFT = 0;
+    inpBuf.RIGHT = 0;
+    inpBuf.A = 0;
+    inpBuf.B = 0;
+
+    if (IsKeyDown(KEY_W)) inpBuf.UP = 1;
+    if (IsKeyDown(KEY_S)) inpBuf.DOWN = 1;
+    if (IsKeyDown(KEY_A)) inpBuf.LEFT = 1;
+    if (IsKeyDown(KEY_D)) inpBuf.RIGHT = 1;
+
+    if (IsKeyDown(KEY_J)) inpBuf.A = 1;
+    if (IsKeyDown(KEY_K)) inpBuf.B = 1;
+}
+
 void movePlayerObj(EntStruct* p, Camera_t* c, int canMove){
     float yawCam = FROM_FIXED24_8(c->rotation.y);
     float mainYaw = FROM_FIXED24_8(p->rotation.y);
     float secondaryStrength = 0.5f;
     float jumpFrict = 0.54f;
+    int lock = 0;
 
     // === Movement ===
     if (canMove) {
-        if (IsKeyDown(KEY_J) && (p->grounded == 1 || p->coyote <= 10)) {
+        if (inpBuf.B) lock = 1;
+        if (inpBuf.A && (p->grounded == 1 || p->coyote <= 10)) {
             p->grounded = 0;
             p->velocity.y = jumpFrict;
-        }
+
+            if (lock == 1 && p->grounded == 1) { p->velocity.x *= 1.02f; p->velocity.z *= 1.02f; }
+        } if (!inpBuf.A && (p->grounded == 0 && p->coyote <= 10)) p->coyote = 11;
+
         // === Compute input vector ===
         float inputX = 0.0f;
         float inputZ = 0.0f;
         
-        if (IsKeyDown(KEY_W)) inputZ += 1.0f;
-        if (IsKeyDown(KEY_S)) inputZ -= 1.0f;
-        if (IsKeyDown(KEY_A)) inputX -= 1.0f;
-        if (IsKeyDown(KEY_D)) inputX += 1.0f;
+        if (inpBuf.UP) inputZ += 1.0f;
+        if (inpBuf.DOWN) inputZ -= 1.0f;
+        if (inpBuf.LEFT) inputX -= 1.0f;
+        if (inpBuf.RIGHT) inputX += 1.0f;
 
         // === Map input to camera-relative movement ===
         float dirX = inputX * cosf(yawCam) + inputZ * sinf(yawCam);
@@ -169,11 +192,16 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int canMove){
         
         if (dirX != 0.0f || dirZ != 0.0f) {
             float targetYaw = atan2f(dirX, dirZ);
+            
+            if (lock == 1) {
+                if (p->grounded == 1) { p->surfRot = TO_FIXED24_8(targetYaw); }
+                else { rotateTowards(p, targetYaw, 0.2f); }
+            } else {
+                p->rotation.y = TO_FIXED24_8(targetYaw);
 
-            p->rotation.y = TO_FIXED24_8(targetYaw);
-
-            if (p->grounded == 1) { rotateTowards(p, FROM_FIXED24_8(p->rotation.y), 0.5f); }
-            else { rotateTowards(p, targetYaw, 0.2f); }
+                if (p->grounded == 1) { rotateTowards(p, FROM_FIXED24_8(p->rotation.y), 0.5f); }
+                else { rotateTowards(p, targetYaw, 0.2f); }
+            }
 
             p->ifMove++;
         } else {
@@ -228,20 +256,20 @@ void handleCameraFreeInput(Camera_t* cam) {
     if (IsKeyDown(KEY_I)) { crankTilda += degToRad(5.0f); }
     if (IsKeyDown(KEY_U)) { crankTilda -= degToRad(5.0f); }
 
-    if (IsKeyDown(KEY_W)) { 
+    if (inpBuf.UP) { 
         cam->position.x += TO_FIXED24_8(groundFrict * sin(camYaw));
         cam->position.z += TO_FIXED24_8(groundFrict * cos(camYaw));
     }
-    if (IsKeyDown(KEY_S)) { 
+    if (inpBuf.DOWN) { 
         cam->position.x -= TO_FIXED24_8(groundFrict * sin(camYaw));
         cam->position.z -= TO_FIXED24_8(groundFrict * cos(camYaw));
     }
 
-    if (IsKeyDown(KEY_A)) { crankDelta -= degToRad(5.0f); }
-    if (IsKeyDown(KEY_D)) { crankDelta += degToRad(5.0f); }
+    if (inpBuf.LEFT) { crankDelta -= degToRad(5.0f); }
+    if (inpBuf.RIGHT) { crankDelta += degToRad(5.0f); }
 
-    if (IsKeyDown(KEY_J)) { cam->position.y += TO_FIXED24_8(0.35f); }
-    if (IsKeyDown(KEY_K)) { cam->position.y -= TO_FIXED24_8(0.35f); }
+    if (inpBuf.A) { cam->position.y += TO_FIXED24_8(0.35f); }
+    if (inpBuf.B) { cam->position.y -= TO_FIXED24_8(0.35f); }
 
     if (degToRad(crankDelta) > 360.0f) { crankDelta -= degToRad(360.0f); }
     if (degToRad(crankDelta) < 0.0f)   { crankDelta += degToRad(360.0f); }

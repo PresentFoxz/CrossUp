@@ -97,6 +97,35 @@ int windingOrder(const int p0[2], const int p1[2], const int p2[2]) {
 
 static inline qfixed32_t edgeFuncF(qfixed32_t x0, qfixed32_t y0, qfixed32_t x1, qfixed32_t y1, qfixed32_t px, qfixed32_t py) { return (py - y0) * (x1 - x0) - (px - x0) * (y1 - y0); }
 
+void drawImg(int x, int y, int dist, int8_t* texture, int texW, int texH, float fov) {
+    float scale = fov / dist;
+
+    int scaledW = (int)(texW * scale);
+    int scaledH = (int)(texH * scale);
+
+    if (scaledW <= 0 || scaledH <= 0) return;
+
+    int drawX = x - scaledW / 2;
+    int drawY = y - scaledH / 2;
+
+    for (int j = 0; j < scaledH; j++) {
+        for (int i = 0; i < scaledW; i++) {
+
+            int gx = drawX + i;
+            int gy = drawY + j;
+
+            if (gx < 0 || gy < 0 || gx >= sW || gy >= sH) continue;
+            
+            int texX = (i * texW) / scaledW;
+            int texY = (j * texH) / scaledH;
+
+            int8_t color = texture[texY * texW + texX];
+
+            setPixScnBuf(gx, gy, color);
+        }
+    }
+}
+
 void drawFilledTris(int tris[3][2], int triColor) {
     qfixed32_t x0 = TO_FIXED32(tris[0][0]), y0 = TO_FIXED32(tris[0][1]);
     qfixed32_t x1 = TO_FIXED32(tris[1][0]), y1 = TO_FIXED32(tris[1][1]);
@@ -159,7 +188,7 @@ void drawFilledTris(int tris[3][2], int triColor) {
     }
 }
 
-void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, int texH) {
+void drawTexturedTris(int tris[3][2], float uvs[3][2], int8_t* texture, int texW, int texH) {
     qfixed32_t x0 = TO_FIXED32(tris[0][0]), y0 = TO_FIXED32(tris[0][1]);
     qfixed32_t x1 = TO_FIXED32(tris[1][0]), y1 = TO_FIXED32(tris[1][1]);
     qfixed32_t x2 = TO_FIXED32(tris[2][0]), y2 = TO_FIXED32(tris[2][1]);
@@ -232,7 +261,7 @@ void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, i
                 if (gx >= sW_L) gx = sW_L - 1;
                 if (gy >= sH_L) gy = sH_L - 1;
 
-                int shade = texture[iv * texW + iu];
+                int8_t shade = texture[iv * texW + iu];
                 if (shade != -1) setPixScnBuf(gx, gy, shade);
             }
 

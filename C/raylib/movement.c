@@ -3,7 +3,6 @@
 #include "libRay.h"
 
 const int detectDist = 15;
-InputBuffer inpBuf = {0};
 
 static float wrapFloat(float value, float min, float max) {
     float range = max - min;
@@ -141,23 +140,6 @@ void stateMachine(EntStruct* p){
     p->currentAnim = 0;
 
     if (p->grounded == 1 && ((p->velocity.x > 0.02 || p->velocity.x < -0.02) || (p->velocity.z > 0.02 || p->velocity.z < -0.02))) { p->currentAnim = 1; }
-}
-
-void runInputBuffer() {
-    inpBuf.UP = 0;
-    inpBuf.DOWN = 0;
-    inpBuf.LEFT = 0;
-    inpBuf.RIGHT = 0;
-    inpBuf.A = 0;
-    inpBuf.B = 0;
-
-    if (IsKeyDown(KEY_W)) inpBuf.UP = 1;
-    if (IsKeyDown(KEY_S)) inpBuf.DOWN = 1;
-    if (IsKeyDown(KEY_A)) inpBuf.LEFT = 1;
-    if (IsKeyDown(KEY_D)) inpBuf.RIGHT = 1;
-
-    if (IsKeyDown(KEY_J)) inpBuf.A = 1;
-    if (IsKeyDown(KEY_K)) inpBuf.B = 1;
 }
 
 void movePlayerObj(EntStruct* p, Camera_t* c, int canMove){

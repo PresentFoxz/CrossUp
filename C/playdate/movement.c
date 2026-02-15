@@ -79,7 +79,7 @@ static void rotateTowards(EntStruct* p, float rot, float step){
     while (p->surfRot >= TO_FIXED24_8(degToRad(360.0f))) p->surfRot -= TO_FIXED24_8(degToRad(360.0f));
 }
 
-static void runColl(EntStruct* p){
+static void runColl(EntStruct* p) {
     Vect3f pCollisionPos = {FROM_FIXED24_8(p->position.x), FROM_FIXED24_8(p->position.y), FROM_FIXED24_8(p->position.z)};
     float stepX = p->velocity.x / substeps;
     float stepY = p->velocity.y / substeps;
@@ -140,28 +140,29 @@ void stateMachine(EntStruct* p){
 }
 
 void movePlayerObj(EntStruct* p, Camera_t* c){
-    PDButtons tapped, held;
-    pd->system->getButtonState(&held, &tapped, NULL);
-
     float yawCam = FROM_FIXED24_8(c->rotation.y);
     float mainYaw = FROM_FIXED24_8(p->rotation.y);
     float secondaryStrength = 0.5f;
     float jumpFrict = 0.54f;
+    int lock = 0;
 
     // === Movement ===
-    if (held & kButtonA && (p->grounded == 1 || p->coyote <= 10)) {
+    if (inpBuf.B) lock = 1;
+    if (inpBuf.A && (p->grounded == 1 || p->coyote <= 10)) {
         p->grounded = 0;
         p->velocity.y = jumpFrict;
-    }
+
+        if (lock == 1 && p->grounded == 1) { p->velocity.x *= 1.02f; p->velocity.z *= 1.02f; }
+    } if (!inpBuf.A && (p->grounded == 0 && p->coyote <= 10)) p->coyote = 11;
 
     // === Compute input vector ===
     float inputX = 0.0f;
     float inputZ = 0.0f;
     
-    if (held & kButtonUp) inputZ += 1.0f;
-    if (held & kButtonDown) inputZ -= 1.0f;
-    if (held & kButtonLeft) inputX -= 1.0f;
-    if (held & kButtonRight) inputX += 1.0f;
+    if (inpBuf.UP) inputZ += 1.0f;
+    if (inpBuf.DOWN) inputZ -= 1.0f;
+    if (inpBuf.LEFT) inputX -= 1.0f;
+    if (inpBuf.RIGHT) inputX += 1.0f;
 
     // === Map input to camera-relative movement ===
     float dirX = inputX * cosf(yawCam) + inputZ * sinf(yawCam);
@@ -169,11 +170,16 @@ void movePlayerObj(EntStruct* p, Camera_t* c){
     
     if (dirX != 0.0f || dirZ != 0.0f) {
         float targetYaw = atan2f(dirX, dirZ);
+        
+        if (lock == 1) {
+            if (p->grounded == 1) { p->surfRot = TO_FIXED24_8(targetYaw); }
+            else { rotateTowards(p, targetYaw, 0.2f); }
+        } else {
+            p->rotation.y = TO_FIXED24_8(targetYaw);
 
-        p->rotation.y = TO_FIXED24_8(targetYaw);
-
-        if (p->grounded == 1) { rotateTowards(p, FROM_FIXED24_8(p->rotation.y), 0.5f); }
-        else { rotateTowards(p, targetYaw, 0.2f); }
+            if (p->grounded == 1) { rotateTowards(p, FROM_FIXED24_8(p->rotation.y), 0.5f); }
+            else { rotateTowards(p, targetYaw, 0.2f); }
+        }
 
         p->ifMove++;
     } else {

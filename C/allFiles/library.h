@@ -40,7 +40,7 @@ static inline void pd_free(void* ptr) {
     pd->system->realloc(ptr, 0);
 }
 
-#define resolution 4
+#define resolution 2
 #define MAX_TRIS 700
 
 #else
@@ -119,5 +119,29 @@ void drawCustomLine(int x1, int y1, int x2, int y2, int thickness, int type);
 extern int allPointsCount;
 extern int entAmt;
 extern int mapIndex;
+
+extern InputBuffer inpBuf;
+
+static inline void runInputBuffer() {
+    #if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
+    PDButtons tapped, held;
+    pd->system->getButtonState(&held, &tapped, NULL);
+
+    inpBuf.UP = held & kButtonUp;
+    inpBuf.DOWN = held & kButtonDown;
+    inpBuf.LEFT = held & kButtonLeft;
+    inpBuf.RIGHT = held & kButtonRight;
+
+    inpBuf.A = held & kButtonA;
+    inpBuf.B = held & kButtonB;
+    #else 
+    inpBuf.UP = IsKeyDown(KEY_W);
+    inpBuf.DOWN = IsKeyDown(KEY_S);
+    inpBuf.LEFT = IsKeyDown(KEY_A);
+    inpBuf.RIGHT = IsKeyDown(KEY_D);
+    inpBuf.A = IsKeyDown(KEY_J);
+    inpBuf.B = IsKeyDown(KEY_K);
+    #endif
+}
 
 #endif

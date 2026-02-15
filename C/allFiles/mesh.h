@@ -11,6 +11,8 @@ typedef struct {
 } Edge;
 
 typedef struct {
+    Dimentions dimentions;
+    
     float verts[3][3];
     Edge edges[3];
     float uvs[3][2];
@@ -19,7 +21,6 @@ typedef struct {
     int bfc;
     int lines;
     int textID;
-    int dimentions;
 } worldTris;
 
 typedef struct {

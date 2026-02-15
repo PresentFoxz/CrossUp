@@ -19,7 +19,8 @@ void computeRotScaleMatrix(float rotMat[3][3], float angleX, float angleY, float
 void staticLineDrawing(int p0[2], int p1[2], int color);
 
 void drawFilledTris(int tris[3][2], int triColor);
-void drawTexturedTris(int tris[3][2], float uvs[3][2], int* texture, int texW, int texH);
+void drawTexturedTris(int tris[3][2], float uvs[3][2], int8_t* texture, int texW, int texH);
+void drawImg(int x, int y, int dist, int8_t* texture, int texW, int texH, float fov);
 
 int backfaceCullCamera(Vertex* v0, Vertex* v1, Vertex* v2, Vect3f cam, int flipped);
 void drawLine(int x0, int y0, int x1, int y1, int8_t color);

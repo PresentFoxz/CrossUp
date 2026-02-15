@@ -2,8 +2,8 @@
 #define MAPDATA_H
 
 static const char* mapObjs[] = {
-    "Objects/map/Castle.obj",
-    "Objects/map/testplate.obj",
+    "Objects/3D/map/Castle.obj",
+    "Objects/3D/map/testplate.obj",
 };
 
 static const int mapData[][2] = {

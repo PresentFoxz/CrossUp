@@ -3,7 +3,7 @@
 #include "../../allFiles/library.h"
 
 static const textAtlas testTexture = {
-    .pixels = (int[]) {
+    .pixels = (int8_t[]) {
         12, 12, 12, 12,
         3, 12, 12, 3,
         12, 15, 15, 12,

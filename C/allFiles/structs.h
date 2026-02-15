@@ -7,10 +7,14 @@ typedef int64_t qfixed32_t;
 typedef unsigned int uint;
 
 typedef enum {
-    ENT_NONE,
-    ENT_PLAYER,
-    ENT_TEST
-} EntTypes;
+    D_2D, D_3D
+} Dimentions;
+
+typedef enum {
+    PLAYER,
+    ENTITY,
+    OBJECT
+} ModelType;
 
 typedef struct {
     qfixed24x8_t x, y, z;
@@ -25,11 +29,6 @@ typedef struct {
 } Vect2f;
 
 typedef struct {
-    Vect3f pos;
-    int floor, ceiling, wall;
-} VectMf;
-
-typedef struct {
     Vect3f min, max;
 } MinMax3f;
 
@@ -37,6 +36,10 @@ typedef struct {
     Vect2f min, max;
 } MinMax2f;
 
+typedef struct {
+    Vect3f pos;
+    int floor, ceiling, wall;
+} VectMf;
 typedef struct {
     float x, y, z;
     float u, v;
@@ -74,6 +77,8 @@ typedef struct {
 } EntityActions;
 
 typedef struct {
+    Dimentions dimention;
+
     Vect3i position;
     Vect3i rotation;
     Vect3i size;
@@ -86,8 +91,6 @@ typedef struct {
     float frict, fallFrict;
     int frameCount, currentFrame;
     int currentAnim, lastAnim;
-    int meshIndex;
-
     union {
         PlayerActions plr;
         EntityActions ent;
@@ -95,6 +98,8 @@ typedef struct {
 } EntStruct;
 
 typedef struct {
+    Dimentions dimention;
+
     int timer;
     int type;
     Vect3i position;
@@ -102,12 +107,6 @@ typedef struct {
     Vect3i size;
     Vect3f velocity;
 } ObjStruct;
-
-typedef enum {
-    PLAYER,
-    ENTITY,
-    OBJECT
-} ModelType;
 
 typedef struct {
     ModelType type;
@@ -120,7 +119,7 @@ typedef struct {
 } Objects;
 
 typedef struct {
-    int* pixels;
+    int8_t* pixels;
     int w;
     int h;
 } textAtlas;

@@ -11,21 +11,21 @@ EntStruct player = {0};
 Mesh_t mapArray = {0};
 Mesh_t* objArray = NULL;
 VertAnims* entArray = NULL;
+// ImgAnims* imgArray = NULL;
 
 // ChunkCount chunkMap = {0};
 
 int gameScreen = 0;
-const int maxProjs = 1;
 const int mapObjsCount = 2;
 
 int freeFly = 0;
 
 void generateEnts() {
     if (mapIndex == 0) {
-        addEnt((Vect3f){0.0f, 20.0f, -5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY, entArray, allEnts);
-        addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray, allEnts);
+        addEnt((Vect3f){0.0f, 20.0f, -5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY, entArray, allEnts, D_3D);
+        addEnt((Vect3f){0.0f, 10.0f, -10.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray, allEnts, D_3D);
     } else if (mapIndex == 1) {
-        addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray, allEnts);
+        addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray, allEnts, D_3D);
     }
 }
 
@@ -33,16 +33,17 @@ static int init() {
     allPointsCount = 0;
     entAmt = 0;
 
-    cam = createCamera(0.0f, 3.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
-    player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.55f, 0.08f, 0);
-
-    objArray = pd_malloc( sizeof(Mesh_t) * maxProjs);
+    objArray = pd_malloc( sizeof(Mesh_t) * projDataCount);
     entArray = pd_malloc(sizeof(VertAnims) * entDataCount);
     allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
 
-    convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, (Vect3f){2.0f, 2.0f, 2.0f});
-    convertFileToMesh("Objects/proj/ball.obj", &objArray[0], 0, 0, 0, (Vect3f){1.0f, 1.0f, 1.0f});
+    cam = createCamera(0.0f, 3.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
+    player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.55f, 0.08f, 0, D_3D);
+    generateEnts();
 
+    convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, (Vect3f){2.0f, 2.0f, 2.0f});
+
+    for (int i=0; i < projDataCount; i++) convertFileToMesh(projObjs[i], &objArray[i], projData[i][0], projData[i][1], 0, (Vect3f){1.0f, 1.0f, 1.0f});
     for (int i=0; i < entDataCount; i++){
         int highest = allocAnimModel(&entArray[i], entData[i].totalAnims, entData[i].animFrameCounts, entData[i].animNames, 0, 1, 1, (Vect3f){1.0f, 1.0f, 1.0f});
         allPointsCount += (highest * (entAmt+1));
@@ -52,7 +53,6 @@ static int init() {
     generateMap(mapArray);
     generateTextures(&textAtlasMem, 0);
     generateTriggers((Vect3f){5.0f, 5.0f, 5.0f}, (Vect3f){10.0f, 10.0f, 10.0f});
-    generateEnts();
 
     resetAllVariables();
 
@@ -75,32 +75,57 @@ static void addPlayer() {
         player.currentFrame = 0;
     }
 
-    Mesh_t model = anims->meshModel[player.currentFrame];
-    if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) {
-        Vect3f objectPos = {
-            FROM_FIXED24_8(player.position.x),
-            FROM_FIXED24_8(player.position.y),
-            FROM_FIXED24_8(player.position.z)
-        };
+    if (player.dimention == D_3D) {
+        Mesh_t model = anims->meshModel[player.currentFrame];
+        if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) {
+            Vect3f objectPos = {
+                FROM_FIXED24_8(player.position.x),
+                FROM_FIXED24_8(player.position.y),
+                FROM_FIXED24_8(player.position.z)
+            };
+        
+            Vect3f objectRot = {
+                FROM_FIXED24_8(player.rotation.x),
+                FROM_FIXED24_8(player.rotation.y),
+                FROM_FIXED24_8(player.rotation.z)
+            };
+        
+            Vect3f objectSize = {
+                FROM_FIXED24_8(player.size.x),
+                FROM_FIXED24_8(player.size.y),
+                FROM_FIXED24_8(player.size.z)
+            };
+        
+            addObjToWorld3D(
+                objectPos, objectRot, objectSize,
+                cam, 10.0f,
+                model,
+                true, 1
+            );
+        }
+    // } else if (player.dimention == D_2D) {
+    //     Vect3f objectPos = {
+    //         FROM_FIXED24_8(player.position.x),
+    //         FROM_FIXED24_8(player.position.y),
+    //         FROM_FIXED24_8(player.position.z)
+    //     };
     
-        Vect3f objectRot = {
-            FROM_FIXED24_8(player.rotation.x),
-            FROM_FIXED24_8(player.rotation.y),
-            FROM_FIXED24_8(player.rotation.z)
-        };
+    //     Vect3f objectRot = {
+    //         FROM_FIXED24_8(player.rotation.x),
+    //         FROM_FIXED24_8(player.rotation.y),
+    //         FROM_FIXED24_8(player.rotation.z)
+    //     };
     
-        Vect3f objectSize = {
-            FROM_FIXED24_8(player.size.x),
-            FROM_FIXED24_8(player.size.y),
-            FROM_FIXED24_8(player.size.z)
-        };
-    
-        addObjectToWorld(
-            objectPos, objectRot, objectSize,
-            cam, 10.0f,
-            &model,
-            true, 1
-        );
+    //     Vect3f objectSize = {
+    //         FROM_FIXED24_8(player.size.x),
+    //         FROM_FIXED24_8(player.size.y),
+    //         FROM_FIXED24_8(player.size.z)
+    //     };
+
+    //     addObjToWorld2D(
+    //         objectPos, objectRot, objectSize,
+    //         cam, 10.0f, 
+    //     );
     }
 
     player.lastAnim = player.currentAnim;
@@ -155,10 +180,10 @@ static void addEntities(int ents, int objs) {
                         FROM_FIXED24_8(ent_->size.z)
                     };
 
-                    addObjectToWorld(
+                    addObjToWorld3D(
                         objectPos, objectRot, objectSize,
                         cam, 10.0f,
-                        &model,
+                        model,
                         true, 1
                     );
                 }
@@ -176,12 +201,12 @@ static void addEntities(int ents, int objs) {
                 ObjStruct *obj_ = &allEnts[z].data.obj;
                 // objectTypes(obj_);
                 
-                addObjectToWorld(
+                addObjToWorld3D(
                     (Vect3f){FROM_FIXED24_8(obj_->position.x), FROM_FIXED24_8(obj_->position.y), FROM_FIXED24_8(obj_->position.z)},
                     (Vect3f){FROM_FIXED24_8(obj_->rotation.x), FROM_FIXED24_8(obj_->rotation.y), FROM_FIXED24_8(obj_->rotation.z)},
                     (Vect3f){FROM_FIXED24_8(obj_->size.x), FROM_FIXED24_8(obj_->size.y), FROM_FIXED24_8(obj_->size.z)},
                     cam, 0.0f,
-                    &objArray[obj_->type],
+                    objArray[obj_->type],
                     false, 1
                 );
                 break;
@@ -190,10 +215,10 @@ static void addEntities(int ents, int objs) {
 }
 
 static void addMap() {
-    addObjectToWorld(
+    addObjToWorld3D(
         (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f},
         cam, 0.0f,
-        &mapArray,
+        mapArray,
         false, 1
     );
 }

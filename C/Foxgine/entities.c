@@ -20,7 +20,7 @@ void moveCamera(Camera_t* cam, float dx, float dy, float dz) { if (cam) { cam->p
 void rotateCamera(Camera_t* cam, float rx, float ry, float rz) { if (cam) { cam->rotation.x += TO_FIXED24_8(rx); cam->rotation.y += TO_FIXED24_8(ry); cam->rotation.z += TO_FIXED24_8(rz); } }
 void destroyCamera(Camera_t* cam) { if (cam) { cam = pd_realloc(cam, 0); } }
 
-EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, float radius, float height, float frict, float fallFrict, int type) {
+EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, float radius, float height, float frict, float fallFrict, int type, Dimentions dimention) {
     EntStruct p;
     p.position.x = TO_FIXED24_8(x);
     p.position.y = TO_FIXED24_8(y);
@@ -58,6 +58,8 @@ EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float 
     p.currentFrame = 0;
     p.currentAnim = 0;
     p.lastAnim = 0;
+
+    p.dimention = dimention;
     
     return p;
 }
@@ -66,7 +68,7 @@ void moveEntity(EntStruct* p, float dx, float dy, float dz) { if (p) { p->positi
 void rotateEntity(EntStruct* p, float rx, float ry, float rz) { if (p) { p->rotation.x = TO_FIXED24_8(rx); p->rotation.y = TO_FIXED24_8(ry); p->rotation.z = TO_FIXED24_8(rz); } }
 void destroyEntity(EntStruct* p) { if (p) { p = pd_realloc(p, 0); } }
 
-ObjStruct createObject(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, int type, int timer){
+ObjStruct createObject(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, int type, int timer, Dimentions dimention){
     ObjStruct o;
     o.position.x = TO_FIXED24_8(x);
     o.position.y = TO_FIXED24_8(y);
@@ -86,6 +88,8 @@ ObjStruct createObject(float x, float y, float z, float rotX, float rotY, float 
 
     o.type = type;
     o.timer = timer;
+
+    o.dimention = dimention;
 
     return o;
 }

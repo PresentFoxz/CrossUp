@@ -2,6 +2,7 @@
 
 int objectCount = 0;
 int8_t* scnBuf;
+InputBuffer inpBuf = {0};
 
 int inside(int x, int y) { return x >= sX && x < sX + sW && y >= sY && y < sY + sH; }
 

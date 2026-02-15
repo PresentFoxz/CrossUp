@@ -56,12 +56,6 @@ typedef struct {
 } Camera_t;
 
 typedef struct {
-    const char*** animNames;
-    const int* animFrameCounts;
-    int totalAnims;
-} entData_t;
-
-typedef struct {
     int actionUsed;
     int timer;
 } Action;
@@ -117,12 +111,6 @@ typedef struct {
         ObjStruct obj;
     } data;
 } Objects;
-
-typedef struct {
-    int8_t* pixels;
-    int w;
-    int h;
-} textAtlas;
 
 typedef struct {
     Vect3f pos;

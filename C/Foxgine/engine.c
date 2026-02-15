@@ -51,7 +51,7 @@ void generateTriggers(Vect3f pos, Vect3f size) {
     addTriggers(pos, size, 1, 2);
 }
 
-void generateTextures(textAtlas** textAtlasMem, int memArea) {
+void generateMapTextures(textAtlas** textAtlasMem, int memArea) {
     *textAtlasMem = pd_realloc(*textAtlasMem, sizeof(textAtlas) * 1);
     if (!*textAtlasMem) return;
     (*textAtlasMem)[memArea] = testTexture;
@@ -66,8 +66,7 @@ static inline int compareRenderTris(const void* a, const void* b) {
     return 0;
 }
 
-static void renderToScn(int tri[3][2], clippedTri* clip, textAtlas* textAtlasMem, int t, int color, Dimentions dimention, Edge* edge, float dist, float fov) {
-    if (!textAtlasMem || !textAtlasMem[0].pixels) return;
+static void renderToScn(int tri[3][2], clippedTri* clip, textAtlas* textAtlasMem, int t, int color, Dimentions dimention, Edge* edge, float dist, float fov, float nearPlane, float farPlane) {
     if (dimention == D_3D) {
         if (t != -1) {
             drawTexturedTris(
@@ -80,66 +79,31 @@ static void renderToScn(int tri[3][2], clippedTri* clip, textAtlas* textAtlasMem
         } else {
             drawFilledTris(tri, color);
         }
-
-        // for (int e = 0; e < 3; e++) {
-        //     int t0 = edge->tri0;
-        //     int t1 = edge->tri1;
-
-        //     int front0 = allPoints[t0].bfc;
-        //     int front1 = (t1 != -1) ? allPoints[t1].bfc : 0;
-
-        //     if (t1 == -1 || front0 != front1)
-        //     {
-        //         int v0 = e;
-        //         int v1 = (e + 1) % 3;
-
-        //         drawLine(tri[v0][0], tri[v0][1], tri[v1][0], tri[v1][1], 0);
-        //     }
-        // }
-    } else if ( dimention == D_2D) {
-        drawImg(
-            tri[0][0], tri[0][1], dist,
-            textAtlasMem[t].pixels, textAtlasMem[t].w, textAtlasMem[t].h,
-            fov
-        );
+    } else if (dimention == D_2D) {
+        drawImg(tri[0][0], tri[0][1], dist, 0, 0, 9, 9, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h, fov, nearPlane);
+        // drawImgNoScale(tri[0][0], tri[0][1], 0, 0, 9, 9, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h);
     }
 }
 
-static void renderStart(Camera_t usedCam, textAtlas* textAtlasMem) {
+static void renderStart(Camera_t usedCam, textAtlas* worldTextAtlasMem, textAnimsAtlas* allObjArray2D) {
     float fov = usedCam.fov;
     float nearPlane = usedCam.nearPlane;
     float farPlane = usedCam.farPlane;
     Vect3f camPos = {FROM_FIXED24_8(usedCam.position.x), FROM_FIXED24_8(usedCam.position.y), FROM_FIXED24_8(usedCam.position.z)};
+    clippedTri clipped[2] = {0};
 
     float camMatrix[3][3];
     computeCamMatrix(camMatrix, FROM_FIXED24_8(usedCam.rotation.x), FROM_FIXED24_8(usedCam.rotation.y), FROM_FIXED24_8(usedCam.rotation.z));
 
     int tri[3][2];
-    int triCheck[3][2];
-
-    clippedTri clipped[2] = {0};
-
     int triStart = 0;
     if (MAX_TRIS > 0 && allAmt > MAX_TRIS) { triStart = (allAmt - MAX_TRIS); }
-    
     for (int index = triStart; index < allAmt; index++) {
         worldTris* src = &allPoints[index];
-
-        Vertex verts[] = {0};
         int t = src->textID;
 
         if (src->dimentions == D_3D) {
-            for (int v = 0; v < 3; v++) {
-                verts[v].x = src->verts[v][0];
-                verts[v].y = src->verts[v][1];
-                verts[v].z = src->verts[v][2];
-                verts[v].u = src->uvs[v][0];
-                verts[v].v = src->uvs[v][1];
-
-                rotateVertexInPlace(&verts[v], camPos, camMatrix);
-            }
-
-            int output = TriangleClipping( verts, &clipped[0], &clipped[1], nearPlane, farPlane );
+            int output = TriangleClipping( src->verts, &clipped[0], &clipped[1], nearPlane, farPlane );
             if (!output) continue;
 
             float tmp[3];
@@ -148,17 +112,17 @@ static void renderStart(Camera_t usedCam, textAtlas* textAtlasMem) {
                 tmp[0] = clipped[c].t2.x; tmp[1] = clipped[c].t2.y; tmp[2] = clipped[c].t2.z; project2D(&tri[1][0], tmp, fov, nearPlane);
                 tmp[0] = clipped[c].t3.x; tmp[1] = clipped[c].t3.y; tmp[2] = clipped[c].t3.z; project2D(&tri[2][0], tmp, fov, nearPlane);
 
-                renderToScn(tri, &clipped[c], textAtlasMem, t, src->color, src->dimentions, src->edges, 0.0f, 0.0f);
+                renderToScn(tri, &clipped[c], worldTextAtlasMem, t, src->color, src->dimentions, src->edges, src->dist, fov, nearPlane, farPlane);
             }
         } else if (src->dimentions == D_2D) {
             float tmp[3];
-            tmp[0] = src->verts[0][0]; tmp[1] = src->verts[0][1]; tmp[2] = src->verts[0][2];
+            rotateVertexInPlace(&src->verts[0], camPos, camMatrix);
 
-            if (tmp[2] < nearPlane) continue;
+            tmp[0] = src->verts[0].x; tmp[1] = src->verts[0].y; tmp[2] = src->verts[0].z;
+            if (tmp[2] < nearPlane || tmp[2] > farPlane) continue;
 
             project2D(&tri[0][0], tmp, fov, nearPlane);
-
-            renderToScn(tri, NULL, NULL, t, 0, src->dimentions, NULL, src->dist, fov);
+            renderToScn(tri, NULL, &allObjArray2D->animation[t]->animData, t, 0, src->dimentions, NULL, src->lines, fov, nearPlane, farPlane);
         }
     }
 }
@@ -166,11 +130,8 @@ static void renderStart(Camera_t usedCam, textAtlas* textAtlasMem) {
 void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, Mesh_t model, int lineDraw, int distMod) {
     if (allAmt >= allPointsCount) return;
 
-    int renderRadiusNear = cCam.nearPlane;
-    int renderRadiusFar  = cCam.farPlane;
-
     worldTris wTris;
-    float renderRadiusSq = renderRadiusFar ? (renderRadiusFar * renderRadiusFar) : 0.0f;
+    float renderRadiusSq = cCam.farPlane ? (cCam.farPlane * cCam.farPlane) : 0.0f;
     
     float camMatrix[3][3];
     Vect3f camPos = {FROM_FIXED24_8(cCam.position.x), FROM_FIXED24_8(cCam.position.y), FROM_FIXED24_8(cCam.position.z)};
@@ -190,8 +151,6 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
     float rotMat[3][3];
     computeRotScaleMatrix(rotMat, rot.x, rot.y, rot.z, size.x, size.y, size.z);
 
-    Vect3f tv[3];
-    Vertex verts[3];
     int triScn[3][2];
     for (int i = 0; i < triCount; i++) {
         if (allAmt >= allPointsCount) return;
@@ -210,26 +169,17 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
                 r
             );
 
-            tv[j].x = r[0] + pos.x;
-            tv[j].y = r[1] + pos.y;
-            tv[j].z = r[2] + pos.z;
-
-            sumX += tv[j].x;
-            sumY += tv[j].y;
-            sumZ += tv[j].z;
-
-            wTris.verts[j][0] = tv[j].x;
-            wTris.verts[j][1] = tv[j].y;
-            wTris.verts[j][2] = tv[j].z;
-
-            verts[j].x = tv[j].x;
-            verts[j].y = tv[j].y;
-            verts[j].z = tv[j].z;
-
+            wTris.verts[j].x = r[0] + pos.x;
+            wTris.verts[j].y = r[1] + pos.y;
+            wTris.verts[j].z = r[2] + pos.z;
             wTris.edges[j] = edges[base + j];
 
-            rotateVertexInPlace(&verts[j], camPos, camMatrix);
-            project2D(&triScn[j][0], (float[3]){verts[j].x, verts[j].y, verts[j].z}, cCam.fov, cCam.nearPlane);
+            sumX += wTris.verts[j].x;
+            sumY += wTris.verts[j].y;
+            sumZ += wTris.verts[j].z;
+
+            rotateVertexInPlace(&wTris.verts[j], camPos, camMatrix);
+            project2D(&triScn[j][0], (float[3]){wTris.verts[j].x, wTris.verts[j].y, wTris.verts[j].z}, cCam.fov, cCam.nearPlane);
         }
 
         int bfc = windingOrder(triScn[0], triScn[1], triScn[2]);
@@ -242,26 +192,25 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
         float dx = cx - camPos.x;
         float dy = cy - camPos.y;
         float dz = cz - camPos.z;
-        float dist = dx*dx + dy*dy + dz*dz;
+        float dist = sqrtf(dx*dx + dy*dy + dz*dz);
 
-        if (renderRadiusFar && dist > renderRadiusSq) continue;
+        if (cCam.farPlane && dist > renderRadiusSq) continue;
 
         wTris.dimentions = D_3D;
         wTris.color      = colorArray[i];
         wTris.dist       = dist - depthOffset;
-        wTris.bfc        = backFace[i];
         wTris.lines      = lineDraw;
         wTris.textID     = -1;
 
-        wTris.uvs[0][0] = 0.0f; wTris.uvs[0][1] = 0.0f;
-        wTris.uvs[1][0] = 1.0f; wTris.uvs[1][1] = 0.0f;
-        wTris.uvs[2][0] = 0.0f; wTris.uvs[2][1] = 1.0f;
+        wTris.verts[0].u = 0.0f; wTris.verts[0].v = 0.0f;
+        wTris.verts[1].u = 1.0f; wTris.verts[1].v = 0.0f;
+        wTris.verts[2].u = 0.0f; wTris.verts[2].v = 1.0f;
 
         allPoints[allAmt++] = wTris;
     }
 }
 
-void addObjToWorld2D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, int textID) {
+void addObjToWorld2D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float objDepthOffset, float sprtDepthOffset, int anim, int animFrame) {
     if (allAmt >= allPointsCount) return;
 
     int renderRadiusNear = cCam.nearPlane;
@@ -281,33 +230,28 @@ void addObjToWorld2D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
     Vect3f tv[3];
     Vertex verts[3];
     int triScn[3][2];
-    
-    float cx = pos.x * one_third;
-    float cy = pos.y * one_third;
-    float cz = pos.z * one_third;
 
-    float dx = cx - camPos.x;
-    float dy = cy - camPos.y;
-    float dz = cz - camPos.z;
-    float dist = dx*dx + dy*dy + dz*dz;
+    float dx = pos.x - camPos.x;
+    float dy = (pos.y - 5.0f) - camPos.y;
+    float dz = pos.z - camPos.z;
+    float dist = sqrtf(dx*dx + dy*dy + dz*dz);
 
     if (renderRadiusFar && dist > renderRadiusSq) return;
 
+    wTris.verts[0].x = pos.x; wTris.verts[0].y = pos.y; wTris.verts[0].z = pos.z;
     wTris.dimentions = D_2D;
-    wTris.dist       = dist - depthOffset;
-    wTris.textID     = 0;
-
-    wTris.color      = 0;
-    wTris.bfc        = -1;
-    wTris.lines      = -1;
+    wTris.dist       = dist - objDepthOffset;
+    wTris.lines      = dist + sprtDepthOffset;
+    wTris.textID     = anim;
+    wTris.color      = animFrame;
 
     allPoints[allAmt++] = wTris;
 }
 
-void shootRender(Camera_t cam, textAtlas* textAtlasMem) {
+void shootRender(Camera_t cam, textAtlas* worldTextAtlasMem, textAnimsAtlas* allObjArray2D) {
     qsort(allPoints, allAmt, sizeof(worldTris), compareRenderTris);
 
-    renderStart(cam, textAtlasMem);
+    renderStart(cam, worldTextAtlasMem, allObjArray2D);
     allAmt = 0;
 }
 

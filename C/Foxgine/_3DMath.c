@@ -97,35 +97,6 @@ int windingOrder(const int p0[2], const int p1[2], const int p2[2]) {
 
 static inline qfixed32_t edgeFuncF(qfixed32_t x0, qfixed32_t y0, qfixed32_t x1, qfixed32_t y1, qfixed32_t px, qfixed32_t py) { return (py - y0) * (x1 - x0) - (px - x0) * (y1 - y0); }
 
-void drawImg(int x, int y, int dist, int8_t* texture, int texW, int texH, float fov) {
-    float scale = fov / dist;
-
-    int scaledW = (int)(texW * scale);
-    int scaledH = (int)(texH * scale);
-
-    if (scaledW <= 0 || scaledH <= 0) return;
-
-    int drawX = x - scaledW / 2;
-    int drawY = y - scaledH / 2;
-
-    for (int j = 0; j < scaledH; j++) {
-        for (int i = 0; i < scaledW; i++) {
-
-            int gx = drawX + i;
-            int gy = drawY + j;
-
-            if (gx < 0 || gy < 0 || gx >= sW || gy >= sH) continue;
-            
-            int texX = (i * texW) / scaledW;
-            int texY = (j * texH) / scaledH;
-
-            int8_t color = texture[texY * texW + texX];
-
-            setPixScnBuf(gx, gy, color);
-        }
-    }
-}
-
 void drawFilledTris(int tris[3][2], int triColor) {
     qfixed32_t x0 = TO_FIXED32(tris[0][0]), y0 = TO_FIXED32(tris[0][1]);
     qfixed32_t x1 = TO_FIXED32(tris[1][0]), y1 = TO_FIXED32(tris[1][1]);
@@ -161,12 +132,14 @@ void drawFilledTris(int tris[3][2], int triColor) {
         w2_row = -w2_row;
     }
 
-    for (qfixed32_t y = minY; y <= maxY; y += TO_FIXED32(resolution)) {
+    qfixed32_t step = TO_FIXED32(resolution);
+
+    for (qfixed32_t y = minY; y <= maxY; y += step) {
         qfixed32_t w0 = w0_row;
         qfixed32_t w1 = w1_row;
         qfixed32_t w2 = w2_row;
 
-        for (qfixed32_t x = minX; x <= maxX; x += TO_FIXED32(resolution)) {
+        for (qfixed32_t x = minX; x <= maxX; x += step) {
             if ((w0 | w1 | w2) >= 0) {
                 int gx = FROM_FIXED32(x) / resolution;
                 int gy = FROM_FIXED32(y) / resolution;
@@ -231,13 +204,14 @@ void drawTexturedTris(int tris[3][2], float uvs[3][2], int8_t* texture, int texW
     }
 
     qfixed32_t areaFP = TO_FIXED32(area);
+    qfixed32_t step = TO_FIXED32(resolution);
 
-    for (qfixed32_t y = minY; y <= maxY; y += TO_FIXED32(resolution)) {
+    for (qfixed32_t y = minY; y <= maxY; y += step) {
         qfixed32_t w0 = w0_row;
         qfixed32_t w1 = w1_row;
         qfixed32_t w2 = w2_row;
 
-        for (qfixed32_t x = minX; x <= maxX; x += TO_FIXED32(resolution)) {
+        for (qfixed32_t x = minX; x <= maxX; x += step) {
             if ((w0 | w1 | w2) >= 0) {
                 int64_t u_acc = (int64_t)multiply32(w0, u0) + multiply32(w1, u1) + multiply32(w2, u2);
                 int64_t v_acc = (int64_t)multiply32(w0, v0) + multiply32(w1, v1) + multiply32(w2, v2);
@@ -336,11 +310,12 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
         return 1;
     }
 
-    if (inAmt == 1) {
-        int in0 = inScreen[0];
-        int out0 = outScreen[0];
-        int out1 = outScreen[1];
+    int in0 = inScreen[0];
+    int in1 = inScreen[1];
+    int out0 = outScreen[0];
+    int out1 = outScreen[1];
 
+    if (inAmt == 1) {
         float plane0 = (verts[out0].z < nearPlane) ? nearPlane : farPlane;
         float plane1 = (verts[out1].z < nearPlane) ? nearPlane : farPlane;
 
@@ -360,10 +335,6 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
     }
     
     if (inAmt == 2) {
-        int in0 = inScreen[0];
-        int in1 = inScreen[1];
-        int out0 = outScreen[0];
-
         float plane = (verts[out0].z < nearPlane) ? nearPlane : farPlane;
 
         float t0 = (plane - verts[out0].z) / (verts[in0].z - verts[out0].z);
@@ -383,4 +354,72 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
     }
 
     return 0;
+}
+
+void drawImg(int x, int y, float dist, int tX, int tY, int tW, int tH, int8_t* texture, int texW, int texH, float fov, float nearPlane) {
+    int minX = tW < tX ? tW : tX;
+    int maxX = tW > tX ? tW : tX;
+    int minY = tH < tY ? tH : tY;
+    int maxY = tH > tY ? tH : tY;
+
+    if (minX >= texW || minY >= texH) return;
+    if (maxX >= texW) maxX = texW - 1;
+    if (maxY >= texH) maxY = texH - 1;
+
+    float projDist = (sW_L / 2) / tan(fov * 0.5f);
+    float scale = (projDist / dist);
+
+    int spriteW = maxX - minX + 1;
+    int spriteH = maxY - minY + 1;
+
+    if (spriteW <= 0 || spriteH <= 0) return;
+
+    int scaledW = (int)(spriteW * scale);
+    int scaledH = (int)(spriteH * scale);
+
+    if (scaledW <= 0 || scaledH <= 0) return;
+
+    int drawX = x - scaledW / 2;
+    int drawY = y - scaledH / 2;
+
+    for (int j = 0; j < scaledH; j++) {
+        for (int i = 0; i < scaledW; i++) {
+            int gx = (drawX + i) / resolution;
+            int gy = (drawY + j) / resolution;
+
+            if (gx < 0 || gy < 0 || gx >= sW_L || gy >= sH_L) continue;
+
+            int texX = minX + (i * spriteW) / scaledW;
+            int texY = minY + (j * spriteH) / scaledH;
+
+            int8_t color = texture[texY * texW + texX];
+            setPixScnBuf(gx, gy, color);
+        }
+    }
+}
+
+void drawImgNoScale(int x, int y, int tX, int tY, int tW, int tH, int8_t* texture, int texW, int texH) {
+    if (tX >= texW || tY >= texH) return;
+    if (tW >= texW) tW = texW - 1;
+    if (tH >= texH) tH = texH - 1;
+
+    int regionW = tW - tX;
+    int regionH = tH - tY;
+
+    int drawX = x - regionW / 2;
+    int drawY = y - regionH / 2;
+    
+    for (int j = 0; j < regionH; j++) {
+        for (int i = 0; i < regionW; i++) {
+            int texX = (tX + i);
+            int texY = (tY + j);
+
+            int8_t color = texture[texY * texW + texX];
+            int gx = drawX + i;
+            int gy = drawY + j;
+
+            if (gx < 0 || gy < 0 || gx >= sW_L || gy >= sH_L) continue;
+            setPixScnBuf(gx / resolution, gy / resolution, color);
+        }
+    }
 }

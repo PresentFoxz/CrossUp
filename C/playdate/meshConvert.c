@@ -157,6 +157,56 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
     buildTriangleEdges(meshOut);
 }
 
+void convertFileToAtlas(const char* filename, textAtlas* atlasOut) {
+    SDFile* fptr = pd->file->open(filename, kFileRead | kFileReadData);
+    if (!fptr) {
+        pd->system->logToConsole("Error: Could not open file %s\n", filename);
+        return;
+    }
+
+    int pixelIndex = 0;
+    int width = 0;
+    int height = 0;
+    int8_t* pixels = NULL;
+
+    char line[256];
+    while (pd_fgets(line, sizeof(line), fptr)) {
+        if (strncmp(line, "width ", 6) == 0) {
+            width = atoi(line + 6);
+        } else if (strncmp(line, "height ", 7) == 0) {
+            height = atoi(line + 7);
+        } else if (strncmp(line, "color ", 6) == 0) {
+            if (width > 0 && height > 0 && pixels == NULL) {
+                pixels = malloc(width * height * sizeof(int8_t));
+                if (!pixels) {
+                    pd->system->logToConsole("Memory allocation failed\n");
+                    fclose(fptr);
+                    return;
+                }
+            }
+
+            char* token = strtok(line + 6, " \t\n");
+            while (token) {
+                if (pixelIndex < width * height) {
+                    pixels[pixelIndex++] = (int8_t)atoi(token);
+                }
+                token = strtok(NULL, " \t\n");
+            }
+        }
+    }
+
+    pd->file->close(fptr);
+
+    if (pixels && pixelIndex == width * height) {
+        atlasOut->pixels = pixels;
+        atlasOut->w = width;
+        atlasOut->h = height;
+    } else {
+        pd->system->logToConsole("Invalid .fox file format\n");
+        pd_free(pixels);
+    }
+}
+
 int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[], int color, int invert, int outline, Vect3f size) {
     int highest = 0;
     allocateMeshes(mesh, maxAnims, framesPerAnim);
@@ -174,4 +224,22 @@ int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, cons
 
     if (outline) highest *= 2;
     return highest;
+}
+
+void allocAnimAtlas(textAnimsAtlas* atlas, int maxAnims, const int* framesPerAnim, const char** names[]) {
+    atlas->animation = pd_malloc(sizeof(textAtlasFrames*) * maxAnims);
+    atlas->count = maxAnims;
+
+    for (int a = 0; a < maxAnims; a++) {
+        int frames = framesPerAnim[a];
+        
+        atlas->animation[a] = pd_malloc(sizeof(textAtlasFrames));
+        atlas->animation[a]->frames = frames;
+
+        pd->system->logToConsole("Anim: %d | Frames: %d\n", a, frames);
+        
+        for (int f = 0; f < frames; f++) {
+            convertFileToAtlas(names[a][f], &atlas->animation[a]->animData);
+        }
+    }
 }

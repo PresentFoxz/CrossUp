@@ -13,12 +13,10 @@ typedef struct {
 typedef struct {
     Dimentions dimentions;
     
-    float verts[3][3];
+    Vertex verts[3];
     Edge edges[3];
-    float uvs[3][2];
     int color;
     int32_t dist;
-    int bfc;
     int lines;
     int textID;
 } worldTris;
@@ -51,5 +49,27 @@ typedef struct {
     AnimFrames** anims;
     int count;
 } VertAnims;
+
+typedef struct {
+    int8_t* pixels;
+    int w;
+    int h;
+} textAtlas;
+
+typedef struct {
+    textAtlas animData;
+    int frames;
+} textAtlasFrames;
+
+typedef struct {
+    textAtlasFrames** animation;
+    int count;
+} textAnimsAtlas;
+
+typedef struct {
+    const char*** animNames;
+    const int* animFrameCounts;
+    int totalAnims;
+} entData_t;
 
 #endif

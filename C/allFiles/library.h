@@ -60,7 +60,7 @@ static inline void pd_free(void* ptr) {
 #define RAYSCREEN_WIDTH   700
 #define RAYSCREEN_HEIGHT  460
 
-#define resolution 1
+#define resolution 2
 #define MAX_TRIS 0
 
 extern Texture2D screenTex;

@@ -20,7 +20,8 @@ void staticLineDrawing(int p0[2], int p1[2], int color);
 
 void drawFilledTris(int tris[3][2], int triColor);
 void drawTexturedTris(int tris[3][2], float uvs[3][2], int8_t* texture, int texW, int texH);
-void drawImg(int x, int y, int dist, int8_t* texture, int texW, int texH, float fov);
+void drawImg(int x, int y, float dist, int tX, int tY, int tW, int tH, int8_t* texture, int texW, int texH, float fov, float nearPlane);
+void drawImgNoScale(int x, int y, int tX, int tY, int tW, int tH, int8_t* texture, int texW, int texH);
 
 int backfaceCullCamera(Vertex* v0, Vertex* v1, Vertex* v2, Vect3f cam, int flipped);
 void drawLine(int x0, int y0, int x1, int y1, int8_t color);

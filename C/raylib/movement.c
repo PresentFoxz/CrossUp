@@ -217,7 +217,7 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int canMove){
         }
 
         if (p->actions.plr.spin.timer > 0) p->actions.plr.spin.timer--;
-        stateMachine(p);
+        // stateMachine(p);
     } else {
         p->velocity.y -= p->fallFrict;
         if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
@@ -225,7 +225,7 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int canMove){
         runColl(p);
         moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 1);
 
-        stateMachine(p);
+        // stateMachine(p);
     }
 }
 

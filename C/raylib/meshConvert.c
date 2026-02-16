@@ -160,7 +160,7 @@ void convertFileToAtlas(const char* filename, textAtlas* atlasOut) {
     int height = 0;
     int8_t* pixels = NULL;
 
-    char line[256];
+    char line[4096];
     while (fgets(line, sizeof(line), fptr)) {
         if (strncmp(line, "width ", 6) == 0) {
             width = atoi(line + 6);

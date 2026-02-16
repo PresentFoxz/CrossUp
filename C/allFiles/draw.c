@@ -102,12 +102,33 @@ void upscaleToScreen() {
 Texture2D screenTex;
 Color raylibShadeLUT[16];
 
-void raylibShadeLUTCreate() {
+void raylibShadeLUTCreateColor() {
+    raylibShadeLUT[0]  = (Color){  0,   0,   0, 255};   // Black
+    raylibShadeLUT[1]  = (Color){ 29,  43,  83, 255};   // Dark Blue
+    raylibShadeLUT[2]  = (Color){126,  37,  83, 255};   // Dark Purple
+    raylibShadeLUT[3]  = (Color){  0, 135,  81, 255};   // Dark Green
+    raylibShadeLUT[4]  = (Color){171,  82,  54, 255};   // Brown
+    raylibShadeLUT[5]  = (Color){ 95,  87,  79, 255};   // Dark Gray
+    raylibShadeLUT[6]  = (Color){194, 195, 199, 255};   // Light Gray
+    raylibShadeLUT[7]  = (Color){255, 241, 232, 255};   // White
+
+    raylibShadeLUT[8]  = (Color){255,   0,  77, 255};   // Red
+    raylibShadeLUT[9]  = (Color){255, 163,   0, 255};   // Orange
+    raylibShadeLUT[10] = (Color){255, 236,  39, 255};   // Yellow
+    raylibShadeLUT[11] = (Color){  0, 228,  54, 255};   // Green
+    raylibShadeLUT[12] = (Color){ 41, 173, 255, 255};   // Blue
+    raylibShadeLUT[13] = (Color){131, 118, 156, 255};   // Lavender
+    raylibShadeLUT[14] = (Color){255, 119, 168, 255};   // Pink
+    raylibShadeLUT[15] = (Color){255, 204, 170, 255};   // Peach
+}
+
+void raylibShadeLUTCreateGrayscale() { 
     for (int shade = 0; shade < 16; shade++) {
         uint8_t gray = (shade * 255) / 15;
-        raylibShadeLUT[shade] = (Color){gray, gray, gray, 255};
+        raylibShadeLUT[shade] = (Color){gray, gray, gray, 255}; 
     }
 }
+
 
 void drawScreen() {
     Color* framebufferPixels = pd_malloc(sizeof(Color) * sW_L * sH_L);

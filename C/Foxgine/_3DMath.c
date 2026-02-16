@@ -393,7 +393,7 @@ void drawImg(int x, int y, float dist, int tX, int tY, int tW, int tH, int8_t* t
             int texY = minY + (j * spriteH) / scaledH;
 
             int8_t color = texture[texY * texW + texX];
-            setPixScnBuf(gx, gy, color);
+            if (color != -1) setPixScnBuf(gx, gy, color);
         }
     }
 }

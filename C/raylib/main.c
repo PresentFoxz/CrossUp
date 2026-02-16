@@ -278,7 +278,8 @@ int main() {
     freeFly = 0;
 
     init();
-    raylibShadeLUTCreate();
+    raylibShadeLUTCreateGrayscale();
+    // raylibShadeLUTCreateColor();
     scnBuf = pd_malloc(sizeof(int8_t) * (sW_L * sH_L));
 
     Image img = GenImageColor(sW_L, sH_L, BLACK);

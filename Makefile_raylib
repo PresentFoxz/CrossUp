@@ -85,9 +85,11 @@ else
 endif
 
 mesh:
-	@echo "Copying Objects folder into $(BINDIR)..."
+	@echo "Deleting old Objects folder in $(BINDIR)..."
+	@if [ -d "$(BINDIR)/Objects" ]; then rm -rf "$(BINDIR)/Objects"; fi
+	@echo "Copying new Objects folder into $(BINDIR)..."
 	@mkdir -p $(BINDIR)
-	@if [ -d "$(OBJ_SRC)" ]; then cp -r $(OBJ_SRC) $(BINDIR); fi
+	@if [ -d "$(OBJ_SRC)" ]; then cp -r "$(OBJ_SRC)" "$(BINDIR)"; fi
 
 doctor: check-raylib
 raylib-check: check-raylib

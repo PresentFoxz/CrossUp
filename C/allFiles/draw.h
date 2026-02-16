@@ -10,7 +10,8 @@ void upscaleToScreen();
 void initDitherByteLUT();
 #else
 void drawScreen();
-void raylibShadeLUTCreate();
+void raylibShadeLUTCreateGrayscale();
+void raylibShadeLUTCreateColor();
 #endif
 
 #endif

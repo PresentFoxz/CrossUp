@@ -80,7 +80,7 @@ static void renderToScn(int tri[3][2], clippedTri* clip, textAtlas* textAtlasMem
             drawFilledTris(tri, color);
         }
     } else if (dimention == D_2D) {
-        drawImg(tri[0][0], tri[0][1], dist, 0, 0, 9, 9, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h, fov, nearPlane);
+        drawImg(tri[0][0], tri[0][1], dist, 0, 0, 1024, 1024, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h, fov, nearPlane);
         // drawImgNoScale(tri[0][0], tri[0][1], 0, 0, 9, 9, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h);
     }
 }

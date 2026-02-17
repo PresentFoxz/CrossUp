@@ -18,24 +18,24 @@ static void wrapPositionFloat(float* x, float* y, float* z) {
 }
 
 static void moveEnt(EntStruct* p, float mainYaw, float secondaryYaw, float secondaryStrength, float frict, float groundDelta, float airDelta, int type) {
+    float forwardX = sinf(mainYaw);
+    float forwardZ = cosf(mainYaw);
+
     if (type == 0){
         if (p->grounded) {
-            p->velocity.x += groundDelta * sinf(secondaryYaw);
-            p->velocity.z += groundDelta * cosf(secondaryYaw);
+            p->velocity.x += groundDelta * sinf(mainYaw);
+            p->velocity.z += groundDelta * cosf(mainYaw);
         } else {
             p->velocity.x += airDelta * sinf(secondaryYaw);
             p->velocity.z += airDelta * cosf(secondaryYaw);
         }
     } else {
-        if (p->grounded) {
-            float landFrict = (frict + 1.0f) * 0.5f;
+        if (p->grounded == 1 && p->groundTimer > 3) {
+            float landFrict = 1.0f - frict * 0.1f;
             
             p->velocity.x *= landFrict;
             p->velocity.z *= landFrict;
         } else {
-            float forwardX = sinf(secondaryYaw);
-            float forwardZ = cosf(secondaryYaw);
-
             float forwardVel = p->velocity.x * forwardX + p->velocity.z * forwardZ;
 
             if (forwardVel != 0.0f) {
@@ -59,7 +59,7 @@ static void moveEnt(EntStruct* p, float mainYaw, float secondaryYaw, float secon
     }
 }
 
-static void rotateTowards(EntStruct* p, float rot, float step){
+static void rotateSurfTowards(EntStruct* p, float rot, float step){
     float current = FROM_FIXED24_8(p->surfRot);
     float delta = rot - current;
     
@@ -77,6 +77,26 @@ static void rotateTowards(EntStruct* p, float rot, float step){
     
     while (p->surfRot < 0) p->surfRot += TO_FIXED24_8(degToRad(360.0f));
     while (p->surfRot >= TO_FIXED24_8(degToRad(360.0f))) p->surfRot -= TO_FIXED24_8(degToRad(360.0f));
+}
+
+static void rotatePlrTowards(EntStruct* p, float rot, float step){
+    float current = FROM_FIXED24_8(p->rotation.y);
+    float delta = rot - current;
+    
+    while (delta < -M_PI) delta += degToRad(360.0f);
+    while (delta > M_PI)  delta -= degToRad(360.0f);
+    
+    if (fabsf(delta) > degToRad(120.0f)) {
+        p->rotation.y = TO_FIXED24_8(rot);
+    } else {
+        if (delta > step)  delta = step;
+        if (delta < -step) delta = -step;
+        
+        p->rotation.y = TO_FIXED24_8(current + delta);
+    }
+    
+    while (p->rotation.y < 0) p->rotation.y += TO_FIXED24_8(degToRad(360.0f));
+    while (p->rotation.y >= TO_FIXED24_8(degToRad(360.0f))) p->rotation.y -= TO_FIXED24_8(degToRad(360.0f));
 }
 
 static void runColl(EntStruct* p) {
@@ -144,18 +164,14 @@ void movePlayerObj(EntStruct* p, Camera_t* c){
     float mainYaw = FROM_FIXED24_8(p->rotation.y);
     float secondaryStrength = 0.5f;
     float jumpFrict = 0.54f;
-    int lock = 0;
-
-    // === Movement ===
-    if (inpBuf.B) lock = 1;
+    
     if (inpBuf.A && (p->grounded == 1 || p->coyote <= 10)) {
+        if (p->grounded == 1) { p->velocity.x *= 1.15f; p->velocity.z *= 1.15f; }
+
         p->grounded = 0;
         p->velocity.y = jumpFrict;
-
-        if (lock == 1 && p->grounded == 1) { p->velocity.x *= 1.02f; p->velocity.z *= 1.02f; }
     } if (!inpBuf.A && (p->grounded == 0 && p->coyote <= 10)) p->coyote = 11;
-
-    // === Compute input vector ===
+    
     float inputX = 0.0f;
     float inputZ = 0.0f;
     
@@ -163,36 +179,28 @@ void movePlayerObj(EntStruct* p, Camera_t* c){
     if (inpBuf.DOWN) inputZ -= 1.0f;
     if (inpBuf.LEFT) inputX -= 1.0f;
     if (inpBuf.RIGHT) inputX += 1.0f;
-
-    // === Map input to camera-relative movement ===
+    
     float dirX = inputX * cosf(yawCam) + inputZ * sinf(yawCam);
     float dirZ = inputZ * cosf(yawCam) - inputX * sinf(yawCam);
     
     if (dirX != 0.0f || dirZ != 0.0f) {
         float targetYaw = atan2f(dirX, dirZ);
-        
-        if (lock == 1) {
-            if (p->grounded == 1) { p->surfRot = TO_FIXED24_8(targetYaw); }
-            else { rotateTowards(p, targetYaw, 0.2f); }
-        } else {
-            p->rotation.y = TO_FIXED24_8(targetYaw);
-
-            if (p->grounded == 1) { rotateTowards(p, FROM_FIXED24_8(p->rotation.y), 0.5f); }
-            else { rotateTowards(p, targetYaw, 0.2f); }
-        }
+        rotateSurfTowards(p, targetYaw, 0.2f);
+            
+        if (p->grounded == 1 && p->groundTimer >= 3) rotatePlrTowards(p, targetYaw, 0.2f);
 
         p->ifMove++;
     } else {
         p->ifMove = 0;
     }
 
-    if (p->ifMove > 0) { moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 0); }
+    if (p->ifMove > 0) { moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.12f, 0.05f, 0); }
 
     p->velocity.y -= p->fallFrict;
     if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
 
     runColl(p);
-    moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.22f, 0.05f, 1);
+    moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.12f, 0.05f, 1);
 
     p->coyote++;
     if (p->grounded == 1) {

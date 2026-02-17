@@ -11,47 +11,33 @@ void resShiftFix() {
     }
 }
 
-void project2D(int point[2], float verts[3], float fov, float nearPlane) {
-    float z = verts[2];
+void project2D(int point[2], Vertex verts, float fov, float nearPlane) {
+    float z = verts.z;
     if (z < nearPlane + epsilon) z = nearPlane + epsilon;
 
-    float scale = fov / z;
+    float invZ = 1.0f / z;
+    float scale = fov * invZ;
+    
+    float sx = sW_H + sX;
+    float sy = sH_H + sY;
 
-    point[0] = (int)(verts[0] * scale + (sW_H + sX));
-    point[1] = (int)(-verts[1] * scale + (sH_H + sY));
+    point[0] = (int)(verts.x * scale + sx);
+    point[1] = (int)(verts.y * -scale + sy);
 }
+
 
 void rotateVertexInPlace(Vertex* v, Vect3f camPos, float camMatrix[3][3]) {
-    float x = v->x - camPos.x;
-    float y = v->y - camPos.y;
-    float z = v->z - camPos.z;
+    float x = (v->x - camPos.x); float y = (v->y - camPos.y); float z = (v->z - camPos.z);
 
-    float rx = x * camMatrix[0][0] + y * camMatrix[1][0] + z * camMatrix[2][0];
-    float ry = x * camMatrix[0][1] + y * camMatrix[1][1] + z * camMatrix[2][1];
-    float rz = x * camMatrix[0][2] + y * camMatrix[1][2] + z * camMatrix[2][2];
-
-    v->x = rx;
-    v->y = ry;
-    v->z = rz;
+    v->x = x * camMatrix[0][0] + y * camMatrix[1][0] + z * camMatrix[2][0];
+    v->y = x * camMatrix[0][1] + y * camMatrix[1][1] + z * camMatrix[2][1];
+    v->z = x * camMatrix[0][2] + y * camMatrix[1][2] + z * camMatrix[2][2];
 }
 
-void rotateVertex(float x, float y, float z, float rotMat[3][3], float out[3]) {
-    out[0] = x * rotMat[0][0] + y * rotMat[0][1] + z * rotMat[0][2];
-    out[1] = x * rotMat[1][0] + y * rotMat[1][1] + z * rotMat[1][2];
-    out[2] = x * rotMat[2][0] + y * rotMat[2][1] + z * rotMat[2][2];
-}
-
-int backfaceCullCamera(Vertex* v0, Vertex* v1, Vertex* v2, Vect3f cam, int flipped) {
-    Vect3f e1 = {v1->x - v0->x, v1->y - v0->y, v1->z - v0->z};
-    Vect3f e2 = {v2->x - v0->x, v2->y - v0->y, v2->z - v0->z};
-    
-    Vect3f normal = { e1.y * e2.z - e1.z * e2.y, e1.z * e2.x - e1.x * e2.z, e1.x * e2.y - e1.y * e2.x };
-    Vect3f center = { (v0->x + v1->x + v2->x) / 3.0f, (v0->y + v1->y + v2->y) / 3.0f, (v0->z + v1->z + v2->z) / 3.0f };
-    
-    Vect3f view = { center.x - cam.x, center.y - cam.y, center.z - cam.z };
-    float dot = normal.x * view.x + normal.y * view.y + normal.z * view.z;
-    
-    return flipped ? (dot > 0.0f) : (dot < 0.0f);
+void rotateVertex(Vect3f verts, float rotMat[3][3], Vect3f* vertsOut) {
+    vertsOut->x = verts.x * rotMat[0][0] + verts.y * rotMat[0][1] + verts.z * rotMat[0][2];
+    vertsOut->y = verts.x * rotMat[1][0] + verts.y * rotMat[1][1] + verts.z * rotMat[1][2];
+    vertsOut->z = verts.x * rotMat[2][0] + verts.y * rotMat[2][1] + verts.z * rotMat[2][2];
 }
 
 void computeCamMatrix(float m[3][3], float pitchX, float yawY, float rollZ) {
@@ -97,69 +83,66 @@ int windingOrder(const int p0[2], const int p1[2], const int p2[2]) {
 
 static inline qfixed32_t edgeFuncF(qfixed32_t x0, qfixed32_t y0, qfixed32_t x1, qfixed32_t y1, qfixed32_t px, qfixed32_t py) { return (py - y0) * (x1 - x0) - (px - x0) * (y1 - y0); }
 
-void drawFilledTris(int tris[3][2], int triColor) {
-    qfixed32_t x0 = TO_FIXED32(tris[0][0]), y0 = TO_FIXED32(tris[0][1]);
-    qfixed32_t x1 = TO_FIXED32(tris[1][0]), y1 = TO_FIXED32(tris[1][1]);
-    qfixed32_t x2 = TO_FIXED32(tris[2][0]), y2 = TO_FIXED32(tris[2][1]);
+static inline void drawSpanLowRes(int y, int xStart, int xEnd, int color) {
+    if (y < 0 || y >= sH_L) return;
 
-    qfixed32_t minX = x0 < x1 ? (x0 < x2 ? x0 : x2) : (x1 < x2 ? x1 : x2);
-    qfixed32_t maxX = x0 > x1 ? (x0 > x2 ? x0 : x2) : (x1 > x2 ? x1 : x2);
-    qfixed32_t minY = y0 < y1 ? (y0 < y2 ? y0 : y2) : (y1 < y2 ? y1 : y2);
-    qfixed32_t maxY = y0 > y1 ? (y0 > y2 ? y0 : y2) : (y1 > y2 ? y1 : y2);
-
-    if (minX < 0) minX = 0;
-    if (minY < 0) minY = 0;
-    if (maxX >= TO_FIXED32(sW)) maxX = TO_FIXED32(sW - 1);
-    if (maxY >= TO_FIXED32(sH)) maxY = TO_FIXED32(sH - 1);
-
-    qfixed32_t A01 = TO_FIXED32((y0 - y1) * resolution), B01 = TO_FIXED32((x1 - x0) * resolution);
-    qfixed32_t A12 = TO_FIXED32((y1 - y2) * resolution), B12 = TO_FIXED32((x2 - x1) * resolution);
-    qfixed32_t A20 = TO_FIXED32((y2 - y0) * resolution), B20 = TO_FIXED32((x0 - x2) * resolution);
-
-    qfixed32_t w0_row = edgeFuncF(x1, y1, x2, y2, minX, minY);
-    qfixed32_t w1_row = edgeFuncF(x2, y2, x0, y0, minX, minY);
-    qfixed32_t w2_row = edgeFuncF(x0, y0, x1, y1, minX, minY);
-
-    qfixed32_t area = edgeFuncF(x0, y0, x1, y1, x2, y2);
-    if (area == 0) return;
-
-    if (area < 0) {
-        A01 = -A01; B01 = -B01;
-        A12 = -A12; B12 = -B12;
-        A20 = -A20; B20 = -B20;
-        w0_row = -w0_row;
-        w1_row = -w1_row;
-        w2_row = -w2_row;
+    if (xStart > xEnd) {
+        int t = xStart;
+        xStart = xEnd;
+        xEnd = t;
     }
 
-    qfixed32_t step = TO_FIXED32(resolution);
+    if (xEnd < 0 || xStart >= sW_L) return;
 
-    for (qfixed32_t y = minY; y <= maxY; y += step) {
-        qfixed32_t w0 = w0_row;
-        qfixed32_t w1 = w1_row;
-        qfixed32_t w2 = w2_row;
+    if (xStart < 0) xStart = 0;
+    if (xEnd >= sW_L) xEnd = sW_L - 1;
 
-        for (qfixed32_t x = minX; x <= maxX; x += step) {
-            if ((w0 | w1 | w2) >= 0) {
-                int gx = FROM_FIXED32(x) / resolution;
-                int gy = FROM_FIXED32(y) / resolution;
-
-                if (gx < 0) gx = 0; if (gy < 0) gy = 0;
-                if (gx >= sW_L) gx = sW_L - 1; if (gy >= sH_L) gy = sH_L - 1;
-
-                setPixScnBuf(gx, gy, triColor);
-            }
-
-            w0 += A12;
-            w1 += A20;
-            w2 += A01;
-        }
-
-        w0_row += B12;
-        w1_row += B20;
-        w2_row += B01;
+    for (int x = xStart; x <= xEnd; x++) {
+        setPixScnBuf(x, y, color);
     }
 }
+
+void drawFilledTris(int tris[3][2], int triColor) {
+    int x0 = tris[0][0] / resolution;
+    int y0 = tris[0][1] / resolution;
+    int x1 = tris[1][0] / resolution;
+    int y1 = tris[1][1] / resolution;
+    int x2 = tris[2][0] / resolution;
+    int y2 = tris[2][1] / resolution;
+
+    if (y0 > y1) { swapInt(&y0, &y1); swapInt(&x0, &x1); }
+    if (y1 > y2) { swapInt(&y1, &y2); swapInt(&x1, &x2); }
+    if (y0 > y1) { swapInt(&y0, &y1); swapInt(&x0, &x1); }
+
+    if (y0 == y2) return;
+
+    int totalHeight = y2 - y0;
+
+    qfixed16_t dx02 = TO_FIXED16(x2 - x0);
+    qfixed16_t dx01 = TO_FIXED16(x1 - x0);
+    qfixed16_t dx12 = TO_FIXED16(x2 - x1);
+
+    qfixed16_t step02 = totalHeight ? dx02 / totalHeight : 0;
+    qfixed16_t step01 = (y1 - y0) ? dx01 / (y1 - y0) : 0;
+    qfixed16_t step12 = (y2 - y1) ? dx12 / (y2 - y1) : 0;
+
+    qfixed16_t curx02 = TO_FIXED16(x0);
+    qfixed16_t curx01 = TO_FIXED16(x0);
+    qfixed16_t curx12 = TO_FIXED16(x1);
+
+    for (int y = y0; y < y1; y++) {
+        drawSpanLowRes(y, FROM_FIXED16(curx01), FROM_FIXED16(curx02), triColor);
+        curx01 += step01;
+        curx02 += step02;
+    }
+
+    for (int y = y1; y <= y2; y++) {
+        drawSpanLowRes(y, FROM_FIXED16(curx12), FROM_FIXED16(curx02), triColor);
+        curx12 += step12;
+        curx02 += step02;
+    }
+}
+
 
 void drawTexturedTris(int tris[3][2], float uvs[3][2], int8_t* texture, int texW, int texH) {
     qfixed32_t x0 = TO_FIXED32(tris[0][0]), y0 = TO_FIXED32(tris[0][1]);
@@ -356,7 +339,7 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
     return 0;
 }
 
-void drawImg(int x, int y, float dist, int tX, int tY, int tW, int tH, int8_t* texture, int texW, int texH, float fov, float nearPlane) {
+void drawImg(int screenX, int screenY, float depth, int tX, int tY, int tW, int tH, int8_t* texture, int texW, int texH, float projDist) {
     int minX = tW < tX ? tW : tX;
     int maxX = tW > tX ? tW : tX;
     int minY = tH < tY ? tH : tY;
@@ -366,8 +349,8 @@ void drawImg(int x, int y, float dist, int tX, int tY, int tW, int tH, int8_t* t
     if (maxX >= texW) maxX = texW - 1;
     if (maxY >= texH) maxY = texH - 1;
 
-    float projDist = (sW_L / 2) / tan(fov * 0.5f);
-    float scale = (projDist / dist);
+    if (depth < 0.001f) depth = 0.001f;
+    float scale = (projDist / depth);
 
     int spriteW = maxX - minX + 1;
     int spriteH = maxY - minY + 1;
@@ -379,8 +362,8 @@ void drawImg(int x, int y, float dist, int tX, int tY, int tW, int tH, int8_t* t
 
     if (scaledW <= 0 || scaledH <= 0) return;
 
-    int drawX = x - scaledW / 2;
-    int drawY = y - scaledH / 2;
+    int drawX = screenX - scaledW / 2.0f;
+    int drawY = screenY - scaledH / 1.2f;
 
     for (int j = 0; j < scaledH; j++) {
         for (int i = 0; i < scaledW; i++) {

@@ -151,9 +151,6 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
         meshOut->bfc[i] = 1;
     }
 
-    meshOut->flipped = invert;
-    meshOut->outline = outline;
-
     buildTriangleEdges(meshOut);
 }
 
@@ -169,7 +166,7 @@ void convertFileToAtlas(const char* filename, textAtlas* atlasOut) {
     int height = 0;
     int8_t* pixels = NULL;
 
-    char line[256];
+    char line[4096];
     while (pd_fgets(line, sizeof(line), fptr)) {
         if (strncmp(line, "width ", 6) == 0) {
             width = atoi(line + 6);
@@ -177,7 +174,7 @@ void convertFileToAtlas(const char* filename, textAtlas* atlasOut) {
             height = atoi(line + 7);
         } else if (strncmp(line, "color ", 6) == 0) {
             if (width > 0 && height > 0 && pixels == NULL) {
-                pixels = malloc(width * height * sizeof(int8_t));
+                pixels = pd_malloc(width * height * sizeof(int8_t));
                 if (!pixels) {
                     pd->system->logToConsole("Memory allocation failed\n");
                     fclose(fptr);
@@ -226,7 +223,7 @@ int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, cons
     return highest;
 }
 
-void allocAnimAtlas(textAnimsAtlas* atlas, int maxAnims, const int* framesPerAnim, const char** names[]) {
+void allocAnimAtlas(textAnimsAtlas* atlas, int maxAnims, const int* framesPerAnim, const char* names[]) {
     atlas->animation = pd_malloc(sizeof(textAtlasFrames*) * maxAnims);
     atlas->count = maxAnims;
 
@@ -238,8 +235,8 @@ void allocAnimAtlas(textAnimsAtlas* atlas, int maxAnims, const int* framesPerAni
 
         pd->system->logToConsole("Anim: %d | Frames: %d\n", a, frames);
         
-        for (int f = 0; f < frames; f++) {
-            convertFileToAtlas(names[a][f], &atlas->animation[a]->animData);
-        }
+        convertFileToAtlas(names[a], &atlas->animation[a]->animData);
     }
+
+    pd->system->logToConsole("Model Atlas Allocation Complete\n");
 }

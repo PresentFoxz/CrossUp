@@ -21,12 +21,11 @@ typedef struct {
 } Vect3i;
 
 typedef struct {
-    float x, y, z;
-} Vect3f;
-
-typedef struct {
     float x, y;
 } Vect2f;
+typedef struct {
+    float x, y, z;
+} Vect3f;
 
 typedef struct {
     Vect3f min, max;
@@ -52,7 +51,9 @@ typedef struct {
 typedef struct {
     Vect3i position;
     Vect3i rotation;
+    float camMatrix[3][3];
     float fov, nearPlane, farPlane;
+    float projDist;
 } Camera_t;
 
 typedef struct {
@@ -62,8 +63,7 @@ typedef struct {
 
 typedef struct {
     Action spin;
-    Action dive;
-    Action punch;
+    Action dash;
 } PlayerActions;
 
 typedef struct {

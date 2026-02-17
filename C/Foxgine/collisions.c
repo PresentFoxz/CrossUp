@@ -3,6 +3,7 @@ CollisionChunks* collisionChunkSurfaces;
 Triggers* triggers;
 
 #define CHUNK_SIZE 50
+#define TRI_EPSILON 20
 
 int triggerCount = 0;
 int chunkAmt = 0;
@@ -191,7 +192,8 @@ Triggers cylinderInTrigger(Vect3f pos, float radius, float height) {
 
 VectMf cylinderInTriangle(Vect3f pos, float radius, float height) {
     VectMf pushPlayer = {0};
-    float radius2 = radius * radius;
+    float effectiveRadius = radius + TRI_EPSILON;
+    float radius2 = effectiveRadius * effectiveRadius;
 
     for (int c=0; c < chunkAmt; c++){
         int chunkPos[3] = {getChunkPos(pos.x), getChunkPos(pos.y), getChunkPos(pos.z)};
@@ -202,17 +204,17 @@ VectMf cylinderInTriangle(Vect3f pos, float radius, float height) {
         for (int i = 0; i < collisionChunkSurfaces[c].amt; i++) {
             CollisionSurface *tri = &collSurface[i];
 
-            if (tri->normal.x == 0 && tri->normal.y == 0 && tri->normal.z == 0)
-                continue;
+            if (tri->normal.x == 0 && tri->normal.y == 0 && tri->normal.z == 0) continue;
 
             float minX = fminf(tri->v0.x, fminf(tri->v1.x, tri->v2.x));
             float maxX = fmaxf(tri->v0.x, fmaxf(tri->v1.x, tri->v2.x));
+            float minY = fminf(tri->v0.y, fminf(tri->v1.y, tri->v2.y));
+            float maxY = fmaxf(tri->v0.y, fmaxf(tri->v1.y, tri->v2.y));
             float minZ = fminf(tri->v0.z, fminf(tri->v1.z, tri->v2.z));
             float maxZ = fmaxf(tri->v0.z, fmaxf(tri->v1.z, tri->v2.z));
 
-            // PADDED broad-phase (important!)
-            float pad = radius + 0.01f;
-            if (pos.x + pad < minX || pos.x - pad > maxX || pos.z + pad < minZ || pos.z - pad > maxZ) continue;
+            float pad = radius + 0.5f;
+            if (pos.x + pad < minX || pos.x - pad > maxX || pos.y + pad < minY || pos.y - pad > maxY || pos.z + pad < minZ || pos.z - pad > maxZ) continue;
 
             float dx = pos.x - tri->center.x;
             float dz = pos.z - tri->center.z;
@@ -264,7 +266,7 @@ VectMf cylinderInTriangle(Vect3f pos, float radius, float height) {
             float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
             float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
 
-            if (u >= 0 && v >= 0 && (u + v <= 1)) {
+            if (u >= -TRI_EPSILON && v >= -TRI_EPSILON && (u + v <= 1.0f + TRI_EPSILON)) {
                 float penetration = radius - fabsf(dist);
 
                 if (tri->type == OUT_OF_BOUNDS) {

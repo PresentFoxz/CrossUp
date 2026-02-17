@@ -15,8 +15,9 @@ typedef struct {
     
     Vertex verts[3];
     Edge edges[3];
-    int color;
+    float distMod;
     int32_t dist;
+    int color;
     int lines;
     int textID;
 } worldTris;
@@ -36,8 +37,6 @@ typedef struct {
 
     int* color;
     int* bfc;
-    int flipped;
-    int outline;
 } Mesh_t;
 
 typedef struct {
@@ -70,6 +69,12 @@ typedef struct {
     const char*** animNames;
     const int* animFrameCounts;
     int totalAnims;
-} entData_t;
+} entDataModel_t;
+
+typedef struct {
+    const char** animNames;
+    const int* animFrameCounts;
+    int totalAnims;
+} entDataAtlas_t;
 
 #endif

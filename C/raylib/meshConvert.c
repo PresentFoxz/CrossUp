@@ -35,22 +35,16 @@ static inline void buildTriangleEdges(Mesh_t* mesh) {
         mesh->edges[ei++] = (Edge){ 
             .v0 = tri[0], 
             .v1 = tri[1],
-            .tri0 = t,
-            .tri1 = -1
         };
 
         mesh->edges[ei++] = (Edge){ 
             .v0 = tri[1], 
             .v1 = tri[2],
-            .tri0 = t,
-            .tri1 = -1
         };
 
         mesh->edges[ei++] = (Edge){ 
-            .v0 = tri[2],
+            .v0 = tri[2], 
             .v1 = tri[0],
-            .tri0 = t,
-            .tri1 = -1
         };
     }
 }
@@ -142,9 +136,6 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
         meshOut->bfc[i] = 1;
     }
 
-    meshOut->flipped = invert;
-    meshOut->outline = outline;
-
     buildTriangleEdges(meshOut);
 }
 
@@ -168,7 +159,7 @@ void convertFileToAtlas(const char* filename, textAtlas* atlasOut) {
             height = atoi(line + 7);
         } else if (strncmp(line, "color ", 6) == 0) {
             if (width > 0 && height > 0 && pixels == NULL) {
-                pixels = malloc(width * height * sizeof(int8_t));
+                pixels = pd_malloc(width * height * sizeof(int8_t));
                 if (!pixels) {
                     printf("Memory allocation failed\n");
                     fclose(fptr);
@@ -217,7 +208,7 @@ int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, cons
     return highest;
 }
 
-void allocAnimAtlas(textAnimsAtlas* atlas, int maxAnims, const int* framesPerAnim, const char** names[]) {
+void allocAnimAtlas(textAnimsAtlas* atlas, int maxAnims, const int* framesPerAnim, const char* names[]) {
     atlas->animation = pd_malloc(sizeof(textAtlasFrames*) * maxAnims);
     atlas->count = maxAnims;
 
@@ -229,8 +220,8 @@ void allocAnimAtlas(textAnimsAtlas* atlas, int maxAnims, const int* framesPerAni
 
         printf("Anim: %d | Frames: %d\n", a, frames);
         
-        for (int f = 0; f < frames; f++) {
-            convertFileToAtlas(names[a][f], &atlas->animation[a]->animData);
-        }
+        convertFileToAtlas(names[a], &atlas->animation[a]->animData);
     }
+
+    printf("Model Atlas Allocation Complete\n");
 }

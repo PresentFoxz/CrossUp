@@ -15,8 +15,6 @@ VertAnims* entArray3D = NULL;
 textAnimsAtlas* allObjArray2D = NULL;
 textAtlas* worldTextAtlasMem = NULL;
 
-// ChunkCount chunkMap = {0};
-
 int gameScreen = 0;
 const int mapObjsCount = 2;
 
@@ -142,7 +140,7 @@ static void addPlayer() {
 
         addObjToWorld2D(
             objectPos, objectRot, objectSize,
-            cam, 10.0f, 10.0f,
+            cam, 20.0f, 0.3f,
             player.currentAnim, player.currentFrame
         );
     }
@@ -292,6 +290,8 @@ int main() {
         scnBufFix();
         skybox(5, 10, 10);
         runInputBuffer();
+        
+        precomputedFunctions(&cam);
 
         if (gameScreen == 1) {
             render(freeFly);

@@ -18,12 +18,7 @@ VertAnims* entArray3D = NULL;
 textAnimsAtlas* allObjArray2D = NULL;
 textAtlas* worldTextAtlasMem = NULL;
 
-// ChunkCount chunkMap = {0};
-
 int gameScreen = 0;
-const int maxProjs = 1;
-const int mapObjsCount = 2;
-
 int onStart = 0;
 
 static int update(void* userdata);
@@ -270,8 +265,8 @@ static int render() {
     updateCamera(&cam, &player, 7.0f);
     
     addMap();
-    addPlayer();
     // addEntities(1, 0);
+    addPlayer();
 
     shootRender(cam, worldTextAtlasMem, allObjArray2D);
 
@@ -302,6 +297,8 @@ static int update(void* userdata) {
     scnBufFix();
     skybox(5, 10, 10);
     runInputBuffer();
+
+    precomputedFunctions(&cam);
     
     if (gameScreen == 1) {
         render();

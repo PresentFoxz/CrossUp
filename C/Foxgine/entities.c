@@ -10,9 +10,10 @@ Camera_t createCamera(float x, float y, float z, float rotX, float rotY, float r
     cam.rotation.y = TO_FIXED24_8(degToRad(rotY));
     cam.rotation.z = TO_FIXED24_8(degToRad(rotZ));
 
-    cam.fov =        fov;
-    cam.nearPlane =  near;
-    cam.farPlane =   far;
+    cam.fov        = fov;
+    cam.nearPlane  = near;
+    cam.farPlane   = far;
+    cam.projDist   = 0;
     return cam;
 }
 

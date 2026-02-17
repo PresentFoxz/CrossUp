@@ -97,7 +97,6 @@ void upscaleToScreen() {
     }
 }
 
-
 #else
 Texture2D screenTex;
 Color raylibShadeLUT[16];

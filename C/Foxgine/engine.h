@@ -17,5 +17,6 @@ void shootRender(Camera_t cam, textAtlas* worldTextAtlasMem, textAnimsAtlas* all
 void resetAllVariables();
 
 void addEnt(Vect3f pos, Vect3f rot, Vect3f size, float radius, float height, float frict, float fallFrict, int type, ModelType objType, VertAnims* entArray, Objects* allEnts, Dimentions dimention);
+void precomputedFunctions(Camera_t* cam);
 
 #endif

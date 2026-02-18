@@ -19,7 +19,7 @@
 #define sW_L  (sW / resolution)
 #define sH_L  (sH / resolution)
 
-#if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
+#if defined(TARGET_PLAYDATE) || defined(TARGET_SIMULATOR) || defined(PLAYDATE_SDK)
 #include "pd_api.h"
 
 extern PlaydateAPI* pd;
@@ -50,7 +50,9 @@ static inline void pd_free(void* ptr) {
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#ifdef _WIN32
 #include <direct.h>
+#endif
 #include "raylib.h"
 
 #define pd_realloc(ptr, size) realloc(ptr, size)
@@ -123,7 +125,7 @@ extern int mapIndex;
 extern InputBuffer inpBuf;
 
 static inline void runInputBuffer() {
-    #if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
+    #if defined(TARGET_PLAYDATE) || defined(TARGET_SIMULATOR) || defined(PLAYDATE_SDK)
     PDButtons tapped, held;
     pd->system->getButtonState(&held, &tapped, NULL);
 

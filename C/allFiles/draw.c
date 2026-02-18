@@ -19,7 +19,7 @@ static const uint8_t shadeLUT[16][4][4] = {
     {{1,1,1,1},{1,1,1,1},{1,1,1,1},{1,1,1,1}}
 };
 
-#if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
+#if defined(TARGET_PLAYDATE) || defined(TARGET_SIMULATOR) || defined(PLAYDATE_SDK)
 static uint8_t ditherByte[16][4][4];
 
 void initDitherByteLUT() {

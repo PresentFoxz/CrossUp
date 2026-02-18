@@ -227,7 +227,7 @@ PDC = $(PLAYDATE_SDK_PATH)/bin/pdc.exe
 
 OBJ_SRC = C/Objects
 IMG_SRC = C/images
-SND_SRC = C/sounds
+AUDIO_SRC = C/Audio
 
 pdx-sim: sim_build/pdex.dll
 	@echo "Building simulator PDX..."
@@ -236,6 +236,8 @@ pdx-sim: sim_build/pdex.dll
 
 	cp C/pdxinfo $(CUSFOLDER)/
 	cp -r $(OBJ_SRC) $(CUSFOLDER)/
+	if [ -d "$(AUDIO_SRC)/music" ]; then mkdir -p $(CUSFOLDER)/music && cp -r $(AUDIO_SRC)/music/. $(CUSFOLDER)/music/; fi
+	if [ -d "$(AUDIO_SRC)/sfx" ]; then mkdir -p $(CUSFOLDER)/sfx && cp -r $(AUDIO_SRC)/sfx/. $(CUSFOLDER)/sfx/; fi
 	cp sim_build/pdex.dll $(CUSFOLDER)/
 	$(PDC) $(CUSFOLDER) CrossUp-sim.pdx
 
@@ -250,6 +252,8 @@ pdx-dev: device_build/pdex.elf
 
 	cp C/pdxinfo $(CUDFOLDER)/
 	cp -r $(OBJ_SRC) $(CUDFOLDER)/
+	if [ -d "$(AUDIO_SRC)/music" ]; then mkdir -p $(CUDFOLDER)/music && cp -r $(AUDIO_SRC)/music/. $(CUDFOLDER)/music/; fi
+	if [ -d "$(AUDIO_SRC)/sfx" ]; then mkdir -p $(CUDFOLDER)/sfx && cp -r $(AUDIO_SRC)/sfx/. $(CUDFOLDER)/sfx/; fi
 	cp device_build/pdex.elf $(CUDFOLDER)/
 	cp device_build/pdex_unstripped.elf save_elf
 	cp device_build/pdex.elf save_elf

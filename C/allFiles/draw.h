@@ -4,7 +4,7 @@
 #include "library.h"
 
 void skybox(int col1, int col2, int count);
-#if defined(TARGET_PLAYDATE) || defined(PLAYDATE_SDK)
+#if defined(TARGET_PLAYDATE) || defined(TARGET_SIMULATOR) || defined(PLAYDATE_SDK)
 void setPixelRaw(uint x, uint y, int color);
 void upscaleToScreen();
 void initDitherByteLUT();

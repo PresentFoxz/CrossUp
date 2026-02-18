@@ -1,0 +1,78 @@
+# Linux Makefile for CrossUp (Raylib)
+
+CC = gcc
+
+# Detect Raylib via pkg-config
+RAYLIB_PKG := $(shell pkg-config --exists raylib 2>/dev/null && echo "yes" || echo "no")
+
+ifeq ($(RAYLIB_PKG),yes)
+    RAYLIB_CFLAGS := $(shell pkg-config --cflags raylib)
+    RAYLIB_LDFLAGS := $(shell pkg-config --libs raylib)
+else
+    RAYLIB_SEARCH_PATHS := /usr/local/include /usr/include $(HOME)/raylib/src ./raylib/src
+    RAYLIB_LIB_PATHS    := /usr/local/lib /usr/lib $(HOME)/raylib/src ./raylib/src
+    RAYLIB_FOUND_PATH := $(shell for path in $(RAYLIB_SEARCH_PATHS); do \
+        if [ -f "$$path/raylib.h" ]; then echo "$$path"; break; fi \
+    done)
+    RAYLIB_INCLUDE := $(if $(RAYLIB_FOUND_PATH),-I$(RAYLIB_FOUND_PATH),)
+    RAYLIB_LIBDIR := $(shell \
+        for path in $(RAYLIB_SEARCH_PATHS) $(RAYLIB_LIB_PATHS); do \
+            if [ -f "$$path/libraylib.a" ] || [ -f "$$path/libraylib.so" ]; then \
+                echo "-L$$path"; break; \
+            fi; \
+        done)
+    RAYLIB_CFLAGS := $(RAYLIB_INCLUDE)
+    RAYLIB_LDFLAGS := $(RAYLIB_LIBDIR) -lraylib -lm -lpthread -ldl -lrt -lX11
+endif
+
+SRCDIR = C
+BINDIR = bin
+
+SRC_FOLDERS = Foxgine raylib textures allFiles
+
+SRC = $(foreach dir,$(SRC_FOLDERS),$(shell find $(SRCDIR)/$(dir) -name "*.c"))
+
+INCLUDES = $(shell find $(SRCDIR) -type d -not -path "$(SRCDIR)/playdate*" | sed 's/^/-I/')
+
+OBJ_SRC  = $(SRCDIR)/Objects
+AUDIO_SRC = $(SRCDIR)/Audio
+
+CFLAGS       = -Wall -Wextra -std=c2x -O2 $(RAYLIB_CFLAGS) $(INCLUDES)
+DEBUG_CFLAGS = -Wall -Wextra -std=c2x -g -DDEBUG $(RAYLIB_CFLAGS) $(INCLUDES)
+
+OUT = $(BINDIR)/CrossUp
+
+.PHONY: all build debug clean directories mesh check-raylib
+
+all: check-raylib build
+
+check-raylib:
+	@echo "Checking for raylib..."
+ifeq ($(RAYLIB_PKG),yes)
+	@echo "  Found via pkg-config: $(RAYLIB_CFLAGS)"
+else ifneq ($(RAYLIB_CFLAGS),)
+	@echo "  Found at: $(RAYLIB_CFLAGS)"
+else
+	@echo "  raylib not found!"
+	@false
+endif
+
+directories:
+	@mkdir -p $(BINDIR)
+
+mesh: directories
+	@if [ -d "$(OBJ_SRC)" ]; then cp -r "$(OBJ_SRC)" "$(BINDIR)"; fi
+	@if [ -d "$(AUDIO_SRC)/music" ]; then mkdir -p "$(BINDIR)/music" && cp -r "$(AUDIO_SRC)/music/." "$(BINDIR)/music/"; fi
+	@if [ -d "$(AUDIO_SRC)/sfx" ]; then mkdir -p "$(BINDIR)/sfx" && cp -r "$(AUDIO_SRC)/sfx/." "$(BINDIR)/sfx/"; fi
+
+build: check-raylib directories mesh
+	$(CC) $(CFLAGS) $(SRC) -o $(OUT) $(RAYLIB_LDFLAGS)
+	@echo "Built: $(OUT)"
+
+debug: check-raylib directories mesh
+	$(CC) $(DEBUG_CFLAGS) $(SRC) -o $(OUT) $(RAYLIB_LDFLAGS)
+	@echo "Built (debug): $(OUT)"
+
+clean:
+	@echo "Cleaning..."
+	rm -rf $(BINDIR)/*

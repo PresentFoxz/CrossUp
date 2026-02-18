@@ -1,6 +1,7 @@
 #include "game/libRay.h"
 #include "game/movement.h"
 #include "game/meshConvert.h"
+#include "sound/audio.h"
 
 #include "../Foxgine/engine.h"
 
@@ -35,7 +36,12 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg)
 		pd->display->setRefreshRate(30);
 		pd->system->setUpdateCallback(update, NULL);
 	}
-	
+
+	if ( event == kEventTerminate )
+	{
+		UnloadAudioManager(&audioManager);
+	}
+
 	return 0;
 }
 
@@ -80,6 +86,9 @@ static int init() {
     generateTriggers((Vect3f){5.0f, 5.0f, 5.0f}, (Vect3f){10.0f, 10.0f, 10.0f});
 
     resetAllVariables();
+
+    InitAudioManager(&audioManager);
+    PlayModuleMusic(&audioManager, "music/adamsoft_-_sonic_trance_remix.mod");
 
     return 0;
 }
@@ -292,6 +301,10 @@ static int update(void* userdata) {
         onStart = 1;
     }
 
+    float dt = pd->system->getElapsedTime();
+    pd->system->resetElapsedTime();
+    UpdateAudioManager(&audioManager, dt);
+
     pd->graphics->clear(kColorBlack);
     buf = pd->graphics->getFrame();
     scnBufFix();
@@ -299,11 +312,15 @@ static int update(void* userdata) {
     runInputBuffer();
 
     precomputedFunctions(&cam);
-    
+
     if (gameScreen == 1) {
         render();
 
         upscaleToScreen();
+
+        if (inpBuf.B) {
+            PlaySFX(&audioManager, "sfx/jump", 1.0f);
+        }
     }
 
     pd->graphics->fillRect(0, 0, 20, 20, kColorWhite);

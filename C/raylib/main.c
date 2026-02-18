@@ -1,6 +1,7 @@
 #include "game/libRay.h"
 #include "game/movement.h"
 #include "game/meshConvert.h"
+#include "sound/audio.h"
 
 #include "../../Foxgine/engine.h"
 
@@ -61,6 +62,8 @@ static int init() {
     generateTriggers((Vect3f){5.0f, 5.0f, 5.0f}, (Vect3f){10.0f, 10.0f, 10.0f});
 
     resetAllVariables();
+
+    InitAudioManager(&audioManager);
 
     return 0;
 }
@@ -270,6 +273,7 @@ static inline void scnBufFix() {
 int main() {
     InitWindow(RAYSCREEN_WIDTH, RAYSCREEN_HEIGHT, "CrossUp");
     SetTargetFPS(30);
+    InitAudioDevice();
 
     gameScreen = 1;
     freeFly = 0;
@@ -283,6 +287,8 @@ int main() {
     screenTex = LoadTextureFromImage(img);
     UnloadImage(img);
 
+    PlayModuleMusic(&audioManager, "music/adamsoft_-_sonic_trance_remix.mod");
+
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(BLACK);
@@ -291,6 +297,8 @@ int main() {
         runInputBuffer();
         
         precomputedFunctions(&cam);
+
+        UpdateAudioManager(&audioManager, GetFrameTime());
 
         if (gameScreen == 1) {
             render(freeFly);
@@ -306,12 +314,18 @@ int main() {
 
                 if (freeFly > 1) freeFly = 0;
             }
+
+            if (IsKeyPressed(KEY_B)) {
+                PlaySFX(&audioManager, "sfx/jump.wav", 1.0f);
+            }
         }
 
         drawScreen();
         EndDrawing();
     }
 
+    UnloadAudioManager(&audioManager);
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }

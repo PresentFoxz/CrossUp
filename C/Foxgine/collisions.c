@@ -3,7 +3,7 @@ CollisionChunks* collisionChunkSurfaces;
 Triggers* triggers;
 
 #define CHUNK_SIZE 50
-#define TRI_EPSILON 20
+#define TRI_EPSILON 5
 
 int triggerCount = 0;
 int chunkAmt = 0;

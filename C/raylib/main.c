@@ -254,7 +254,6 @@ static int render(int camType) {
     addPlayer();
 
     shootRender(cam, worldTextAtlasMem, allObjArray2D);
-    drawScreen();
 
     return 0;
 }

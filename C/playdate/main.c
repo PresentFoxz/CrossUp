@@ -1,6 +1,6 @@
-#include "libRay.h"
-#include "movement.h"
-#include "meshConvert.h"
+#include "game/libRay.h"
+#include "game/movement.h"
+#include "game/meshConvert.h"
 
 #include "../Foxgine/engine.h"
 

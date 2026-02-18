@@ -1,8 +1,8 @@
 #ifndef MOVEMENT_H
 #define MOVEMENT_H
 #include "libRay.h"
-#include "../Foxgine/entities.h"
-#include "../Foxgine/collisions.h"
+#include "../../Foxgine/entities.h"
+#include "../../Foxgine/collisions.h"
 
 #define V_LOOK_SENS 0.25f
 #define H_LOOK_SENS 0.25f

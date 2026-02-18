@@ -1,8 +1,8 @@
-#include "libRay.h"
-#include "movement.h"
-#include "meshConvert.h"
+#include "game/libRay.h"
+#include "game/movement.h"
+#include "game/meshConvert.h"
 
-#include "../Foxgine/engine.h"
+#include "../../Foxgine/engine.h"
 
 Camera_t cam = {0};
 

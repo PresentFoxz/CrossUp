@@ -143,7 +143,6 @@ void drawFilledTris(int tris[3][2], int triColor) {
     }
 }
 
-
 void drawTexturedTris(int tris[3][2], float uvs[3][2], int8_t* texture, int texW, int texH) {
     qfixed32_t x0 = TO_FIXED32(tris[0][0]), y0 = TO_FIXED32(tris[0][1]);
     qfixed32_t x1 = TO_FIXED32(tris[1][0]), y1 = TO_FIXED32(tris[1][1]);

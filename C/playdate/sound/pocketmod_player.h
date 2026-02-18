@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "pd_api.h"
+#include "../../allFiles/library.h"
 
 typedef struct PocketModPlayer PocketModPlayer;
 

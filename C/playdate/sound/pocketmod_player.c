@@ -128,7 +128,7 @@ bool LoadModFromPath(PocketModPlayer* player, const char* path) {
 
     pd->system->logToConsole("PocketMod: File size = %d bytes", fileSize);
 
-    player->modData = malloc(fileSize);
+    player->modData = pd_malloc(fileSize);
     if (!player->modData) {
         strcpy(player->loadStage, "Memory allocation failed");
         pd->file->close(file);
@@ -148,7 +148,7 @@ bool LoadModFromPath(PocketModPlayer* player, const char* path) {
     g_modDataSize = fileSize;
     strcpy(player->loadStage, "Initializing pocketmod");
 
-    player->pmodContext = malloc(sizeof(pocketmod_context));
+    player->pmodContext = pd_malloc(sizeof(pocketmod_context));
     if (!player->pmodContext) {
         strcpy(player->loadStage, "Context allocation failed");
         free(player->modData);

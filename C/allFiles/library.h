@@ -1,7 +1,7 @@
 #ifndef LIBRARY_H
 #define LIBRARY_H
 
-#define BASE_FPS 30.0f
+#define BASE_FPS 20
 
 #define MAX_ENTITIES 240
 
@@ -41,7 +41,7 @@ static inline void pd_free(void* ptr) {
 }
 
 #define resolution 2
-#define MAX_TRIS 700
+#define MAX_TRIS 450
 
 #else
 #include <stdio.h>

@@ -37,7 +37,7 @@ INCLUDES = $(shell find $(SRCDIR) -type d -not -path "$(SRCDIR)/playdate*" | sed
 OBJ_SRC  = $(SRCDIR)/Objects
 AUDIO_SRC = $(SRCDIR)/Audio
 
-CFLAGS       = -Wall -Wextra -std=c2x -O2 $(RAYLIB_CFLAGS) $(INCLUDES)
+CFLAGS       = -Wall -Wextra -std=c2x -O3 $(RAYLIB_CFLAGS) $(INCLUDES)
 DEBUG_CFLAGS = -Wall -Wextra -std=c2x -g -DDEBUG $(RAYLIB_CFLAGS) $(INCLUDES)
 
 OUT = $(BINDIR)/CrossUp

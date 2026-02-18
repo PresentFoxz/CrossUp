@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "pd_api.h"
 #include "pocketmod_player.h"
 
 #define MAX_SOUNDS 128

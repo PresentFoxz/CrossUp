@@ -33,7 +33,7 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg)
 	{
         pd = playdate;
 
-		pd->display->setRefreshRate(30);
+		pd->display->setRefreshRate(BASE_FPS);
 		pd->system->setUpdateCallback(update, NULL);
 	}
 
@@ -301,12 +301,13 @@ static int update(void* userdata) {
         onStart = 1;
     }
 
-    float dt = pd->system->getElapsedTime();
-    pd->system->resetElapsedTime();
-    UpdateAudioManager(&audioManager, dt);
-
     pd->graphics->clear(kColorBlack);
     buf = pd->graphics->getFrame();
+
+    // float dt = pd->system->getElapsedTime();
+    // pd->system->resetElapsedTime();
+    // UpdateAudioManager(&audioManager, dt);
+
     scnBufFix();
     skybox(5, 10, 10);
     runInputBuffer();
@@ -318,9 +319,7 @@ static int update(void* userdata) {
 
         upscaleToScreen();
 
-        if (inpBuf.B) {
-            PlaySFX(&audioManager, "sfx/jump", 1.0f);
-        }
+        if (inpBuf.B) { PlaySFX(&audioManager, "sfx/jump", 1.0f); }
     }
 
     pd->graphics->fillRect(0, 0, 20, 20, kColorWhite);

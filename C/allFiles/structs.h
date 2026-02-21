@@ -133,4 +133,9 @@ typedef struct {
     uint8_t B;
 } InputBuffer;
 
+typedef struct {
+    int idx;
+    float dist;
+} TriangleOrdering;
+
 #endif

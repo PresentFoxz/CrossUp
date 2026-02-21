@@ -221,7 +221,7 @@ void movePlayerObj(EntStruct* p, Camera_t* c){
     }
 
     if (p->actions.plr.spin.timer > 0) p->actions.plr.spin.timer--;
-    // stateMachine(p);
+    stateMachine(p);
 }
 
 void updateCamera(Camera_t* cam, EntStruct* ent, float radius) {

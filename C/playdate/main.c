@@ -4,12 +4,11 @@
 #include "sound/audio.h"
 
 #include "../Foxgine/engine.h"
+#include "profiler.h"
 
 PlaydateAPI* pd;
-uint8_t* buf = NULL;
 
 Camera_t cam = {0};
-
 Objects* allEnts = NULL;
 EntStruct player = {0};
 Mesh_t mapArray = {0};
@@ -17,12 +16,14 @@ Mesh_t mapArray = {0};
 Mesh_t* objArray3D = NULL;
 VertAnims* entArray3D = NULL;
 textAnimsAtlas* allObjArray2D = NULL;
-textAtlas* worldTextAtlasMem = NULL;
+// textAtlas* worldTextAtlasMem = NULL;
 
 int gameScreen = 0;
+int mapIndex = 0;
 int onStart = 0;
 
 static int update(void* userdata);
+static int UnloadData();
 
 #ifdef _WINDLL
 __declspec(dllexport)
@@ -39,10 +40,19 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg)
 
 	if ( event == kEventTerminate )
 	{
+        UnloadData();
 		UnloadAudioManager(&audioManager);
 	}
 
 	return 0;
+}
+
+static int UnloadData() {
+    pd_free(allEnts);
+    pd_free(objArray3D);
+    pd_free(entArray3D);
+    pd_free(allObjArray2D);
+    // pd_free(worldTextAtlasMem);
 }
 
 static void generateEnts() {
@@ -64,7 +74,7 @@ static int init() {
     allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
 
     cam = createCamera(0.0f, 3.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
-    player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.55f, 0.08f, 0, D_2D);
+    player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.55f, 0.08f, 0, D_3D);
     // generateEnts();
 
     convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, (Vect3f){2.0f, 2.0f, 2.0f});
@@ -82,13 +92,12 @@ static int init() {
     }
 
     generateMap(mapArray);
-    generateMapTextures(&worldTextAtlasMem, 0);
-    generateTriggers((Vect3f){5.0f, 5.0f, 5.0f}, (Vect3f){10.0f, 10.0f, 10.0f});
+    // generateTriggers((Vect3f){5.0f, 5.0f, 5.0f}, (Vect3f){10.0f, 10.0f, 10.0f});
 
     resetAllVariables();
 
-    InitAudioManager(&audioManager);
-    PlayModuleMusic(&audioManager, "music/adamsoft_-_sonic_trance_remix.mod");
+    // InitAudioManager(&audioManager);
+    // PlayModuleMusic(&audioManager, "music/adamsoft_-_sonic_trance_remix.mod");
 
     return 0;
 }
@@ -277,18 +286,9 @@ static int render() {
     // addEntities(1, 0);
     addPlayer();
 
-    shootRender(cam, worldTextAtlasMem, allObjArray2D);
+    shootRender(cam, allObjArray2D);
 
     return 0;
-}
-
-static inline void scnBufFix() {
-    int8_t* p = scnBuf;
-    int count = sW_L * sH_L;
-
-    while (count--) {
-        *p++ = -1;
-    }
 }
 
 static int update(void* userdata) {
@@ -296,34 +296,34 @@ static int update(void* userdata) {
         gameScreen = 1;
 
         init();
-        initDitherByteLUT();
-        scnBuf = pd_malloc(sizeof(int8_t) * (sW_L * sH_L));
         onStart = 1;
-    }
+    } PROF_FRAME_BEGIN();
 
-    pd->graphics->clear(kColorBlack);
-    buf = pd->graphics->getFrame();
-
+    // PROF_BEGIN("audio");
     // float dt = pd->system->getElapsedTime();
     // pd->system->resetElapsedTime();
     // UpdateAudioManager(&audioManager, dt);
+    // PROF_END("audio");
 
-    scnBufFix();
-    skybox(5, 10, 10);
     runInputBuffer();
-
     precomputedFunctions(&cam);
 
+    PROF_BEGIN("update");
     if (gameScreen == 1) {
         render();
 
-        upscaleToScreen();
-
-        if (inpBuf.B) { PlaySFX(&audioManager, "sfx/jump", 1.0f); }
+        // if (inpBuf.B) { PlaySFX(&audioManager, "sfx/jump", 1.0f); }
     }
+    PROF_END("update");
+
+    blitToScreen();
+    PROF_BEGIN("draw");
 
     pd->graphics->fillRect(0, 0, 20, 20, kColorWhite);
     pd->system->drawFPS(2, 2);
+
+    PROF_DRAW();
+    PROF_FRAME_END();
 
     return 1;
 }

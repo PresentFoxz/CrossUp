@@ -3,15 +3,11 @@
 
 #include "library.h"
 
-void skybox(int col1, int col2, int count);
-#if defined(TARGET_PLAYDATE) || defined(TARGET_SIMULATOR) || defined(PLAYDATE_SDK)
-void setPixelRaw(uint x, uint y, int color);
-void upscaleToScreen();
-void initDitherByteLUT();
-#else
-void drawScreen();
-void raylibShadeLUTCreateGrayscale();
-void raylibShadeLUTCreateColor();
-#endif
+void DrawScreen(void);
+void blitToScreen();
+
+void drawTriangle(int tris[3][2], int shade);
+// void drawImg(int screenX, int screenY, float depth, int tX, int tY, int tW, int tH, int8_t* texture, int texW, int texH, float projDist);
+// void drawImgNoScale(int x, int y, int tX, int tY, int tW, int tH, int8_t* texture, int texW, int texH);
 
 #endif

@@ -16,7 +16,6 @@ typedef struct {
     Vertex verts[3];
     Edge edges[3];
     float distMod;
-    int32_t dist;
     int color;
     int lines;
     int textID;

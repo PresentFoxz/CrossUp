@@ -3,10 +3,13 @@ CollisionChunks* collisionChunkSurfaces;
 Triggers* triggers;
 
 #define CHUNK_SIZE 50
-#define TRI_EPSILON 5
+#define TRI_EPSILON 0
 
 int triggerCount = 0;
 int chunkAmt = 0;
+
+int minX; int minY; int minZ;
+int maxX; int maxY; int maxZ;
 
 static inline int getChunkPos(int dot) {
     return (dot / CHUNK_SIZE);
@@ -20,13 +23,13 @@ void resetCollisionSurface(Mesh_t mapArray) {
     Vect3f v1 = mapArray.verts[1];
     Vect3f v2 = mapArray.verts[2];
 
-    int minX = (int)floorf(fminf(v0.x, fminf(v1.x, v2.x)));
-    int minY = (int)floorf(fminf(v0.y, fminf(v1.y, v2.y)));
-    int minZ = (int)floorf(fminf(v0.z, fminf(v1.z, v2.z)));
+    minX = (int)floorf(fminf(v0.x, fminf(v1.x, v2.x)));
+    minY = (int)floorf(fminf(v0.y, fminf(v1.y, v2.y)));
+    minZ = (int)floorf(fminf(v0.z, fminf(v1.z, v2.z)));
 
-    int maxX = (int)ceilf (fmaxf(v0.x, fmaxf(v1.x, v2.x)));
-    int maxY = (int)ceilf (fmaxf(v0.y, fmaxf(v1.y, v2.y)));
-    int maxZ = (int)ceilf (fmaxf(v0.z, fmaxf(v1.z, v2.z)));
+    maxX = (int)ceilf (fmaxf(v0.x, fmaxf(v1.x, v2.x)));
+    maxY = (int)ceilf (fmaxf(v0.y, fmaxf(v1.y, v2.y)));
+    maxZ = (int)ceilf (fmaxf(v0.z, fmaxf(v1.z, v2.z)));
 
     for (int i=0; i < mapArray.triCount; i++){
         int* tris = mapArray.tris[i];
@@ -191,6 +194,8 @@ Triggers cylinderInTrigger(Vect3f pos, float radius, float height) {
 
 
 VectMf cylinderInTriangle(Vect3f pos, float radius, float height) {
+    if ((pos.x < minX || pos.x >= maxX) || (pos.y < minY || pos.y >= maxY) || (pos.z < minZ || pos.z >= maxZ)) { return (VectMf){0, 0, 0, -1, -1, -1}; }
+
     VectMf pushPlayer = {0};
     float effectiveRadius = radius + TRI_EPSILON;
     float radius2 = effectiveRadius * effectiveRadius;

@@ -1,5 +1,4 @@
 cd E:/PlaydateSDK/C_API/CrossUp
 cd C:/PlaydateSDK/C_API/CrossUp
 
-make -f Makefile pdx-sim
-make -f Makefile pdx-dev
+make clean pdx-sim pdx-dev

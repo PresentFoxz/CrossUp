@@ -9,4 +9,8 @@ static const int mapData[][2] = {
     {0, 1},
 };
 
+static const Vect3f mapSize[] = {
+    {2.0f, 2.0f, 2.0f}
+};
+
 #endif

@@ -112,7 +112,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                 tris[triCount][1] = invert ? indices[2] : indices[1];
                 tris[triCount][2] = invert ? indices[1] : indices[2];
 
-                colorArr[triCount] = randomInt(0, 3);
+                colorArr[triCount] = randomInt(25, 255);
                 triCount++;
             }
             
@@ -123,12 +123,12 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                 tris[triCount][0] = indices[0];
                 tris[triCount][1] = invert ? indices[2] : indices[1];
                 tris[triCount][2] = invert ? indices[1] : indices[2];
-                colorArr[triCount] = randomInt(0, 3);
+                colorArr[triCount] = randomInt(25, 255);
                 
                 tris[triCount + 1][0] = indices[0];
                 tris[triCount + 1][1] = invert ? indices[3] : indices[2];
                 tris[triCount + 1][2] = invert ? indices[2] : indices[3];
-                colorArr[triCount + 1] = randomInt(0, 3);
+                colorArr[triCount + 1] = randomInt(25, 255);
 
                 triCount += 2;
             }

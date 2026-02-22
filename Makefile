@@ -44,7 +44,7 @@ SIM_STRIP = strip
 SIM_TOOL_ROOT = /usr/x86_64-w64-mingw32/sys-root/mingw
 
 SIM_ASFLAGS =
-SIM_CFLAGS = -DTARGET_SIMULATOR=1 -DPLAYDATE_SDK=1 -DTARGET_EXTENSION=1 -DPROFILER_ENABLED=1 -O3 -Wall -D_WINDLL -flto
+SIM_CFLAGS = -DTARGET_SIMULATOR=1 -DPLAYDATE_SDK=1 -DTARGET_EXTENSION=1 -O3 -Wall -D_WINDLL -flto
 SIM_LFLAGS = -shared -fPIC -Wl,--kill-at
 
 # Tool settings to build for the device.

@@ -77,7 +77,7 @@ static int init() {
     player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.55f, 0.08f, 0, D_3D);
     // generateEnts();
 
-    convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, (Vect3f){2.0f, 2.0f, 2.0f});
+    convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, mapSize[mapIndex]);
 
     for (int i=0; i < projDataCount3D; i++) convertFileToMesh(projObjs3D[i], &objArray3D[i], projData3D[i][0], projData3D[i][1], 0, (Vect3f){1.0f, 1.0f, 1.0f});
     for (int i=0; i < entDataCount3D; i++){
@@ -96,8 +96,9 @@ static int init() {
 
     resetAllVariables();
 
-    // InitAudioManager(&audioManager);
-    // PlayModuleMusic(&audioManager, "music/adamsoft_-_sonic_trance_remix.mod");
+    InitAudioManager(&audioManager);
+    PlayMusic(&audioManager, "music/EITW", 1.0f, true, 0.0f);
+    // PlayModuleMusic(&audioManager, "Echo in the Wind - Minecraft.wav");
 
     return 0;
 }
@@ -299,11 +300,9 @@ static int update(void* userdata) {
         onStart = 1;
     } PROF_FRAME_BEGIN();
 
-    // PROF_BEGIN("audio");
-    // float dt = pd->system->getElapsedTime();
-    // pd->system->resetElapsedTime();
-    // UpdateAudioManager(&audioManager, dt);
-    // PROF_END("audio");
+    float dt = pd->system->getElapsedTime();
+    pd->system->resetElapsedTime();
+    UpdateAudioManager(&audioManager, dt);
 
     runInputBuffer();
     precomputedFunctions(&cam);
@@ -311,8 +310,6 @@ static int update(void* userdata) {
     PROF_BEGIN("update");
     if (gameScreen == 1) {
         render();
-
-        // if (inpBuf.B) { PlaySFX(&audioManager, "sfx/jump", 1.0f); }
     }
     PROF_END("update");
 

@@ -1,7 +1,6 @@
 #include "draw.h"
 
 static ALIGNED_32 uint8_t _screen[sW * sH] = {0};
-static const uint8_t TRI_SHADES[4] = {0, 85, 170, 255};
 static bool anythingImaged = false;
 InputBuffer inpBuf = {0};
 
@@ -94,7 +93,7 @@ void blitToScreen() {
 }
 
 void drawTriangle(int tris[3][2], int shade) {
-    uint8_t color = TRI_SHADES[shade];
+    uint8_t color = shade;
 
     int x0 = tris[0][0], y0 = tris[0][1];
     int x1 = tris[1][0], y1 = tris[1][1];

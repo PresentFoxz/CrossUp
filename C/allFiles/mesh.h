@@ -11,6 +11,11 @@ typedef struct {
 } Edge;
 
 typedef struct {
+    int idx;
+    float dist;
+} TriangleOrdering;
+
+typedef struct {
     Dimentions dimentions;
     
     Vertex verts[3];

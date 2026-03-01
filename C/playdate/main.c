@@ -313,8 +313,9 @@ static int update(void* userdata) {
     }
     PROF_END("update");
 
-    blitToScreen();
     PROF_BEGIN("draw");
+    blitToScreen();
+    PROF_END("draw");
 
     pd->graphics->fillRect(0, 0, 20, 20, kColorWhite);
     pd->system->drawFPS(2, 2);

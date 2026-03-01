@@ -262,7 +262,7 @@ pdx-dev: device_build/pdex.elf
 	$(PDC) $(CUDFOLDER) CrossUp-dev.pdx
 	zip -r CrossUp-dev.pdx.zip CrossUp-dev.pdx
 
-	rm -rf $(CUDFOLDER)
-	rm -rf device_build
+#	rm -rf $(CUDFOLDER)
+#	rm -rf device_build
 
 # }}}

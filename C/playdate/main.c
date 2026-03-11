@@ -22,7 +22,7 @@ textAnimsAtlas* allObjArray2D = NULL;
 int gameScreen = 0;
 int mapIndex = 0;
 int onStart = 0;
-int camType = 1;
+int camType = 0;
 
 static int update(void* userdata);
 static int UnloadData();

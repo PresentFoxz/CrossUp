@@ -6,10 +6,10 @@
 #include "../allFiles/draw.h"
 
 void project2D(int point[2], Vertex verts, float fov, float nearPlane);
-int windingOrder(const int p0[2], const int p1[2], const int p2[2]);
+int windingOrder2D(const int p0[2], const int p1[2], const int p2[2]);
+int windingOrder3D(const Vect3f* v0, const Vect3f* v1, const Vect3f* v2);
 
 int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, float nearPlane, float farPlane);
-void enforceCCW(float tri[3][3]);
 
 void rotateVertex(Vect3f verts, float rotMat[3][3], Vect3f* vertsOut);
 void rotateVertexInPlace(Vertex* verts, Vect3f camPos, float rotMat[3][3]);

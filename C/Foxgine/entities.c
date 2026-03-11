@@ -14,6 +14,11 @@ Camera_t createCamera(float x, float y, float z, float rotX, float rotY, float r
     cam.nearPlane  = near;
     cam.farPlane   = far;
     cam.projDist   = 0;
+
+    cam.fVect.x    = 0.0f;
+    cam.fVect.y    = 0.0f;
+    cam.fVect.z    = 0.0f;
+
     return cam;
 }
 

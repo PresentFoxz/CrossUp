@@ -66,8 +66,13 @@ void computeRotScaleMatrix(float rotMat[3][3], float angleX, float angleY, float
     rotMat[2][2] = (cosX * cosY) * sz;
 }
 
-int windingOrder(const int p0[2], const int p1[2], const int p2[2]) {
+int windingOrder2D(const int p0[2], const int p1[2], const int p2[2]) {
     long cross = (long)p0[0]*p1[1] - (long)p0[1]*p1[0] + (long)p1[0]*p2[1] - (long)p1[1]*p2[0] + (long)p2[0]*p0[1] - (long)p2[1]*p0[0];
+    return cross > 0;
+}
+
+int windingOrder3D(const Vect3f* v0, const Vect3f* v1, const Vect3f* v2) {
+    long cross = (long)v0->x * (long)v1->y - (long)v0->y * (long)v1->x + (long)v1->x * (long)v2->y - (long)v1->y * (long)v2->x + (long)v2->x * (long)v0->y - (long)v2->y * (long)v0->x;
     return cross > 0;
 }
 

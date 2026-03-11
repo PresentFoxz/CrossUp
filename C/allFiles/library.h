@@ -132,9 +132,7 @@ extern int allPointsCount;
 extern int entAmt;
 
 extern InputBuffer inpBuf;
-
 static inline void runInputBuffer() {
-    #if defined(TARGET_PLAYDATE) || defined(TARGET_SIMULATOR) || defined(PLAYDATE_SDK)
     PDButtons tapped, held;
     pd->system->getButtonState(&held, &tapped, NULL);
 
@@ -145,14 +143,6 @@ static inline void runInputBuffer() {
 
     inpBuf.A = held & kButtonA;
     inpBuf.B = held & kButtonB;
-    #else 
-    inpBuf.UP = IsKeyDown(KEY_W);
-    inpBuf.DOWN = IsKeyDown(KEY_S);
-    inpBuf.LEFT = IsKeyDown(KEY_A);
-    inpBuf.RIGHT = IsKeyDown(KEY_D);
-    inpBuf.A = IsKeyDown(KEY_J);
-    inpBuf.B = IsKeyDown(KEY_K);
-    #endif
 }
 
 #endif

@@ -51,6 +51,7 @@ typedef struct {
 typedef struct {
     Vect3i position;
     Vect3i rotation;
+    Vect3f fVect;
     float camMatrix[3][3];
     float fov, nearPlane, farPlane;
     float projDist;

@@ -3,6 +3,7 @@
 
 worldTris* allPoints;
 TriangleOrdering* triOrder;
+int* triFacing;
 int chnkAmt = 0;
 
 const float one_third = 0.3333333f;
@@ -96,33 +97,36 @@ static void renderStart(Camera_t usedCam, textAnimsAtlas* allObjArray2D) {
             int output = TriangleClipping(src->verts, &clipped[0], &clipped[1], nearPlane, farPlane);
             if (!output) continue;
 
-            Vertex tmp;
+            Vertex tmp[3];
             for (int c = 0; c < output; c++) {
-                tmp.x = clipped[c].t1.x; tmp.y = clipped[c].t1.y; tmp.z = clipped[c].t1.z; project2D(&tri[0][0], tmp, fov, nearPlane);
-                tmp.x = clipped[c].t2.x; tmp.y = clipped[c].t2.y; tmp.z = clipped[c].t2.z; project2D(&tri[1][0], tmp, fov, nearPlane);
-                tmp.x = clipped[c].t3.x; tmp.y = clipped[c].t3.y; tmp.z = clipped[c].t3.z; project2D(&tri[2][0], tmp, fov, nearPlane);
-
+                tmp[0].x = clipped[c].t1.x; tmp[0].y = clipped[c].t1.y; tmp[0].z = clipped[c].t1.z;
+                tmp[1].x = clipped[c].t2.x; tmp[1].y = clipped[c].t2.y; tmp[1].z = clipped[c].t2.z;
+                tmp[2].x = clipped[c].t3.x; tmp[2].y = clipped[c].t3.y; tmp[2].z = clipped[c].t3.z;
+                for (int z = 0; z < 3; z++) { project2D(&tri[z][0], tmp[z], fov, nearPlane); }
                 drawTriangle(tri, src->color);
             }
         } else if (src->dimentions == D_2D) {
+            continue;
+            
             rotateVertexInPlace(&src->verts[0], camPos, camMatrix);
             if (src->verts[0].z < nearPlane || src->verts[0].z > farPlane) continue;
 
             project2D(&tri[0][0], src->verts[0], fov, nearPlane);
 
-            // textAtlas* textAtlasMem = &allObjArray2D->animation[t]->animData;
-            // drawImg(tri[0][0], tri[0][1], src->distMod, 0, 0, 30, 30, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h, usedCam.projDist);
+            textAtlas* textAtlasMem = &allObjArray2D->animation[t]->animData;
+            drawImg(tri[0][0], tri[0][1], src->distMod, 0, 0, 30, 30, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h, usedCam.projDist);
             // drawImgNoScale(tri[0][0], tri[0][1], 0, 0, 30, 30, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h);
         }
     }
 }
 
-void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, Mesh_t model, int lineDraw, int distMod) {
+void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, Mesh_t model, int lowPoly) {
     if (allAmt >= allPointsCount) return;
 
     worldTris* wTris;
-    float renderRadiusSq = cCam.farPlane ? (cCam.farPlane * cCam.farPlane) : 0.0f;
     Vect3f camPos = {FROM_FIXED24_8(cCam.position.x), FROM_FIXED24_8(cCam.position.y), FROM_FIXED24_8(cCam.position.z)};
+    float renderRadiusSq = cCam.farPlane ? (cCam.farPlane * cCam.farPlane) : 0.0f;
+    float lowPolyRend = renderRadiusSq / 12;
 
     int triCount = model.triCount;
     Vect3f* verticies = model.verts;
@@ -139,6 +143,7 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
     }
 
     int triScn[3][2];
+    int triIndex = allAmt;
     for (int i = 0; i < triCount; i++) {
         if (allAmt >= allPointsCount) return;
         wTris = &allPoints[allAmt];
@@ -153,15 +158,16 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
             wTris->verts[j].x = r.x + pos.x;
             wTris->verts[j].y = r.y + pos.y;
             wTris->verts[j].z = r.z + pos.z;
-            wTris->edges[j] = edges[base + j];
 
             sumX += wTris->verts[j].x;
             sumY += wTris->verts[j].y;
             sumZ += wTris->verts[j].z;
 
             rotateVertexInPlace(&wTris->verts[j], camPos, cCam.camMatrix);
-            if (backFace[i]) project2D(&triScn[j][0], wTris->verts[j], cCam.fov, cCam.nearPlane);
-        } if (backFace[i]) { int bfc = windingOrder(triScn[0], triScn[1], triScn[2]); if (!bfc) continue; }
+            project2D(&triScn[j][0], wTris->verts[j], cCam.fov, cCam.nearPlane);
+        }
+        triFacing[triIndex] = windingOrder2D(triScn[0], triScn[1], triScn[2]);
+        if (backFace[i] && !triFacing[triIndex]) { triIndex++; continue; }
 
         float cx = sumX * one_third;
         float cy = sumY * one_third;
@@ -173,11 +179,11 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
         float dist = (dx*dx + dy*dy + dz*dz);
 
         if (cCam.farPlane && dist > renderRadiusSq) continue;
+        if (lowPoly == 1 && dist >= lowPolyRend) { continue; } else if (lowPoly == 2 && dist <= lowPolyRend) { continue; }
 
         wTris->dimentions = D_3D;
         wTris->color      = colorArray[i];
         wTris->distMod    = 0.0f;
-        wTris->lines      = lineDraw;
         wTris->textID     = -1;
 
         wTris->verts[0].u = 0.0f; wTris->verts[0].v = 0.0f;
@@ -209,7 +215,6 @@ void addObjToWorld2D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float o
     wTris->distMod    = sqrtf(dist) + sprtDepthOffset;
     wTris->textID     = anim;
     wTris->color      = animFrame;
-    wTris->lines      = -1;
 
     triOrder[allAmt].idx = allAmt;
     triOrder[allAmt].dist = dist - objDepthOffset;
@@ -226,10 +231,17 @@ void shootRender(Camera_t cam, textAnimsAtlas* allObjArray2D) {
 void resetAllVariables() {
     allPoints = pd_malloc(sizeof(worldTris) * allPointsCount);
     triOrder = pd_malloc(sizeof(TriangleOrdering) * allPointsCount);
+    triFacing = pd_malloc(sizeof(int) * allPointsCount);
     allAmt = 0;
 }
 
-void precomputedFunctions(Camera_t* cam) {
-    computeCamMatrix(cam->camMatrix, FROM_FIXED24_8(cam->rotation.x), FROM_FIXED24_8(cam->rotation.y), FROM_FIXED24_8(cam->rotation.z));
+void precomputedFunctions(Camera_t* cam) { 
+    Vect3f cRot = (Vect3f){FROM_FIXED24_8(cam->rotation.x), FROM_FIXED24_8(cam->rotation.y), FROM_FIXED24_8(cam->rotation.z)};
+
+    computeCamMatrix(cam->camMatrix, cRot.x, cRot.y, cRot.z);
     cam->projDist = (sW_H * 0.5f) / tanf(cam->fov * 0.5f);
+
+    cam->fVect.x = cos(cRot.x) * sin(cRot.y);
+    cam->fVect.y = sin(cRot.x);
+    cam->fVect.z = cos(cRot.x) * cos(cRot.y);
 }

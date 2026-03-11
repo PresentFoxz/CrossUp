@@ -3,12 +3,14 @@
 #include "library.h"
 
 typedef struct {
-    int v0;
-    int v1;
-
-    int tri0;
-    int tri1;
+    int v0, v1;
+    int tri0, tri1;
 } Edge;
+
+typedef struct {
+    int x0, y0, x1, y1;
+    int tri0, tri1;
+} EdgeDraw;
 
 typedef struct {
     int idx;
@@ -19,10 +21,9 @@ typedef struct {
     Dimentions dimentions;
     
     Vertex verts[3];
-    Edge edges[3];
+    EdgeDraw edges[3];
     float distMod;
     int color;
-    int lines;
     int textID;
 } worldTris;
 
@@ -38,7 +39,7 @@ typedef struct {
 
     Edge* edges;
     int edgeCount;
-
+    
     int* color;
     int* bfc;
 } Mesh_t;

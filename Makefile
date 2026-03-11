@@ -258,11 +258,10 @@ pdx-dev: device_build/pdex.elf
 	cp device_build/pdex_unstripped.elf save_elf
 	cp device_build/pdex.elf save_elf
 
-
 	$(PDC) $(CUDFOLDER) CrossUp-dev.pdx
 	zip -r CrossUp-dev.pdx.zip CrossUp-dev.pdx
 
-#	rm -rf $(CUDFOLDER)
-#	rm -rf device_build
+	rm -rf $(CUDFOLDER)
+	rm -rf device_build
 
 # }}}

@@ -9,6 +9,7 @@
 PlaydateAPI* pd;
 
 Camera_t cam = {0};
+Camera_t scnCam = {0};
 Objects* allEnts = NULL;
 EntStruct player = {0};
 Mesh_t mapArray = {0};
@@ -21,6 +22,7 @@ textAnimsAtlas* allObjArray2D = NULL;
 int gameScreen = 0;
 int mapIndex = 0;
 int onStart = 0;
+int camType = 1;
 
 static int update(void* userdata);
 static int UnloadData();
@@ -74,6 +76,7 @@ static int init() {
     allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
 
     cam = createCamera(0.0f, 3.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
+    scnCam = createCamera(0.0f, 1.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
     player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.55f, 0.08f, 0, D_3D);
     // generateEnts();
 
@@ -97,7 +100,7 @@ static int init() {
     resetAllVariables();
 
     InitAudioManager(&audioManager);
-    PlayMusic(&audioManager, "music/EITW", 1.0f, true, 0.0f);
+    // PlayMusic(&audioManager, "music/EITW", 1.0f, true, 0.0f);
     // PlayModuleMusic(&audioManager, "Echo in the Wind - Minecraft.wav");
 
     return 0;
@@ -107,6 +110,7 @@ static void addPlayer() {
     if (player.type < 0) return;
     if (player.dimention == D_3D && player.type >= entDataCount3D) return;
     if (player.dimention == D_2D && player.type >= entDataCount2D) return;
+    movePlayerObj(&player, &cam, camType);
 
     if (player.currentAnim != player.lastAnim) {
         player.frameCount = 0;
@@ -145,8 +149,7 @@ static void addPlayer() {
             addObjToWorld3D(
                 objectPos, objectRot, objectSize,
                 cam, 10.0f,
-                model,
-                true, 1
+                model, 0
             );
         }
     } else if (player.dimention == D_2D) {
@@ -238,8 +241,7 @@ static void addEntities(int ents, int objs) {
                     addObjToWorld3D(
                         objectPos, objectRot, objectSize,
                         cam, 10.0f,
-                        model,
-                        true, 1
+                        model, 0
                     );
                 }
 
@@ -261,8 +263,7 @@ static void addEntities(int ents, int objs) {
                     (Vect3f){FROM_FIXED24_8(obj_->rotation.x), FROM_FIXED24_8(obj_->rotation.y), FROM_FIXED24_8(obj_->rotation.z)},
                     (Vect3f){FROM_FIXED24_8(obj_->size.x), FROM_FIXED24_8(obj_->size.y), FROM_FIXED24_8(obj_->size.z)},
                     cam, 0.0f,
-                    objArray3D[obj_->type],
-                    false, 1
+                    objArray3D[obj_->type], 0
                 );
                 break;
         }
@@ -270,58 +271,82 @@ static void addEntities(int ents, int objs) {
 }
 
 static void addMap() {
+    Vect3f pos = {0.0f, 0.0f, 0.0f};
+    Vect3f rot = {0.0f, 0.0f, 0.0f};
+    Vect3f size = {1.0f, 1.0f, 1.0f};
+
     addObjToWorld3D(
-        (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f},
+        pos, rot, size,
         cam, 0.0f,
-        mapArray,
-        false, 1
+        mapArray, 0
     );
 }
 
-static int render() {
-    movePlayerObj(&player, &cam);
-    handleCameraInput(&cam);
-    updateCamera(&cam, &player, 7.0f);
+static int gameRender() {
+    if (camType == 0) {
+        handleCameraInput(&cam);
+        updateCamera(&cam, &player, 7.0f);
+    } else {
+        flyCameraInput(&cam);
+    }
     
     addMap();
     // addEntities(1, 0);
     addPlayer();
 
     shootRender(cam, allObjArray2D);
+    return 0;
+}
 
+static int titleRender() {
+    scnCam.rotation.y += TO_FIXED24_8(-0.02f);
+
+    Vect3f pos = {0.0f, 0.0f, 0.0f};
+    Vect3f rot = {0.0f, 0.0f, 0.0f};
+    Vect3f size = {1.0f, 1.0f, 1.0f};
+
+    addObjToWorld3D(
+        pos, rot, size,
+        scnCam, 0.0f,
+        mapArray, 0
+    );
+
+    shootRender(scnCam, NULL);
     return 0;
 }
 
 static int update(void* userdata) {
     if (onStart == 0){
-        gameScreen = 1;
+        gameScreen = 0;
 
         init();
         onStart = 1;
-    } PROF_FRAME_BEGIN();
+    } runInputBuffer();
 
     float dt = pd->system->getElapsedTime();
     pd->system->resetElapsedTime();
     UpdateAudioManager(&audioManager, dt);
 
-    runInputBuffer();
-    precomputedFunctions(&cam);
+    if (gameScreen == 0) {
+        pd->graphics->setDrawMode(kDrawModeFillWhite);
+        precomputedFunctions(&scnCam);
+        skybox(50, 150, 10);
+        titleRender();
+        blitToScreen();
 
-    PROF_BEGIN("update");
-    if (gameScreen == 1) {
-        render();
+        const char* msg = "Press A to Start!!";
+        pd->graphics->fillRect(148, 118, 135, 25, kColorBlack);
+        pd->graphics->drawText(msg, strlen(msg), kASCIIEncoding, 150, 120);
+        if (inpBuf.A) { gameScreen = 1; }
+    } else if (gameScreen == 1) {
+        precomputedFunctions(&cam);
+        skybox(50, 150, 10);
+        gameRender();
+        blitToScreen();
     }
-    PROF_END("update");
-
-    PROF_BEGIN("draw");
-    blitToScreen();
-    PROF_END("draw");
-
     pd->graphics->fillRect(0, 0, 20, 20, kColorWhite);
     pd->system->drawFPS(2, 2);
-
-    PROF_DRAW();
-    PROF_FRAME_END();
+    
 
     return 1;
 }

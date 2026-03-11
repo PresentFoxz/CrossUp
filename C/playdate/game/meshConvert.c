@@ -43,24 +43,30 @@ static inline void buildTriangleEdges(Mesh_t* mesh) {
     mesh->edges = pd_malloc(sizeof(Edge) * mesh->edgeCount);
 
     int ei = 0;
-
+    
     for (int t = 0; t < mesh->triCount; t++) {
         int* tri = mesh->tris[t];
 
-        mesh->edges[ei++] = (Edge){ 
-            .v0 = tri[0], 
-            .v1 = tri[1],
-        };
+        mesh->edges[ei++] = (Edge){ .v0 = tri[0], .v1 = tri[1], .tri0 = t, .tri1 = -1 };
+        mesh->edges[ei++] = (Edge){ .v0 = tri[1], .v1 = tri[2], .tri0 = t, .tri1 = -1 };
+        mesh->edges[ei++] = (Edge){ .v0 = tri[2], .v1 = tri[0], .tri0 = t, .tri1 = -1 };
+    }
+    
+    for (int i = 0; i < mesh->edgeCount; i++) {
+        Edge* e1 = &mesh->edges[i];
+        if (e1->tri1 != -1) continue;
 
-        mesh->edges[ei++] = (Edge){ 
-            .v0 = tri[1], 
-            .v1 = tri[2],
-        };
-
-        mesh->edges[ei++] = (Edge){ 
-            .v0 = tri[2], 
-            .v1 = tri[0],
-        };
+        for (int j = i + 1; j < mesh->edgeCount; j++) {
+            Edge* e2 = &mesh->edges[j];
+            if (e2->tri1 != -1) continue;
+            
+            if ((e1->v0 == e2->v0 && e1->v1 == e2->v1) ||
+                (e1->v0 == e2->v1 && e1->v1 == e2->v0)) {
+                e1->tri1 = e2->tri0;
+                e2->tri1 = e1->tri0;
+                break;
+            }
+        }
     }
 }
 
@@ -152,6 +158,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
     }
 
     buildTriangleEdges(meshOut);
+    pd_free(colorArr);
 }
 
 void convertFileToAtlas(const char* filename, textAtlas* atlasOut) {

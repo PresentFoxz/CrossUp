@@ -159,69 +159,80 @@ void stateMachine(EntStruct* p){
     else if (p->actions.plr.spin.actionUsed > 0) { p->currentAnim = 1; }
 }
 
-void movePlayerObj(EntStruct* p, Camera_t* c){
+void movePlayerObj(EntStruct* p, Camera_t* c, int type){
     float yawCam = FROM_FIXED24_8(c->rotation.y);
     float mainYaw = FROM_FIXED24_8(p->rotation.y);
     float secondaryStrength = 0.5f;
     float jumpFrict = 0.54f;
     
-    if (inpBuf.A && (p->grounded == 1 || p->coyote <= 10)) {
-        if (p->grounded == 1) { p->velocity.x *= 1.15f; p->velocity.z *= 1.15f; }
+    if (type == 0) {
+        if (inpBuf.A && (p->grounded == 1 || p->coyote <= 10)) {
+            if (p->grounded == 1) { p->velocity.x *= 1.15f; p->velocity.z *= 1.15f; }
 
-        p->grounded = 0;
-        p->velocity.y = jumpFrict;
-    } if (!inpBuf.A && (p->grounded == 0 && p->coyote <= 10)) p->coyote = 11;
-    
-    float inputX = 0.0f;
-    float inputZ = 0.0f;
-    
-    if (inpBuf.UP) inputZ += 1.0f;
-    if (inpBuf.DOWN) inputZ -= 1.0f;
-    if (inpBuf.LEFT) inputX -= 1.0f;
-    if (inpBuf.RIGHT) inputX += 1.0f;
-    
-    float dirX = inputX * cosf(yawCam) + inputZ * sinf(yawCam);
-    float dirZ = inputZ * cosf(yawCam) - inputX * sinf(yawCam);
-    
-    if (dirX != 0.0f || dirZ != 0.0f) {
-        float targetYaw = atan2f(dirX, dirZ);
-        rotateSurfTowards(p, targetYaw, 0.2f);
-            
-        if (p->grounded == 1 && p->groundTimer >= 3) rotatePlrTowards(p, targetYaw, 0.2f);
+            p->grounded = 0;
+            p->velocity.y = jumpFrict;
+        } if (!inpBuf.A && (p->grounded == 0 && p->coyote <= 10)) p->coyote = 11;
+        
+        float inputX = 0.0f;
+        float inputZ = 0.0f;
+        
+        if (inpBuf.UP) inputZ += 1.0f;
+        if (inpBuf.DOWN) inputZ -= 1.0f;
+        if (inpBuf.LEFT) inputX -= 1.0f;
+        if (inpBuf.RIGHT) inputX += 1.0f;
+        
+        float dirX = inputX * cosf(yawCam) + inputZ * sinf(yawCam);
+        float dirZ = inputZ * cosf(yawCam) - inputX * sinf(yawCam);
+        
+        if (dirX != 0.0f || dirZ != 0.0f) {
+            float targetYaw = atan2f(dirX, dirZ);
+            rotateSurfTowards(p, targetYaw, 0.2f);
+                
+            if (p->grounded == 1 && p->groundTimer >= 3) rotatePlrTowards(p, targetYaw, 0.2f);
 
-        p->ifMove++;
-    } else {
-        p->ifMove = 0;
-    }
-
-    if (p->ifMove > 0) { moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.12f, 0.05f, 0); }
-
-    p->velocity.y -= p->fallFrict;
-    if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
-
-    runColl(p);
-    moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.12f, 0.05f, 1);
-
-    p->coyote++;
-    if (p->grounded == 1) {
-        p->coyote = 0;
-        p->groundTimer++;
-
-        if (p->fallFrict != 0.08f) { p->fallFrict = 0.08f; }
-
-        if (inputX != 0.0f || inputZ != 0.0f){
-            p->groundTimer = 10;
-        }
-    } else {
-        if (inputX != 0.0f || inputZ != 0.0f){
-            p->groundTimer = 10;
+            p->ifMove++;
         } else {
-            p->groundTimer = 0;
+            p->ifMove = 0;
         }
-    }
 
-    if (p->actions.plr.spin.timer > 0) p->actions.plr.spin.timer--;
-    stateMachine(p);
+        if (p->ifMove > 0) { moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.12f, 0.05f, 0); }
+
+        p->velocity.y -= p->fallFrict;
+        if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
+
+        runColl(p);
+        moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.12f, 0.05f, 1);
+
+        p->coyote++;
+        if (p->grounded == 1) {
+            p->coyote = 0;
+            p->groundTimer++;
+
+            if (p->fallFrict != 0.08f) { p->fallFrict = 0.08f; }
+
+            if (inputX != 0.0f || inputZ != 0.0f){
+                p->groundTimer = 10;
+            }
+        } else {
+            if (inputX != 0.0f || inputZ != 0.0f){
+                p->groundTimer = 10;
+            } else {
+                p->groundTimer = 0;
+            }
+        }
+
+        if (p->actions.plr.spin.timer > 0) p->actions.plr.spin.timer--;
+        stateMachine(p);
+    } else {
+        p->velocity.y -= p->fallFrict;
+        if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
+
+        runColl(p);
+        moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.12f, 0.05f, 1);
+
+        if (p->actions.plr.spin.timer > 0) p->actions.plr.spin.timer--;
+        stateMachine(p);
+    }
 }
 
 void updateCamera(Camera_t* cam, EntStruct* ent, float radius) {
@@ -249,6 +260,44 @@ void handleCameraInput(Camera_t* cam) {
     float crankDelta = pd->system->getCrankChange();
     cam->rotation.y += TO_FIXED24_8(crankDelta * rotY_delta);
     cam->rotation.x =  TO_FIXED24_8(degToRad(40.0f));
+    
+    qfixed24x8_t minPitchY = TO_FIXED24_8(degToRad(  0.0f));
+    qfixed24x8_t maxPitchY = TO_FIXED24_8(degToRad(360.0f));
+    if (cam->rotation.y < minPitchY) cam->rotation.y += maxPitchY;
+    if (cam->rotation.y > maxPitchY) cam->rotation.y -= maxPitchY;
+    
+    qfixed24x8_t minPitchX = TO_FIXED24_8(degToRad(-90.0f));
+    qfixed24x8_t maxPitchX = TO_FIXED24_8(degToRad( 90.0f));
+    if (cam->rotation.x < minPitchX) cam->rotation.x = minPitchX;
+    if (cam->rotation.x > maxPitchX) cam->rotation.x = maxPitchX;
+}
+
+void flyCameraInput(Camera_t* cam) {
+    float rotY_delta = -0.03f;
+    float rotX_delta = -0.1f;
+    float crankDelta = pd->system->getCrankChange();
+    float flyVel  = TO_FIXED24_8(0.008f);
+    float camRotXSPD = TO_FIXED24_8(0.08f);
+    float camRotYSPD = TO_FIXED24_8(0.0f);
+
+    float yaw   = FROM_FIXED24_8(cam->rotation.y);
+    float pitch = cam->rotation.x;
+
+    if (inpBuf.UP) {
+        cam->position.x += flyVel * TO_FIXED24_8(sin(yaw));
+        cam->position.z += flyVel * TO_FIXED24_8(cos(yaw));
+    }
+    if (inpBuf.DOWN) {
+        cam->position.x -= flyVel * TO_FIXED24_8(sin(yaw));
+        cam->position.z -= flyVel * TO_FIXED24_8(cos(yaw));
+    }
+
+    if (inpBuf.A) { cam->position.y += TO_FIXED24_8(0.8f); }
+    if (inpBuf.B) { cam->position.y -= TO_FIXED24_8(0.8f); }
+
+    if (inpBuf.LEFT) { cam->rotation.y -= camRotXSPD; }
+    else if (inpBuf.RIGHT) { cam->rotation.y += camRotXSPD; }
+    cam->rotation.x += TO_FIXED24_8(crankDelta * rotY_delta);
     
     qfixed24x8_t minPitchY = TO_FIXED24_8(degToRad(  0.0f));
     qfixed24x8_t maxPitchY = TO_FIXED24_8(degToRad(360.0f));

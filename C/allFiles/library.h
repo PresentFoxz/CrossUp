@@ -53,29 +53,32 @@ static inline void pd_free(void* ptr) { pd->system->realloc(ptr, 0); }
 #include "structs.h"
 #include "mesh.h"
 
+extern int ambientLight;
 #define M_PI 3.14159265358979323846f
 #define TWO_PI 6.2831853f
 
-#define FIXED_POINT_FRACTIONAL_BITS16 16
-#define FP16_ONE (1 << FIXED_POINT_FRACTIONAL_BITS16)
-#define TO_FIXED16(x) ((qfixed16_t)((x) * FP16_ONE))
-#define FROM_FIXED16(x) ((float)(x) / FP16_ONE)
-static inline qfixed16_t multiply16(qfixed16_t a, qfixed16_t b) { return (qfixed16_t)(((int64_t)a * (int64_t)b) >> FIXED_POINT_FRACTIONAL_BITS16); }
-static inline qfixed16_t divide16(qfixed16_t a, qfixed16_t b) { return (qfixed16_t)(((int64_t)a << FIXED_POINT_FRACTIONAL_BITS16) / (int64_t)b); }
-
+#define TABLE_SIZE 256
 #define FIXED_POINT_FRACTIONAL_BITS_24x8 8
 #define FP24_8_ONE (1 << FIXED_POINT_FRACTIONAL_BITS_24x8)
 #define TO_FIXED24_8(x) ((qfixed24x8_t)((x) * FP24_8_ONE))
 #define FROM_FIXED24_8(x) ((float)(x) / FP24_8_ONE)
+extern qfixed24x8_t SIN_LUT[TABLE_SIZE];
+extern qfixed24x8_t COS_LUT[TABLE_SIZE];
 static inline qfixed24x8_t multiply24_8(qfixed24x8_t a, qfixed24x8_t b) { return (qfixed24x8_t)(((int64_t)a * (int64_t)b) >> FIXED_POINT_FRACTIONAL_BITS_24x8); }
 static inline qfixed24x8_t divide24_8(qfixed24x8_t a, qfixed24x8_t b) { return (qfixed24x8_t)(((int64_t)a << FIXED_POINT_FRACTIONAL_BITS_24x8) / (int64_t)b); }
+static inline qfixed24x8_t angleToIndex(qfixed24x8_t a) { return (a >> 8) & 255; }
+static inline qfixed24x8_t FIXED_SIN(qfixed24x8_t a) { return SIN_LUT[angleToIndex(a)]; }
+static inline qfixed24x8_t FIXED_COS(qfixed24x8_t a) { return COS_LUT[angleToIndex(a)]; }
+static inline void init_tables() {
+    int step = 6.28318530718 / TABLE_SIZE;
 
-#define FIXED_POINT_FRACTIONAL_BITS32 16
-#define FP32_ONE (1 << FIXED_POINT_FRACTIONAL_BITS32)
-#define TO_FIXED32(x) ((qfixed32_t)((x) * FP32_ONE))
-#define FROM_FIXED32(x) ((float)((x) / FP32_ONE))
-static inline qfixed32_t multiply32(qfixed32_t a, qfixed32_t b) { return (qfixed32_t)(((int64_t)a * (int64_t)b) >> FIXED_POINT_FRACTIONAL_BITS32); }
-static inline qfixed32_t divide32(qfixed32_t a, qfixed32_t b) { return (qfixed32_t)(((int64_t)a << FIXED_POINT_FRACTIONAL_BITS32) / (int64_t)b); }
+    float angle = 0.0;
+    for (int i = 0; i < 256; i++){
+        SIN_LUT[i] = (int)(sin(angle) * FP24_8_ONE);
+        COS_LUT[i] = (int)(cos(angle) * FP24_8_ONE);
+        angle += step;
+    }
+}
 
 static inline int min(int a, int b) { return (a < b) ? a : b; }
 static inline int max(int a, int b) { return (a > b) ? a : b; }

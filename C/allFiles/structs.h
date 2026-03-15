@@ -1,9 +1,7 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-typedef int32_t qfixed16_t;
 typedef int32_t qfixed24x8_t;
-typedef int64_t qfixed32_t;
 typedef unsigned int uint;
 
 typedef enum {
@@ -124,6 +122,12 @@ typedef struct {
     int chunkAmt;
     int* amt;
 } ChunkCount;
+
+typedef struct {
+    Vect3f pos;
+    uint8_t power;
+    float falloff;
+} Light_t;
 
 typedef struct {
     uint8_t UP;

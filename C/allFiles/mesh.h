@@ -23,7 +23,7 @@ typedef struct {
     Vertex verts[3];
     EdgeDraw edges[3];
     float distMod;
-    int color;
+    uint8_t color;
     int textID;
 } worldTris;
 
@@ -37,10 +37,12 @@ typedef struct {
     float (*uvs)[2];
     int uvCount;
 
+    Vect3f* normal;
+
     Edge* edges;
     int edgeCount;
     
-    int* color;
+    uint8_t* color;
     int* bfc;
 } Mesh_t;
 

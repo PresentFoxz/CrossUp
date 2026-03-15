@@ -11,6 +11,14 @@ int entAmt = 0;
 int allPointsCount = 0;
 int allAmt = 0;
 
+Light_t* lightSource;
+int lightAmt = 0;
+
+void addLightPoint(Vect3f pos, uint8_t power, float falloff) {
+    lightSource = pd_realloc(lightSource, sizeof(Light_t) * (lightAmt + 1));
+    lightSource[lightAmt++] = (Light_t){ .pos = pos, .power = power, .falloff = falloff };
+}
+
 void addEnt(Vect3f pos, Vect3f rot, Vect3f size, float radius, float height, float frict, float fallFrict, int type, ModelType objType, VertAnims* entArray, Objects* allEnts, Dimentions dimention) {
     if (entAmt < MAX_ENTITIES) {
         allEnts[entAmt].type = objType;
@@ -76,6 +84,41 @@ static void quickSortIndices(TriangleOrdering* order, int left, int right) {
     if (i < right) quickSortIndices(order, i, right);
 }
 
+uint8_t calculateLightnessValue(Vect3f tri, Light_t light, Vect3f normal) {
+    float dx = light.pos.x - tri.x;
+    float dy = light.pos.y - tri.y;
+    float dz = light.pos.z - tri.z;
+
+    float len = sqrtf(dx*dx + dy*dy + dz*dz);
+    if (len <= 0.00001f) return 0;
+
+    float attenuation = 1.0f - (len / light.falloff);
+    if (attenuation <= 0.0f) return 0;
+
+    dx /= len;
+    dy /= len;
+    dz /= len;
+
+    float dot = normal.x*dx + normal.y*dy + normal.z*dz;
+    if (dot <= 0.0f) return 0;
+
+    float val = dot * light.power * attenuation;
+
+    if (val >= 255.0f) val = 254.0f;
+    if (val < 0.0f)   val = 0.0f;
+    return (uint8_t)val;
+}
+
+uint8_t getBrightness(Vect3f tri, Light_t* lights, Vect3f normal, uint8_t color) {
+    int brightness = ambientLight;
+    for (int i = 0; i < lightAmt; i++) { brightness += calculateLightnessValue(tri, lights[i], normal); }
+
+    brightness = (brightness * color) / 255;
+    if (brightness >= 255) brightness = 254;
+    if (brightness < 0)    brightness = 0;
+    return (uint8_t)brightness;
+}
+
 static void renderStart(Camera_t usedCam, textAnimsAtlas* allObjArray2D) {
     float fov = usedCam.fov;
     float nearPlane = usedCam.nearPlane;
@@ -114,26 +157,26 @@ static void renderStart(Camera_t usedCam, textAnimsAtlas* allObjArray2D) {
             project2D(&tri[0][0], src->verts[0], fov, nearPlane);
 
             textAtlas* textAtlasMem = &allObjArray2D->animation[t]->animData;
-            drawImg(tri[0][0], tri[0][1], src->distMod, 0, 0, 30, 30, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h, usedCam.projDist);
+            drawImg(tri[0][0], tri[0][1], src->distMod, 0, 0, 30, 30, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h, usedCam.projDist); 
             // drawImgNoScale(tri[0][0], tri[0][1], 0, 0, 30, 30, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h);
         }
     }
 }
 
-void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, Mesh_t model, int lowPoly) {
+void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, Mesh_t model, bool lightUse) {
     if (allAmt >= allPointsCount) return;
 
     worldTris* wTris;
     Vect3f camPos = {FROM_FIXED24_8(cCam.position.x), FROM_FIXED24_8(cCam.position.y), FROM_FIXED24_8(cCam.position.z)};
     float renderRadiusSq = cCam.farPlane ? (cCam.farPlane * cCam.farPlane) : 0.0f;
-    float lowPolyRend = renderRadiusSq / 12;
 
     int triCount = model.triCount;
     Vect3f* verticies = model.verts;
     int (*tris)[3] = model.tris;
     Edge* edges = model.edges;
     int* backFace = model.bfc;
-    int* colorArray = model.color;
+    uint8_t* colorArray = model.color;
+    Vect3f* normal = model.normal;
 
     int rotObjs = 0;
     float rotMat[3][3];
@@ -167,22 +210,25 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
             project2D(&triScn[j][0], wTris->verts[j], cCam.fov, cCam.nearPlane);
         }
         triFacing[triIndex] = windingOrder2D(triScn[0], triScn[1], triScn[2]);
+        if (wTris->verts[0].z < cCam.nearPlane && wTris->verts[1].z < cCam.nearPlane && wTris->verts[2].z < cCam.nearPlane) continue;
         if (backFace[i] && !triFacing[triIndex]) { triIndex++; continue; }
 
-        float cx = sumX * one_third;
-        float cy = sumY * one_third;
-        float cz = sumZ * one_third;
+        int cx = sumX * one_third;
+        int cy = sumY * one_third;
+        int cz = sumZ * one_third;
 
-        float dx = cx - camPos.x;
-        float dy = cy - camPos.y;
-        float dz = cz - camPos.z;
-        float dist = (dx*dx + dy*dy + dz*dz);
+        int dx = cx - camPos.x;
+        int dy = cy - camPos.y;
+        int dz = cz - camPos.z;
+        int dist = (dx*dx + dy*dy + dz*dz);
 
         if (cCam.farPlane && dist > renderRadiusSq) continue;
-        if (lowPoly == 1 && dist >= lowPolyRend) { continue; } else if (lowPoly == 2 && dist <= lowPolyRend) { continue; }
 
+        uint8_t color = colorArray[i];
+        if (lightUse && lightAmt > 0) { color = getBrightness((Vect3f){cx, cy, cz}, lightSource, normal[i], color); }
+        
         wTris->dimentions = D_3D;
-        wTris->color      = colorArray[i];
+        wTris->color      = color;
         wTris->distMod    = 0.0f;
         wTris->textID     = -1;
 

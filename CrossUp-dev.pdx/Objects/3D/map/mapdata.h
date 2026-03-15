@@ -14,4 +14,8 @@ static const Vect3f mapSize[] = {
     {4.0f, 4.0f, 4.0f},
 };
 
+static const int mapAmbientLight[] = {
+    100
+};
+
 #endif

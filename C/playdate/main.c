@@ -7,6 +7,8 @@
 #include "profiler.h"
 
 PlaydateAPI* pd;
+qfixed24x8_t SIN_LUT[TABLE_SIZE];
+qfixed24x8_t COS_LUT[TABLE_SIZE];
 
 Camera_t cam = {0};
 Camera_t scnCam = {0};
@@ -24,6 +26,8 @@ int mapIndex = 0;
 int onStart = 0;
 int camType = 0;
 
+int ambientLight = 0;
+
 static int update(void* userdata);
 static int UnloadData();
 
@@ -38,6 +42,8 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg)
 
 		pd->display->setRefreshRate(BASE_FPS);
 		pd->system->setUpdateCallback(update, NULL);
+
+        init_tables();
 	}
 
 	if ( event == kEventTerminate )
@@ -78,9 +84,11 @@ static int init() {
     cam = createCamera(0.0f, 3.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
     scnCam = createCamera(0.0f, 1.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
     player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.55f, 0.08f, 0, D_3D);
+    addLightPoint((Vect3f){0.0f, 2.0f, -5.0f}, 50, 10.0f);
     // generateEnts();
 
     convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, mapSize[mapIndex]);
+    ambientLight = mapAmbientLight[mapIndex];
 
     for (int i=0; i < projDataCount3D; i++) convertFileToMesh(projObjs3D[i], &objArray3D[i], projData3D[i][0], projData3D[i][1], 0, (Vect3f){1.0f, 1.0f, 1.0f});
     for (int i=0; i < entDataCount3D; i++){
@@ -148,8 +156,8 @@ static void addPlayer() {
         
             addObjToWorld3D(
                 objectPos, objectRot, objectSize,
-                cam, 10.0f,
-                model, 0
+                cam, 20.0f,
+                model, true
             );
         }
     } else if (player.dimention == D_2D) {
@@ -241,7 +249,7 @@ static void addEntities(int ents, int objs) {
                     addObjToWorld3D(
                         objectPos, objectRot, objectSize,
                         cam, 10.0f,
-                        model, 0
+                        model, false
                     );
                 }
 
@@ -263,7 +271,7 @@ static void addEntities(int ents, int objs) {
                     (Vect3f){FROM_FIXED24_8(obj_->rotation.x), FROM_FIXED24_8(obj_->rotation.y), FROM_FIXED24_8(obj_->rotation.z)},
                     (Vect3f){FROM_FIXED24_8(obj_->size.x), FROM_FIXED24_8(obj_->size.y), FROM_FIXED24_8(obj_->size.z)},
                     cam, 0.0f,
-                    objArray3D[obj_->type], 0
+                    objArray3D[obj_->type], false
                 );
                 break;
         }
@@ -278,7 +286,7 @@ static void addMap() {
     addObjToWorld3D(
         pos, rot, size,
         cam, 0.0f,
-        mapArray, 0
+        mapArray, true
     );
 }
 
@@ -308,7 +316,7 @@ static int titleRender() {
     addObjToWorld3D(
         pos, rot, size,
         scnCam, 0.0f,
-        mapArray, 0
+        mapArray, true
     );
 
     shootRender(scnCam, NULL);
@@ -330,7 +338,7 @@ static int update(void* userdata) {
     if (gameScreen == 0) {
         pd->graphics->setDrawMode(kDrawModeFillWhite);
         precomputedFunctions(&scnCam);
-        skybox(50, 150, 10);
+        // skybox(50, 150, 10);
         titleRender();
         blitToScreen();
 
@@ -340,7 +348,7 @@ static int update(void* userdata) {
         if (inpBuf.A) { gameScreen = 1; }
     } else if (gameScreen == 1) {
         precomputedFunctions(&cam);
-        skybox(50, 150, 10);
+        // skybox(50, 150, 10);
         gameRender();
         blitToScreen();
     }

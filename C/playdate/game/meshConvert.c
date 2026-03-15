@@ -1,5 +1,30 @@
 #include "meshConvert.h"
 
+Vect3f computeNormal(Vect3f tri[3]) {
+    Vect3f edge1, edge2;
+    edge1.x = tri[1].x - tri[0].x;
+    edge1.y = tri[1].y - tri[0].y;
+    edge1.z = tri[1].z - tri[0].z;
+
+    edge2.x = tri[2].x - tri[0].x;
+    edge2.y = tri[2].y - tri[0].y;
+    edge2.z = tri[2].z - tri[0].z;
+    
+    Vect3f normal;
+    normal.x = edge1.y * edge2.z - edge1.z * edge2.y;
+    normal.y = edge1.z * edge2.x - edge1.x * edge2.z;
+    normal.z = edge1.x * edge2.y - edge1.y * edge2.x;
+    
+    float len = sqrtf(normal.x*normal.x + normal.y*normal.y + normal.z*normal.z);
+    if (len != 0.0f) {
+        normal.x /= len;
+        normal.y /= len;
+        normal.z /= len;
+    }
+
+    return normal;
+}
+
 void allocateMeshes(VertAnims* mesh, int maxAnims, const int* framesPerAnim) {
     mesh->anims = pd_malloc(sizeof(AnimFrames*) * maxAnims);
 
@@ -83,7 +108,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
     int (*tris)[3] = NULL;
     int triCount = 0;
 
-    int* colorArr = NULL;
+    uint8_t* colorArr = NULL;
 
     char line[256];
     while (pd_fgets(line, sizeof(line), fptr)) {
@@ -118,7 +143,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                 tris[triCount][1] = invert ? indices[2] : indices[1];
                 tris[triCount][2] = invert ? indices[1] : indices[2];
 
-                colorArr[triCount] = randomInt(25, 255);
+                colorArr[triCount] = randomInt(25, 254);
                 triCount++;
             }
             
@@ -129,12 +154,12 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                 tris[triCount][0] = indices[0];
                 tris[triCount][1] = invert ? indices[2] : indices[1];
                 tris[triCount][2] = invert ? indices[1] : indices[2];
-                colorArr[triCount] = randomInt(25, 255);
+                colorArr[triCount] = randomInt(25, 254);
                 
                 tris[triCount + 1][0] = indices[0];
                 tris[triCount + 1][1] = invert ? indices[3] : indices[2];
                 tris[triCount + 1][2] = invert ? indices[2] : indices[3];
-                colorArr[triCount + 1] = randomInt(25, 255);
+                colorArr[triCount + 1] = randomInt(25, 254);
 
                 triCount += 2;
             }
@@ -151,10 +176,19 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
 
     meshOut->color = pd_malloc(sizeof(int) * triCount);
     meshOut->bfc   = pd_malloc(sizeof(int) * triCount);
+    meshOut->normal   = pd_malloc(sizeof(Vect3f) * triCount);
 
     for (int i = 0; i < triCount; i++) {
         meshOut->color[i] = colorArr[i];
         meshOut->bfc[i] = 1;
+
+
+        Vect3f face[3] = {
+            {verts[tris[i][0]].x, verts[tris[i][0]].y, verts[tris[i][0]].z},
+            {verts[tris[i][1]].x, verts[tris[i][1]].y, verts[tris[i][1]].z},
+            {verts[tris[i][2]].x, verts[tris[i][2]].y, verts[tris[i][2]].z},
+        };
+        meshOut->normal[i] = computeNormal(face);
     }
 
     buildTriangleEdges(meshOut);

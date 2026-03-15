@@ -4,6 +4,10 @@ static ALIGNED_32 uint8_t _screen[sW * sH] = {0};
 static bool anythingImaged = false;
 InputBuffer inpBuf = {0};
 
+#define INTERLACE_HEIGHT  4
+static int interlaceFrame = 0;
+static int frameCount = 0;
+
 uint8_t* src;
 uint8_t* hwscreen;
 
@@ -15,16 +19,14 @@ const uint32_t ordered_dither4x4[] = {
 };
 
 static void hline(int x1, int x2, int y, uint8_t color) {
+    if ((y & 1) != interlaceFrame) return;
     if (y < 0 || y >= sH) return;
 
     if (x1 < 0) x1 = 0;
     if (x2 >= sW) x2 = sW - 1;
     if (x2 < x1) return;
 
-    uint8_t* dst = _screen + y * sW + x1;
-    memset(dst, color, x2 - x1 + 1);
-
-    anythingImaged = true;
+    memset(_screen + y * sW + x1, color, x2 - x1 + 1);
 }
 
 INLINE uint32_t __SUBTEST_DUAL(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) {
@@ -62,15 +64,18 @@ INLINE uint32_t __SUBTEST_DUAL(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y
 }
 
 void plotPixel(int x, int y, uint8_t color) {
+    if ((y & 1) != interlaceFrame) return;
     if (x < 0 || x >= sW || y < 0 || y >= sH) return;
-    _screen[y * sW + x] = color;
+    
+    uint8_t brightness = color + ((interlaceFrame & 1) << 3);
+
+    _screen[y * sW + x] = brightness;
     anythingImaged = true;
 }
 
 void blitToScreen() {
     hwscreen = pd->graphics->getFrame();
-
-    for (int y = 0; y < sH; y++) {
+    for (int y = interlaceFrame; y < sH; y += 2) {
         for (int xbyte = 0; xbyte < sW / 8; xbyte++) {
             uint8_t* dst = hwscreen + y * LCD_ROWSIZE + xbyte;
             uint8_t* row = _screen + y * sW + xbyte * 8;
@@ -83,21 +88,32 @@ void blitToScreen() {
         }
     }
 
-    pd->graphics->markUpdatedRows(0, LCD_ROWS - 1);
-    memset(_screen, 0, sW * sH);
+    pd->graphics->markUpdatedRows(interlaceFrame, LCD_ROWS - 1);
+    for (int y = 0; y < sH; y++) {
+        if (((y / INTERLACE_HEIGHT) & 1) == interlaceFrame) {
+            memset(_screen + y * sW, 0, sW);
+        }
+    }
+
+    frameCount++;
+    if (frameCount > 2){
+        frameCount = 0;
+        interlaceFrame ^= 1;
+    }
 }
 
 void skybox(int col1, int col2, int count) {
     for (int y = 0; y < sH; y++) {
+        if ((y & 1) != interlaceFrame) continue;
+
         for (int x = 0; x < sW; x++) {
             int checkerX = x / count;
             int checkerY = y / count;
-            
-            if ((checkerX + checkerY) % 2 == 0) {
+
+            if ((checkerX + checkerY) % 2 == 0)
                 _screen[y * sW + x] = col1;
-            } else {
+            else
                 _screen[y * sW + x] = col2;
-            }
         }
     }
 }
@@ -121,7 +137,6 @@ void drawTriangle(int tris[3][2], int shade) {
     if (dy02 == 0) return;
 
     float dx02 = (float)(x2 - x0) / dy02;
-
     float dx01 = 0;
     float dx12 = 0;
 
@@ -132,27 +147,26 @@ void drawTriangle(int tris[3][2], int shade) {
     float xB = x0;
 
     int y;
-    
     for (y = y0; y < y1; y++) {
         if (y >= 0 && y < sH) {
             int xLeft  = (int)(xA < xB ? xA + 0.5f : xB + 0.5f);
             int xRight = (int)(xA > xB ? xA + 0.5f : xB + 0.5f);
+
             hline(xLeft, xRight, y, color);
         }
-
         xA += dx02;
         xB += dx01;
     }
 
     xB = x1;
-    
+
     for (; y <= y2; y++) {
         if (y >= 0 && y < sH) {
             int xLeft  = (int)(xA < xB ? xA + 0.5f : xB + 0.5f);
             int xRight = (int)(xA > xB ? xA + 0.5f : xB + 0.5f);
+
             hline(xLeft, xRight, y, color);
         }
-
         xA += dx02;
         xB += dx12;
     }

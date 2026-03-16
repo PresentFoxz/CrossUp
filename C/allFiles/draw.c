@@ -91,22 +91,6 @@ void blitToScreen() {
     interlaceFrame = (interlaceFrame + 1) % INTERLACE_HEIGHT;
 }
 
-void skybox(int col1, int col2, int count) {
-    for (int y = 0; y < sH; y++) {
-        if ((y & 1) != interlaceFrame) continue;
-
-        for (int x = 0; x < sW; x++) {
-            int checkerX = x / count;
-            int checkerY = y / count;
-
-            if ((checkerX + checkerY) % 2 == 0)
-                _screen[y * sW + x] = col1;
-            else
-                _screen[y * sW + x] = col2;
-        }
-    }
-}
-
 void drawTriangle(int tris[3][2], int shade) {
     uint8_t color = shade;
 

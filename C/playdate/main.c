@@ -338,7 +338,6 @@ static int update(void* userdata) {
     if (gameScreen == 0) {
         pd->graphics->setDrawMode(kDrawModeFillWhite);
         precomputedFunctions(&scnCam);
-        // skybox(50, 150, 10);
         titleRender();
         blitToScreen();
 
@@ -348,7 +347,6 @@ static int update(void* userdata) {
         if (inpBuf.A) { gameScreen = 1; }
     } else if (gameScreen == 1) {
         precomputedFunctions(&cam);
-        // skybox(50, 150, 10);
         gameRender();
         blitToScreen();
     }

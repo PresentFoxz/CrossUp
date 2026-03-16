@@ -19,7 +19,6 @@ const uint32_t ordered_dither4x4[] = {
 };
 
 static void hline(int x1, int x2, int y, uint8_t color) {
-    if ((y & 1) != interlaceFrame) return;
     if (y < 0 || y >= sH) return;
 
     if (x1 < 0) x1 = 0;
@@ -64,7 +63,6 @@ INLINE uint32_t __SUBTEST_DUAL(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y
 }
 
 void plotPixel(int x, int y, uint8_t color) {
-    if ((y & 1) != interlaceFrame) return;
     if (x < 0 || x >= sW || y < 0 || y >= sH) return;
     
     uint8_t brightness = color + ((interlaceFrame & 1) << 3);
@@ -89,17 +87,8 @@ void blitToScreen() {
     }
 
     pd->graphics->markUpdatedRows(interlaceFrame, LCD_ROWS - 1);
-    for (int y = 0; y < sH; y++) {
-        if (((y / INTERLACE_HEIGHT) & 1) == interlaceFrame) {
-            memset(_screen + y * sW, 0, sW);
-        }
-    }
-
-    frameCount++;
-    if (frameCount > 2){
-        frameCount = 0;
-        interlaceFrame ^= 1;
-    }
+    for (int y = interlaceFrame; y < sH; y += INTERLACE_HEIGHT) { memset(_screen + y * sW, 0, sW); }
+    interlaceFrame = (interlaceFrame + 1) % INTERLACE_HEIGHT;
 }
 
 void skybox(int col1, int col2, int count) {

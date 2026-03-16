@@ -157,7 +157,7 @@ static void addPlayer() {
             addObjToWorld3D(
                 objectPos, objectRot, objectSize,
                 cam, 20.0f,
-                model, true
+                model, false
             );
         }
     } else if (player.dimention == D_2D) {
@@ -286,7 +286,7 @@ static void addMap() {
     addObjToWorld3D(
         pos, rot, size,
         cam, 0.0f,
-        mapArray, true
+        mapArray, false
     );
 }
 
@@ -316,7 +316,7 @@ static int titleRender() {
     addObjToWorld3D(
         pos, rot, size,
         scnCam, 0.0f,
-        mapArray, true
+        mapArray, false
     );
 
     shootRender(scnCam, NULL);

@@ -31,23 +31,13 @@ static inline void pd_free(void* ptr) { pd->system->realloc(ptr, 0); }
 #if TARGET_PLAYDATE
 #define INLINE static __attribute__((always_inline)) inline
 #define ALIGNED_32 __attribute__((aligned(32)))
-#define SMALL_CODE() __attribute__((optimize("Os")))
-#define NO_INLINE() __attribute__((noinline))
 #define EXPECTED(t) __builtin_expect((t),1)
 #define NOT_EXPECTED(t) __builtin_expect((t),0)
-#define PREFETCH(ptr) __builtin_prefetch(ptr)
-#define ALIGNED_STRUCT(sz) __attribute__((aligned (sz)))
-#define PACKED __attribute__((packed))
 #else
 #define INLINE static inline
-#define NO_INLINE()
 #define ALIGNED_32
-#define SMALL_CODE()
 #define EXPECTED(t) (t)
 #define NOT_EXPECTED(t) (t)
-#define PREFETCH(ptr)
-#define ALIGNED_STRUCT(sz)
-#define PACKED
 #endif
 
 #include "structs.h"

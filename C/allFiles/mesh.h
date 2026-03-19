@@ -34,9 +34,6 @@ typedef struct {
     int (*tris)[3];
     int triCount;
 
-    float (*uvs)[2];
-    int uvCount;
-
     Vect3f* normal;
 
     Edge* edges;

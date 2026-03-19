@@ -194,6 +194,7 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
         Vect3f r;
         int base = i * 3;
         float sumX = 0.0f, sumY = 0.0f, sumZ = 0.0f;
+        float sumX_ = 0.0f, sumY_ = 0.0f, sumZ_ = 0.0f;
         for (int j = 0; j < 3; j++) {
             int idx = tris[i][j];
             if (rotObjs == 1) { rotateVertex(verticies[idx], rotMat, &r); } else { r = verticies[idx]; }
@@ -205,6 +206,12 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
             sumX += wTris->verts[j].x;
             sumY += wTris->verts[j].y;
             sumZ += wTris->verts[j].z;
+
+            if (lightUse && lightAmt > 0) {
+                sumX_ += verticies[idx].x;
+                sumY_ += verticies[idx].y;
+                sumZ_ += verticies[idx].z;
+            }
 
             rotateVertexInPlace(&wTris->verts[j], camPos, cCam.camMatrix);
             project2D(&triScn[j][0], wTris->verts[j], cCam.fov, cCam.nearPlane);
@@ -225,7 +232,12 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
         if (cCam.farPlane && dist > renderRadiusSq) continue;
 
         uint8_t color = colorArray[i];
-        if (lightUse && lightAmt > 0) { color = getBrightness((Vect3f){cx, cy, cz}, lightSource, normal[i], color); }
+        if (lightUse && lightAmt > 0) { 
+            int cx_ = sumX_ * one_third;
+            int cy_ = sumY_ * one_third;
+            int cz_ = sumZ_ * one_third;
+            color = getBrightness((Vect3f){cx_, cy_, cz_}, lightSource, normal[i], color);
+        }
         
         wTris->dimentions = D_3D;
         wTris->color      = color;

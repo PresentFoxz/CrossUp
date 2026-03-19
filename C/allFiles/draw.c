@@ -1,15 +1,12 @@
 #include "draw.h"
 
 static ALIGNED_32 uint8_t _screen[sW * sH] = {0};
+static uint8_t* hwscreen;
 static bool anythingImaged = false;
-InputBuffer inpBuf = {0};
-
-#define INTERLACE_HEIGHT  4
-static int interlaceFrame = 0;
-static int frameCount = 0;
-
-uint8_t* src;
-uint8_t* hwscreen;
+\
+static int interlaceFrame   = 0;
+static int interlaceHeight  = 4;
+static int frameInterlacing = 0;
 
 const uint32_t ordered_dither4x4[] = {
     0xa52d870f,
@@ -19,8 +16,6 @@ const uint32_t ordered_dither4x4[] = {
 };
 
 static void hline(int x1, int x2, int y, uint8_t color) {
-    if (y < 0 || y >= sH) return;
-
     if (x1 < 0) x1 = 0;
     if (x2 >= sW) x2 = sW - 1;
     if (x2 < x1) return;
@@ -66,20 +61,19 @@ void plotPixel(int x, int y, uint8_t color) {
     if (x < 0 || x >= sW || y < 0 || y >= sH) return;
     
     uint8_t brightness = color + ((interlaceFrame & 1) << 3);
-
     _screen[y * sW + x] = brightness;
     anythingImaged = true;
 }
 
 void blitToScreen() {
     hwscreen = pd->graphics->getFrame();
-    for (int y = interlaceFrame; y < sH; y += 2) {
+    for (int y = interlaceFrame; y < sH; y += interlaceHeight) {
         for (int xbyte = 0; xbyte < sW / 8; xbyte++) {
             uint8_t* dst = hwscreen + y * LCD_ROWSIZE + xbyte;
             uint8_t* row = _screen + y * sW + xbyte * 8;
 
-            uint32_t pixels0 = row[0] | row[1] << 8 | row[2] << 16 | row[3] << 24;
-            uint32_t pixels1 = row[4] | row[5] << 8 | row[6] << 16 | row[7] << 24;
+            uint32_t pixels0 = *(uint32_t*)&row[0];
+            uint32_t pixels1 = *(uint32_t*)&row[4];
 
             const uint32_t threshold = ordered_dither4x4[y & 3];
             *dst = __SUBTEST_DUAL(pixels0, threshold, pixels1, threshold);
@@ -87,8 +81,14 @@ void blitToScreen() {
     }
 
     pd->graphics->markUpdatedRows(interlaceFrame, LCD_ROWS - 1);
-    for (int y = interlaceFrame; y < sH; y += INTERLACE_HEIGHT) { memset(_screen + y * sW, 0, sW); }
-    interlaceFrame = (interlaceFrame + 1) % INTERLACE_HEIGHT;
+    for (int y = interlaceFrame; y < sH; y += interlaceHeight) { memset(_screen + y * sW, 0, sW); }
+    if (frameInterlacing) { interlaceFrame = (interlaceFrame + 1) % interlaceHeight; }
+}
+
+void changeLacing(int l0, int l1, bool bType) {
+    interlaceFrame = l0;
+    interlaceHeight = l1;
+    frameInterlacing = bType;
 }
 
 void drawTriangle(int tris[3][2], int shade) {
@@ -132,7 +132,6 @@ void drawTriangle(int tris[3][2], int shade) {
     }
 
     xB = x1;
-
     for (; y <= y2; y++) {
         if (y >= 0 && y < sH) {
             int xLeft  = (int)(xA < xB ? xA + 0.5f : xB + 0.5f);
@@ -142,34 +141,6 @@ void drawTriangle(int tris[3][2], int shade) {
         }
         xA += dx02;
         xB += dx12;
-    }
-}
-
-void drawLineFast(int x0, int y0, int x1, int y1, uint8_t color, int thickness) {
-    int dx = abs(x1 - x0);
-    int dy = abs(y1 - y0);
-    int sx = (x0 < x1) ? 1 : -1;
-    int sy = (y0 < y1) ? 1 : -1;
-    int err = dx - dy;
-
-    int half = thickness / 2;
-
-    while (1) {
-        for (int iy = -half; iy <= half; iy++) {
-            int py = y0 + iy;
-            if (py < 0 || py >= sH) continue;
-            for (int ix = -half; ix <= half; ix++) {
-                int px = x0 + ix;
-                plotPixel(px, py, color);
-            }
-        }
-        anythingImaged = true;
-
-        if (x0 == x1 && y0 == y1) break;
-
-        int e2 = 2 * err;
-        if (e2 > -dy) { err -= dy; x0 += sx; }
-        if (e2 < dx)  { err += dx; y0 += sy; }
     }
 }
 
@@ -210,7 +181,11 @@ void drawImg(int screenX, int screenY, float depth, int tX, int tY, int tW, int 
             int texY = minY + (j * spriteH) / scaledH;
 
             int8_t color = texture[texY * texW + texX];
-            if (color != -1) plotPixel(gx, gy, color);
+            if (color != -1) {
+                uint8_t brightness = color + ((interlaceFrame & 1) << 3);
+                _screen[gy * sW + gx] = brightness;
+                anythingImaged = true;
+            }
         }
     }
 }
@@ -236,7 +211,12 @@ void drawImgNoScale(int x, int y, int tX, int tY, int tW, int tH, int8_t* textur
             int gy = drawY + j;
 
             if (gx < 0 || gy < 0 || gx >= sW || gy >= sH) continue;
-            plotPixel(gx, gy, color);
+
+            if (color != -1) {
+                uint8_t brightness = color + ((interlaceFrame & 1) << 3);
+                _screen[gy * sW + gx] = brightness;
+                anythingImaged = true;
+            }
         }
     }
 }

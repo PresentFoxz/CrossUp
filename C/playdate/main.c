@@ -14,8 +14,9 @@ Camera_t cam = {0};
 Camera_t scnCam = {0};
 Objects* allEnts = NULL;
 EntStruct player = {0};
-Mesh_t mapArray = {0};
+InputBuffer inpBuf = {0};
 
+Mesh_t mapArray = {0};
 Mesh_t* objArray3D = NULL;
 VertAnims* entArray3D = NULL;
 textAnimsAtlas* allObjArray2D = NULL;
@@ -286,7 +287,7 @@ static void addMap() {
     addObjToWorld3D(
         pos, rot, size,
         cam, 0.0f,
-        mapArray, false
+        mapArray, true
     );
 }
 
@@ -316,7 +317,7 @@ static int titleRender() {
     addObjToWorld3D(
         pos, rot, size,
         scnCam, 0.0f,
-        mapArray, false
+        mapArray, true
     );
 
     shootRender(scnCam, NULL);
@@ -328,6 +329,7 @@ static int update(void* userdata) {
         gameScreen = 0;
 
         init();
+        changeLacing(0, 1, false);
         onStart = 1;
     } runInputBuffer();
 

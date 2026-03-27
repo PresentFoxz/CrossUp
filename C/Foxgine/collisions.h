@@ -2,7 +2,6 @@
 #define COLLISIONS_H
 
 #include "../allFiles/library.h"
-#include "../allFiles/structs.h"
 
 #define MAX_COLLISIONS 1024
 

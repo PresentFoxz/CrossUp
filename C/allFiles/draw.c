@@ -2,10 +2,9 @@
 
 static ALIGNED_32 uint8_t _screen[sW * sH] = {0};
 static uint8_t* hwscreen;
-static bool anythingImaged = false;
-\
+
 static int interlaceFrame   = 0;
-static int interlaceHeight  = 4;
+static int interlaceHeight  = 1;
 static int frameInterlacing = 0;
 
 const uint32_t ordered_dither4x4[] = {
@@ -57,87 +56,102 @@ INLINE uint32_t __SUBTEST_DUAL(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y
     #endif
 }
 
-void plotPixel(int x, int y, uint8_t color) {
-    if (x < 0 || x >= sW || y < 0 || y >= sH) return;
-    
-    uint8_t brightness = color + ((interlaceFrame & 1) << 3);
-    _screen[y * sW + x] = brightness;
-    anythingImaged = true;
-}
-
 void blitToScreen() {
     hwscreen = pd->graphics->getFrame();
-    for (int y = interlaceFrame; y < sH; y += interlaceHeight) {
-        for (int xbyte = 0; xbyte < sW / 8; xbyte++) {
-            uint8_t* dst = hwscreen + y * LCD_ROWSIZE + xbyte;
-            uint8_t* row = _screen + y * sW + xbyte * 8;
+    const int rowBytes = sW;
+    const int totalRows = sH;
 
-            uint32_t pixels0 = *(uint32_t*)&row[0];
-            uint32_t pixels1 = *(uint32_t*)&row[4];
-
+    if (frameInterlacing) {
+        for (int y = interlaceFrame; y < totalRows; y += interlaceHeight) {
+            uint8_t* dst = hwscreen + y * LCD_ROWSIZE;
+            uint8_t* src = _screen + y * rowBytes;
             const uint32_t threshold = ordered_dither4x4[y & 3];
-            *dst = __SUBTEST_DUAL(pixels0, threshold, pixels1, threshold);
+            
+            for (int xbyte = 0; xbyte <= rowBytes - 8; xbyte += 8, dst++, src += 8) {
+                uint32_t pixels0 = *(uint32_t*)(src);
+                uint32_t pixels1 = *(uint32_t*)(src + 4);
+                *dst = __SUBTEST_DUAL(pixels0, threshold, pixels1, threshold);
+            }
         }
-    }
 
-    pd->graphics->markUpdatedRows(interlaceFrame, LCD_ROWS - 1);
-    for (int y = interlaceFrame; y < sH; y += interlaceHeight) { memset(_screen + y * sW, 0, sW); }
-    if (frameInterlacing) { interlaceFrame = (interlaceFrame + 1) % interlaceHeight; }
+        for (int y = interlaceFrame; y < totalRows; y += interlaceHeight) {
+            memset(_screen + y * rowBytes, 0, rowBytes);
+        }
+
+        pd->graphics->markUpdatedRows(interlaceFrame, totalRows - 1);
+        interlaceFrame = (interlaceFrame + 1) % interlaceHeight;
+    } else {
+        for (int y = 0; y < totalRows; y++) {
+            uint8_t* dst = hwscreen + y * LCD_ROWSIZE;
+            uint8_t* src = _screen + y * rowBytes;
+            const uint32_t threshold = ordered_dither4x4[y & 3];
+
+            for (int xbyte = 0; xbyte <= rowBytes - 8; xbyte += 8, dst++, src += 8) {
+                uint32_t pixels0 = *(uint32_t*)(src);
+                uint32_t pixels1 = *(uint32_t*)(src + 4);
+                *dst = __SUBTEST_DUAL(pixels0, threshold, pixels1, threshold);
+            }
+        }
+        
+        memset(_screen, 0, sW * sH);
+        pd->graphics->markUpdatedRows(0, totalRows - 1);
+        interlaceFrame = 0;
+    }
 }
 
 void changeLacing(int l0, int l1, bool bType) {
-    interlaceFrame = l0;
-    interlaceHeight = l1;
+    if (l1 <= 0) l1 = 1;
+
+    interlaceFrame   = l0;
+    interlaceHeight  = l1;
     frameInterlacing = bType;
 }
 
-void drawTriangle(int tris[3][2], int shade) {
-    uint8_t color = shade;
+void drawTriangle(int tris[3][2], uint8_t shade) {
+    int* v0 = tris[0];
+    int* v1 = tris[1];
+    int* v2 = tris[2];
 
-    int temp[2];
-    if (tris[1][1] < tris[0][1]) { temp[0]=tris[0][0]; temp[1]=tris[0][1]; tris[0][0]=tris[1][0]; tris[0][1]=tris[1][1]; tris[1][0]=temp[0]; tris[1][1]=temp[1]; }
-    if (tris[2][1] < tris[0][1]) { temp[0]=tris[0][0]; temp[1]=tris[0][1]; tris[0][0]=tris[2][0]; tris[0][1]=tris[2][1]; tris[2][0]=temp[0]; tris[2][1]=temp[1]; }
-    if (tris[2][1] < tris[1][1]) { temp[0]=tris[1][0]; temp[1]=tris[1][1]; tris[1][0]=tris[2][0]; tris[1][1]=tris[2][1]; tris[2][0]=temp[0]; tris[2][1]=temp[1]; }
+    int* temp;
+    if (v1[1] < v0[1]) { temp=v0; v0=v1; v1=temp; }
+    if (v2[1] < v0[1]) { temp=v0; v0=v2; v2=temp; }
+    if (v2[1] < v1[1]) { temp=v1; v1=v2; v2=temp; }
 
-    int x0=tris[0][0], y0=tris[0][1];
-    int x1=tris[1][0], y1=tris[1][1];
-    int x2=tris[2][0], y2=tris[2][1];
-
-    int dy01 = y1 - y0;
-    int dy12 = y2 - y1;
-    int dy02 = y2 - y0;
+    int dy01 = v1[1] - v0[1];
+    int dy12 = v2[1] - v1[1];
+    int dy02 = v2[1] - v0[1];
 
     if (dy02 == 0) return;
 
-    float dx02 = (float)(x2 - x0) / dy02;
+    float dx02 = (float)(v2[0] - v0[0]) / dy02;
     float dx01 = 0;
     float dx12 = 0;
 
-    if (dy01 != 0) dx01 = (float)(x1 - x0) / dy01;
-    if (dy12 != 0) dx12 = (float)(x2 - x1) / dy12;
+    if (dy01 != 0) dx01 = (float)(v1[0] - v0[0]) / dy01;
+    if (dy12 != 0) dx12 = (float)(v2[0] - v1[0]) / dy12;
 
-    float xA = x0;
-    float xB = x0;
+    float xA = v0[0];
+    float xB = v0[0];
 
     int y;
-    for (y = y0; y < y1; y++) {
+    for (y = v0[1]; y < v1[1]; y++) {
         if (y >= 0 && y < sH) {
             int xLeft  = (int)(xA < xB ? xA + 0.5f : xB + 0.5f);
             int xRight = (int)(xA > xB ? xA + 0.5f : xB + 0.5f);
 
-            hline(xLeft, xRight, y, color);
+            hline(xLeft, xRight, y, shade);
         }
         xA += dx02;
         xB += dx01;
     }
 
-    xB = x1;
-    for (; y <= y2; y++) {
+    xB = v1[0];
+    for (; y <= v2[1]; y++) {
         if (y >= 0 && y < sH) {
             int xLeft  = (int)(xA < xB ? xA + 0.5f : xB + 0.5f);
             int xRight = (int)(xA > xB ? xA + 0.5f : xB + 0.5f);
 
-            hline(xLeft, xRight, y, color);
+            hline(xLeft, xRight, y, shade);
         }
         xA += dx02;
         xB += dx12;
@@ -184,7 +198,6 @@ void drawImg(int screenX, int screenY, float depth, int tX, int tY, int tW, int 
             if (color != -1) {
                 uint8_t brightness = color + ((interlaceFrame & 1) << 3);
                 _screen[gy * sW + gx] = brightness;
-                anythingImaged = true;
             }
         }
     }
@@ -215,7 +228,6 @@ void drawImgNoScale(int x, int y, int tX, int tY, int tW, int tH, int8_t* textur
             if (color != -1) {
                 uint8_t brightness = color + ((interlaceFrame & 1) << 3);
                 _screen[gy * sW + gx] = brightness;
-                anythingImaged = true;
             }
         }
     }

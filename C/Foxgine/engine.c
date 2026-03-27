@@ -123,11 +123,8 @@ static void renderStart(Camera_t usedCam, textAnimsAtlas* allObjArray2D) {
     float fov = usedCam.fov;
     float nearPlane = usedCam.nearPlane;
     float farPlane = usedCam.farPlane;
-    Vect3f camPos = {FROM_FIXED24_8(usedCam.position.x), FROM_FIXED24_8(usedCam.position.y), FROM_FIXED24_8(usedCam.position.z)};
+    Vect3f camPos = usedCam.position;
     clippedTri clipped[2] = {0};
-
-    float camMatrix[3][3];
-    computeCamMatrix(camMatrix, FROM_FIXED24_8(usedCam.rotation.x), FROM_FIXED24_8(usedCam.rotation.y), FROM_FIXED24_8(usedCam.rotation.z));
 
     int tri[3][2];
     int triStart = 0;
@@ -150,9 +147,6 @@ static void renderStart(Camera_t usedCam, textAnimsAtlas* allObjArray2D) {
             }
         } else if (src->dimentions == D_2D) {
             continue;
-            
-            rotateVertexInPlace(&src->verts[0], camPos, camMatrix);
-            if (src->verts[0].z < nearPlane || src->verts[0].z > farPlane) continue;
 
             project2D(&tri[0][0], src->verts[0], fov, nearPlane);
 
@@ -167,7 +161,7 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
     if (allAmt >= allPointsCount) return;
 
     worldTris* wTris;
-    Vect3f camPos = {FROM_FIXED24_8(cCam.position.x), FROM_FIXED24_8(cCam.position.y), FROM_FIXED24_8(cCam.position.z)};
+    Vect3f camPos = cCam.position;
     float renderRadiusSq = cCam.farPlane ? (cCam.farPlane * cCam.farPlane) : 0.0f;
 
     int triCount = model.triCount;
@@ -232,7 +226,7 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
         if (cCam.farPlane && dist > renderRadiusSq) continue;
 
         uint8_t color = colorArray[i];
-        if (lightUse && lightAmt > 0) { 
+        if (lightUse && lightAmt > 0) {
             int cx_ = sumX_ * one_third;
             int cy_ = sumY_ * one_third;
             int cz_ = sumZ_ * one_third;
@@ -258,7 +252,7 @@ void addObjToWorld2D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float o
     if (allAmt >= allPointsCount) return;
     
     worldTris* wTris = &allPoints[allAmt];
-    Vect3f camPos = {FROM_FIXED24_8(cCam.position.x), FROM_FIXED24_8(cCam.position.y), FROM_FIXED24_8(cCam.position.z)};
+    Vect3f camPos = cCam.position;
     float renderRadiusSq = cCam.farPlane ? (cCam.farPlane * cCam.farPlane) : 0.0f;
 
     float dx = pos.x - camPos.x;
@@ -267,6 +261,9 @@ void addObjToWorld2D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float o
     float dist = (dx*dx + dy*dy + dz*dz);
 
     if (cCam.farPlane && dist > renderRadiusSq) return;
+
+    rotateVertexInPlace(&wTris->verts[0], camPos, cCam.camMatrix);
+    if (wTris->verts[0].z < cCam.nearPlane || wTris->verts[0].z > cCam.farPlane) return;
 
     wTris->verts[0].x = pos.x; wTris->verts[0].y = pos.y; wTris->verts[0].z = pos.z;
     wTris->dimentions = D_2D;
@@ -286,7 +283,7 @@ void shootRender(Camera_t cam, textAnimsAtlas* allObjArray2D) {
     allAmt = 0;
 }
 
-void resetAllVariables() {
+void resetAllArrays() {
     allPoints = pd_malloc(sizeof(worldTris) * allPointsCount);
     triOrder = pd_malloc(sizeof(TriangleOrdering) * allPointsCount);
     triFacing = pd_malloc(sizeof(int) * allPointsCount);
@@ -294,7 +291,7 @@ void resetAllVariables() {
 }
 
 void precomputedFunctions(Camera_t* cam) { 
-    Vect3f cRot = (Vect3f){FROM_FIXED24_8(cam->rotation.x), FROM_FIXED24_8(cam->rotation.y), FROM_FIXED24_8(cam->rotation.z)};
+    Vect3f cRot = cam->rotation;
 
     computeCamMatrix(cam->camMatrix, cRot.x, cRot.y, cRot.z);
     cam->projDist = (sW_H * 0.5f) / tanf(cam->fov * 0.5f);

@@ -60,60 +60,60 @@ static void moveEnt(EntStruct* p, float mainYaw, float secondaryYaw, float secon
 }
 
 static void rotateSurfTowards(EntStruct* p, float rot, float step){
-    float current = FROM_FIXED24_8(p->surfRot);
+    float current = p->surfRot;
     float delta = rot - current;
     
     while (delta < -M_PI) delta += degToRad(360.0f);
     while (delta > M_PI)  delta -= degToRad(360.0f);
     
     if (fabsf(delta) > degToRad(120.0f)) {
-        p->surfRot = TO_FIXED24_8(rot);
+        p->surfRot = rot;
     } else {
         if (delta > step)  delta = step;
         if (delta < -step) delta = -step;
         
-        p->surfRot = TO_FIXED24_8(current + delta);
+        p->surfRot = (current + delta);
     }
     
-    while (p->surfRot < 0) p->surfRot += TO_FIXED24_8(degToRad(360.0f));
-    while (p->surfRot >= TO_FIXED24_8(degToRad(360.0f))) p->surfRot -= TO_FIXED24_8(degToRad(360.0f));
+    while (p->surfRot < 0) p->surfRot += degToRad(360.0f);
+    while (p->surfRot >= degToRad(360.0f)) p->surfRot -= degToRad(360.0f);
 }
 
 static void rotatePlrTowards(EntStruct* p, float rot, float step){
-    float current = FROM_FIXED24_8(p->rotation.y);
+    float current = p->rotation.y;
     float delta = rot - current;
     
     while (delta < -M_PI) delta += degToRad(360.0f);
     while (delta > M_PI)  delta -= degToRad(360.0f);
     
     if (fabsf(delta) > degToRad(120.0f)) {
-        p->rotation.y = TO_FIXED24_8(rot);
+        p->rotation.y = rot;
     } else {
         if (delta > step)  delta = step;
         if (delta < -step) delta = -step;
         
-        p->rotation.y = TO_FIXED24_8(current + delta);
+        p->rotation.y = (current + delta);
     }
     
-    while (p->rotation.y < 0) p->rotation.y += TO_FIXED24_8(degToRad(360.0f));
-    while (p->rotation.y >= TO_FIXED24_8(degToRad(360.0f))) p->rotation.y -= TO_FIXED24_8(degToRad(360.0f));
+    while (p->rotation.y < 0) p->rotation.y += degToRad(360.0f);
+    while (p->rotation.y >= degToRad(360.0f)) p->rotation.y -= degToRad(360.0f);
 }
 
 static void runColl(EntStruct* p) {
-    Vect3f pCollisionPos = {FROM_FIXED24_8(p->position.x), FROM_FIXED24_8(p->position.y), FROM_FIXED24_8(p->position.z)};
+    Vect3f pCollisionPos = p->position;
     float stepX = p->velocity.x / substeps;
     float stepY = p->velocity.y / substeps;
     float stepZ = p->velocity.z / substeps;
 
-    float pRadius = FROM_FIXED24_8(p->radius);
-    float pHeight = FROM_FIXED24_8(p->height);
+    float pRadius = p->radius;
+    float pHeight = p->height;
 
     Triggers hitTrig = {0};
 
     for (int i = 0; i < substeps; i++) {
-        pCollisionPos.x = FROM_FIXED24_8(p->position.x) + stepX;
-        pCollisionPos.y = (FROM_FIXED24_8(p->position.y) - 0.5f) + stepY;
-        pCollisionPos.z = FROM_FIXED24_8(p->position.z) + stepZ;
+        pCollisionPos.x = (p->position.x) + stepX;
+        pCollisionPos.y = (p->position.y - 0.5f) + stepY;
+        pCollisionPos.z = (p->position.z) + stepZ;
 
         wrapPositionFloat( &pCollisionPos.x, &pCollisionPos.y, &pCollisionPos.z );
         VectMf movePlr = cylinderInTriangle(pCollisionPos, pRadius, pHeight);
@@ -133,19 +133,19 @@ static void runColl(EntStruct* p) {
             p->grounded = 1;
             p->coyote = 0;
             p->velocity.y = 0.0f;
-            p->position.y += TO_FIXED24_8(movePlr.pos.y);
+            p->position.y += movePlr.pos.y;
             stepY = p->velocity.y / substeps;
         }
         if (movePlr.ceiling == 1) {
             if (p->velocity.y < 0.0f) p->velocity.y = -0.5f;
             p->grounded = 0;
             p->coyote = 20;
-            p->position.y += TO_FIXED24_8(movePlr.pos.y);
+            p->position.y += movePlr.pos.y;
             stepY = p->velocity.y / substeps;
         }
         if (movePlr.wall == 1) {
-            p->position.x += TO_FIXED24_8(movePlr.pos.x);
-            p->position.z += TO_FIXED24_8(movePlr.pos.z);
+            p->position.x += movePlr.pos.x;
+            p->position.z += movePlr.pos.z;
         }
 
         hitTrig = cylinderInTrigger(pCollisionPos, pRadius, pHeight);
@@ -160,8 +160,8 @@ void stateMachine(EntStruct* p){
 }
 
 void movePlayerObj(EntStruct* p, Camera_t* c, int type){
-    float yawCam = FROM_FIXED24_8(c->rotation.y);
-    float mainYaw = FROM_FIXED24_8(p->rotation.y);
+    float yawCam = c->rotation.y;
+    float mainYaw = p->rotation.y;
     float secondaryStrength = 0.5f;
     float jumpFrict = 0.54f;
     
@@ -195,13 +195,13 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int type){
             p->ifMove = 0;
         }
 
-        if (p->ifMove > 0) { moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.12f, 0.05f, 0); }
+        if (p->ifMove > 0) { moveEnt(p, p->rotation.y, p->surfRot, secondaryStrength, p->frict, 0.12f, 0.05f, 0); }
 
         p->velocity.y -= p->fallFrict;
         if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
 
         runColl(p);
-        moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.12f, 0.05f, 1);
+        moveEnt(p, p->rotation.y, p->surfRot, secondaryStrength, p->frict, 0.12f, 0.05f, 1);
 
         p->coyote++;
         if (p->grounded == 1) {
@@ -228,7 +228,7 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int type){
         if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
 
         runColl(p);
-        moveEnt(p, FROM_FIXED24_8(p->rotation.y), FROM_FIXED24_8(p->surfRot), secondaryStrength, p->frict, 0.12f, 0.05f, 1);
+        moveEnt(p, p->rotation.y, p->surfRot, secondaryStrength, p->frict, 0.12f, 0.05f, 1);
 
         if (p->actions.plr.spin.timer > 0) p->actions.plr.spin.timer--;
         stateMachine(p);
@@ -236,21 +236,21 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int type){
 }
 
 void updateCamera(Camera_t* cam, EntStruct* ent, float radius) {
-    float pitch = FROM_FIXED24_8(cam->rotation.x);
-    float yaw   = FROM_FIXED24_8(cam->rotation.y);
+    float pitch = cam->rotation.x;
+    float yaw   = cam->rotation.y;
     float smoothOrbit = 0.1f;
 
     float offsetX = cosf(pitch) * sinf(yaw) * radius;
     float offsetY = sinf(pitch) * radius;
     float offsetZ = cosf(pitch) * cosf(yaw) * radius;
 
-    float targetX = FROM_FIXED24_8(ent->position.x) - offsetX;
-    float targetY = FROM_FIXED24_8(ent->position.y) + offsetY;
-    float targetZ = FROM_FIXED24_8(ent->position.z) - offsetZ;
+    float targetX = ent->position.x - offsetX;
+    float targetY = ent->position.y + offsetY;
+    float targetZ = ent->position.z - offsetZ;
 
-    cam->position.x += TO_FIXED24_8((targetX - FROM_FIXED24_8(cam->position.x)) * smoothOrbit);
-    cam->position.y += TO_FIXED24_8((targetY - FROM_FIXED24_8(cam->position.y)) * smoothOrbit);
-    cam->position.z += TO_FIXED24_8((targetZ - FROM_FIXED24_8(cam->position.z)) * smoothOrbit);
+    cam->position.x += (targetX - cam->position.x) * smoothOrbit;
+    cam->position.y += (targetY - cam->position.y) * smoothOrbit;
+    cam->position.z += (targetZ - cam->position.z) * smoothOrbit;
 }
 
 void handleCameraInput(Camera_t* cam) {
@@ -258,16 +258,16 @@ void handleCameraInput(Camera_t* cam) {
     float rotX_delta = -0.1f;
     
     float crankDelta = pd->system->getCrankChange();
-    cam->rotation.y += TO_FIXED24_8(crankDelta * rotY_delta);
-    cam->rotation.x =  TO_FIXED24_8(degToRad(40.0f));
+    cam->rotation.y += crankDelta * rotY_delta;
+    cam->rotation.x =  degToRad(40.0f);
     
-    qfixed24x8_t minPitchY = TO_FIXED24_8(degToRad(  0.0f));
-    qfixed24x8_t maxPitchY = TO_FIXED24_8(degToRad(360.0f));
+    float minPitchY = degToRad(  0.0f);
+    float maxPitchY = degToRad(360.0f);
     if (cam->rotation.y < minPitchY) cam->rotation.y += maxPitchY;
     if (cam->rotation.y > maxPitchY) cam->rotation.y -= maxPitchY;
     
-    qfixed24x8_t minPitchX = TO_FIXED24_8(degToRad(-90.0f));
-    qfixed24x8_t maxPitchX = TO_FIXED24_8(degToRad( 90.0f));
+    float minPitchX = degToRad(-90.0f);
+    float maxPitchX = degToRad( 90.0f);
     if (cam->rotation.x < minPitchX) cam->rotation.x = minPitchX;
     if (cam->rotation.x > maxPitchX) cam->rotation.x = maxPitchX;
 }
@@ -276,36 +276,36 @@ void flyCameraInput(Camera_t* cam) {
     float rotY_delta = -0.03f;
     float rotX_delta = -0.1f;
     float crankDelta = pd->system->getCrankChange();
-    float flyVel  = TO_FIXED24_8(0.008f);
-    float camRotXSPD = TO_FIXED24_8(0.08f);
-    float camRotYSPD = TO_FIXED24_8(0.0f);
+    float flyVel  = 0.008f;
+    float camRotXSPD = 0.08f;
+    float camRotYSPD = 0.0f;
 
-    float yaw   = FROM_FIXED24_8(cam->rotation.y);
+    float yaw   = cam->rotation.y;
     float pitch = cam->rotation.x;
 
     if (inpBuf.UP) {
-        cam->position.x += flyVel * TO_FIXED24_8(sin(yaw));
-        cam->position.z += flyVel * TO_FIXED24_8(cos(yaw));
+        cam->position.x += flyVel * sin(yaw);
+        cam->position.z += flyVel * cos(yaw);
     }
     if (inpBuf.DOWN) {
-        cam->position.x -= flyVel * TO_FIXED24_8(sin(yaw));
-        cam->position.z -= flyVel * TO_FIXED24_8(cos(yaw));
+        cam->position.x -= flyVel * sin(yaw);
+        cam->position.z -= flyVel * cos(yaw);
     }
 
-    if (inpBuf.A) { cam->position.y += TO_FIXED24_8(0.8f); }
-    if (inpBuf.B) { cam->position.y -= TO_FIXED24_8(0.8f); }
+    if (inpBuf.A) { cam->position.y += 0.8f; }
+    if (inpBuf.B) { cam->position.y -= 0.8f; }
 
     if (inpBuf.LEFT) { cam->rotation.y -= camRotXSPD; }
     else if (inpBuf.RIGHT) { cam->rotation.y += camRotXSPD; }
-    cam->rotation.x += TO_FIXED24_8(crankDelta * rotY_delta);
+    cam->rotation.x += crankDelta * rotY_delta;
     
-    qfixed24x8_t minPitchY = TO_FIXED24_8(degToRad(  0.0f));
-    qfixed24x8_t maxPitchY = TO_FIXED24_8(degToRad(360.0f));
+    float minPitchY = degToRad(  0.0f);
+    float maxPitchY = degToRad(360.0f);
     if (cam->rotation.y < minPitchY) cam->rotation.y += maxPitchY;
     if (cam->rotation.y > maxPitchY) cam->rotation.y -= maxPitchY;
     
-    qfixed24x8_t minPitchX = TO_FIXED24_8(degToRad(-90.0f));
-    qfixed24x8_t maxPitchX = TO_FIXED24_8(degToRad( 90.0f));
+    float minPitchX = degToRad(-90.0f);
+    float maxPitchX = degToRad( 90.0f);
     if (cam->rotation.x < minPitchX) cam->rotation.x = minPitchX;
     if (cam->rotation.x > maxPitchX) cam->rotation.x = maxPitchX;
 }
@@ -313,10 +313,10 @@ void flyCameraInput(Camera_t* cam) {
 // == Entity Movements == //
 
 void moveEntObj(EntStruct* e, EntStruct* p) {
-    float mainYaw = FROM_FIXED24_8(e->rotation.y);
+    float mainYaw = e->rotation.y;
     float secondaryStrength = 0.5f;
 
-    moveEnt(e, FROM_FIXED24_8(e->rotation.y), FROM_FIXED24_8(e->surfRot), secondaryStrength, e->frict, 0.13f, 0.0f, 0);
+    moveEnt(e, e->rotation.y, e->surfRot, secondaryStrength, e->frict, 0.13f, 0.0f, 0);
 
     e->velocity.y -= e->fallFrict;
 
@@ -332,14 +332,14 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
         if (e->velocity.z > -0.001 && e->velocity.z < 0.001) { e->velocity.z = 0.0f; }
     }
 
-    float dx = FROM_FIXED24_8(p->position.x) - FROM_FIXED24_8(e->position.x);
-    float dz = FROM_FIXED24_8(p->position.z) - FROM_FIXED24_8(e->position.z);
+    float dx = p->position.x - e->position.x;
+    float dz = p->position.z - e->position.z;
     if (dx*dx + dz*dz < detectDist*detectDist) {
-        float inputX = (FROM_FIXED24_8(p->position.x) - FROM_FIXED24_8(e->position.x));
-        float inputZ = (FROM_FIXED24_8(p->position.z) - FROM_FIXED24_8(e->position.z));
+        float inputX = (p->position.x) - e->position.x;
+        float inputZ = (p->position.z) - e->position.z;
         float targetYaw = atan2f(inputX, inputZ);
         
-        e->rotation.y = TO_FIXED24_8(targetYaw);
+        e->rotation.y = targetYaw;
         e->surfRot = e->rotation.y;
         e->actions.ent.countdown = 10;
     }
@@ -350,21 +350,21 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
         float inputZ = randomFloat(-1.0f, 1.0f);
         float targetYaw = atan2f(inputX, inputZ);
 
-        e->rotation.y = TO_FIXED24_8(targetYaw);
+        e->rotation.y = targetYaw;
         e->surfRot = e->rotation.y;
         if (randomInt(0, 100) > 99 && (e->grounded == 1 || e->coyote <= 10)) { e->velocity.y = 0.94f; e->grounded = 0; }
 
         e->actions.ent.countdown = randomInt(30, 100);
     }
 
-    moveEnt(e, FROM_FIXED24_8(e->rotation.y), FROM_FIXED24_8(e->surfRot), secondaryStrength, e->frict, 0.13f, 0.0f, 1);
+    moveEnt(e, e->rotation.y, e->surfRot, secondaryStrength, e->frict, 0.13f, 0.0f, 1);
     // stateMachine(e);
 }
 
 static void objectTypes(ObjStruct obj){
     obj.timer--;
 
-    obj.position.x += TO_FIXED24_8(obj.velocity.x);
-    obj.position.y += TO_FIXED24_8(obj.velocity.y);
-    obj.position.z += TO_FIXED24_8(obj.velocity.z);
+    obj.position.x += obj.velocity.x;
+    obj.position.y += obj.velocity.y;
+    obj.position.z += obj.velocity.z;
 }

@@ -7,8 +7,6 @@
 #include "profiler.h"
 
 PlaydateAPI* pd;
-qfixed24x8_t SIN_LUT[TABLE_SIZE];
-qfixed24x8_t COS_LUT[TABLE_SIZE];
 
 Camera_t cam = {0};
 Camera_t scnCam = {0};
@@ -22,15 +20,37 @@ VertAnims* entArray3D = NULL;
 textAnimsAtlas* allObjArray2D = NULL;
 // textAtlas* worldTextAtlasMem = NULL;
 
-int gameScreen = 0;
-int mapIndex = 0;
-int onStart = 0;
-int camType = 0;
+static int gameScreen = 0;
+static int mapIndex = 0;
+static int onStart = 0;
+static int camType = 0;
 
 int ambientLight = 0;
+static int lastVal = 0;
 
 static int update(void* userdata);
 static int UnloadData();
+
+PDMenuItem* interlaceItem;
+void onInterlaceCycle(void* userdata) {
+    const char* names[] = { "1x", "2x", "4x" };
+    int value = pd->system->getMenuItemValue(interlaceItem);
+    value++;
+    if (value > 2) value = 0;
+
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "Interlace: %s", names[value]);
+    pd->system->setMenuItemValue(interlaceItem, value);
+    pd->system->setMenuItemTitle(interlaceItem, buffer);
+
+    if (value != lastVal) {
+        if (value == 0) { changeLacing(0, 1, false); }
+        else if (value == 1) { changeLacing(0, 2, true); }
+        else if (value == 2) { changeLacing(0, 4, true); }
+    } lastVal = value;
+
+    pd->system->logToConsole("Interlace: %s", names[value]);
+}
 
 #ifdef _WINDLL
 __declspec(dllexport)
@@ -44,7 +64,7 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg)
 		pd->display->setRefreshRate(BASE_FPS);
 		pd->system->setUpdateCallback(update, NULL);
 
-        init_tables();
+        interlaceItem = pd->system->addMenuItem("Interlace: 1x", onInterlaceCycle, NULL);
 	}
 
 	if ( event == kEventTerminate )
@@ -62,6 +82,8 @@ static int UnloadData() {
     pd_free(entArray3D);
     pd_free(allObjArray2D);
     // pd_free(worldTextAtlasMem);
+
+    pd->system->removeMenuItem(interlaceItem);
 }
 
 static void generateEnts() {
@@ -106,7 +128,7 @@ static int init() {
     generateMap(mapArray);
     // generateTriggers((Vect3f){5.0f, 5.0f, 5.0f}, (Vect3f){10.0f, 10.0f, 10.0f});
 
-    resetAllVariables();
+    resetAllArrays();
 
     InitAudioManager(&audioManager);
     // PlayMusic(&audioManager, "music/EITW", 1.0f, true, 0.0f);
@@ -137,26 +159,8 @@ static void addPlayer() {
 
         Mesh_t model = anims->meshModel[player.currentFrame];
         if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) {
-            Vect3f objectPos = {
-                FROM_FIXED24_8(player.position.x),
-                FROM_FIXED24_8(player.position.y),
-                FROM_FIXED24_8(player.position.z)
-            };
-        
-            Vect3f objectRot = {
-                FROM_FIXED24_8(player.rotation.x),
-                FROM_FIXED24_8(player.rotation.y),
-                FROM_FIXED24_8(player.rotation.z)
-            };
-        
-            Vect3f objectSize = {
-                FROM_FIXED24_8(player.size.x),
-                FROM_FIXED24_8(player.size.y),
-                FROM_FIXED24_8(player.size.z)
-            };
-        
             addObjToWorld3D(
-                objectPos, objectRot, objectSize,
+                player.position, player.rotation, player.size,
                 cam, 20.0f,
                 model, false
             );
@@ -170,26 +174,8 @@ static void addPlayer() {
             player.currentFrame = 0;
         }
 
-        Vect3f objectPos = {
-            FROM_FIXED24_8(player.position.x),
-            FROM_FIXED24_8(player.position.y),
-            FROM_FIXED24_8(player.position.z)
-        };
-    
-        Vect3f objectRot = {
-            FROM_FIXED24_8(player.rotation.x),
-            FROM_FIXED24_8(player.rotation.y),
-            FROM_FIXED24_8(player.rotation.z)
-        };
-    
-        Vect3f objectSize = {
-            FROM_FIXED24_8(player.size.x),
-            FROM_FIXED24_8(player.size.y),
-            FROM_FIXED24_8(player.size.z)
-        };
-
         addObjToWorld2D(
-            objectPos, objectRot, objectSize,
+            player.position, player.rotation, player.size,
             cam, 10.0f, 10.0f,
             player.currentAnim, player.currentFrame
         );
@@ -229,26 +215,8 @@ static void addEntities(int ents, int objs) {
             
                 Mesh_t model = anims->meshModel[ent_->currentFrame];
                 if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) {
-                    Vect3f objectPos = {
-                        FROM_FIXED24_8(ent_->position.x),
-                        FROM_FIXED24_8(ent_->position.y),
-                        FROM_FIXED24_8(ent_->position.z)
-                    };
-
-                    Vect3f objectRot = {
-                        FROM_FIXED24_8(ent_->rotation.x),
-                        FROM_FIXED24_8(ent_->rotation.y),
-                        FROM_FIXED24_8(ent_->rotation.z)
-                    };
-
-                    Vect3f objectSize = {
-                        FROM_FIXED24_8(ent_->size.x),
-                        FROM_FIXED24_8(ent_->size.y),
-                        FROM_FIXED24_8(ent_->size.z)
-                    };
-
                     addObjToWorld3D(
-                        objectPos, objectRot, objectSize,
+                        ent_->position, ent_->rotation, ent_->size,
                         cam, 10.0f,
                         model, false
                     );
@@ -268,9 +236,7 @@ static void addEntities(int ents, int objs) {
                 // objectTypes(obj_);
                 
                 addObjToWorld3D(
-                    (Vect3f){FROM_FIXED24_8(obj_->position.x), FROM_FIXED24_8(obj_->position.y), FROM_FIXED24_8(obj_->position.z)},
-                    (Vect3f){FROM_FIXED24_8(obj_->rotation.x), FROM_FIXED24_8(obj_->rotation.y), FROM_FIXED24_8(obj_->rotation.z)},
-                    (Vect3f){FROM_FIXED24_8(obj_->size.x), FROM_FIXED24_8(obj_->size.y), FROM_FIXED24_8(obj_->size.z)},
+                    obj_->position, obj_->rotation, obj_->size,
                     cam, 0.0f,
                     objArray3D[obj_->type], false
                 );
@@ -287,7 +253,7 @@ static void addMap() {
     addObjToWorld3D(
         pos, rot, size,
         cam, 0.0f,
-        mapArray, true
+        mapArray, false
     );
 }
 
@@ -308,7 +274,7 @@ static int gameRender() {
 }
 
 static int titleRender() {
-    scnCam.rotation.y += TO_FIXED24_8(-0.02f);
+    scnCam.rotation.y += -0.02f;
 
     Vect3f pos = {0.0f, 0.0f, 0.0f};
     Vect3f rot = {0.0f, 0.0f, 0.0f};
@@ -317,7 +283,7 @@ static int titleRender() {
     addObjToWorld3D(
         pos, rot, size,
         scnCam, 0.0f,
-        mapArray, true
+        mapArray, false
     );
 
     shootRender(scnCam, NULL);
@@ -329,7 +295,6 @@ static int update(void* userdata) {
         gameScreen = 0;
 
         init();
-        changeLacing(0, 1, false);
         onStart = 1;
     } runInputBuffer();
 
@@ -354,7 +319,6 @@ static int update(void* userdata) {
     }
     pd->graphics->fillRect(0, 0, 20, 20, kColorWhite);
     pd->system->drawFPS(2, 2);
-    
 
     return 1;
 }

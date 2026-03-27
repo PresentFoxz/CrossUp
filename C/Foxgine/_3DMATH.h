@@ -1,8 +1,6 @@
 #ifndef _3DMATH_H
 #define _3DMATH_H
 #include "../allFiles/library.h"
-#include "../allFiles/mesh.h"
-#include "../allFiles/structs.h"
 #include "../allFiles/draw.h"
 
 void project2D(int point[2], Vertex verts, float fov, float nearPlane);

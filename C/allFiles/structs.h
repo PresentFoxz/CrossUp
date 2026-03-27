@@ -1,7 +1,6 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-typedef int32_t qfixed24x8_t;
 typedef unsigned int uint;
 
 typedef enum {
@@ -13,10 +12,6 @@ typedef enum {
     ENTITY,
     OBJECT
 } ModelType;
-
-typedef struct {
-    qfixed24x8_t x, y, z;
-} Vect3i;
 
 typedef struct {
     float x, y;
@@ -47,8 +42,8 @@ typedef struct {
 } clippedTri;
 
 typedef struct {
-    Vect3i position;
-    Vect3i rotation;
+    Vect3f position;
+    Vect3f rotation;
     Vect3f fVect;
     float camMatrix[3][3];
     float fov, nearPlane, farPlane;
@@ -72,12 +67,12 @@ typedef struct {
 typedef struct {
     Dimentions dimention;
 
-    Vect3i position;
-    Vect3i rotation;
-    Vect3i size;
+    Vect3f position;
+    Vect3f rotation;
+    Vect3f size;
     Vect3f velocity;
-    qfixed24x8_t surfRot;
-    qfixed24x8_t radius, height;
+    float surfRot;
+    float radius, height;
     int type, grounded, groundTimer;
     int coyote, ifMove;
     int countdown;
@@ -95,9 +90,9 @@ typedef struct {
 
     int timer;
     int type;
-    Vect3i position;
-    Vect3i rotation;
-    Vect3i size;
+    Vect3f position;
+    Vect3f rotation;
+    Vect3f size;
     Vect3f velocity;
 } ObjStruct;
 

@@ -1,8 +1,6 @@
 #ifndef CAM_H
 #define CAM_H
-#include "../allFiles/library.h"
-#include "../allFiles/mesh.h"
-#include "../allFiles/structs.h"
+#include "../allFiles/library.h"S
 
 Camera_t createCamera(float x, float y, float z, float rotX, float rotY, float rotZ, float fov, float near, float far);
 EntStruct createEntity(float x, float y, float z, float rotX, float rotY, float rotZ, float sizeX, float sizeY, float sizeZ, float radius, float height, float frict, float fallFrict, int type, Dimentions dimention);

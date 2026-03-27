@@ -24,6 +24,8 @@ extern PlaydateAPI* pd;
 
 #define MAX_TRIS 0
 
+#define FP_SHIFT 16
+#define FP_ONE   (1 << FP_SHIFT)
 static inline void* pd_realloc(void* ptr, size_t size) { return pd->system->realloc(ptr, size); }
 static inline void* pd_malloc(size_t size) { return pd->system->realloc(NULL, size); }
 static inline void pd_free(void* ptr) { pd->system->realloc(ptr, 0); }
@@ -47,29 +49,6 @@ extern int ambientLight;
 #define M_PI 3.14159265358979323846f
 #define TWO_PI 6.2831853f
 
-#define TABLE_SIZE 256
-#define FIXED_POINT_FRACTIONAL_BITS_24x8 8
-#define FP24_8_ONE (1 << FIXED_POINT_FRACTIONAL_BITS_24x8)
-#define TO_FIXED24_8(x) ((qfixed24x8_t)((x) * FP24_8_ONE))
-#define FROM_FIXED24_8(x) ((float)(x) / FP24_8_ONE)
-extern qfixed24x8_t SIN_LUT[TABLE_SIZE];
-extern qfixed24x8_t COS_LUT[TABLE_SIZE];
-static inline qfixed24x8_t multiply24_8(qfixed24x8_t a, qfixed24x8_t b) { return (qfixed24x8_t)(((int64_t)a * (int64_t)b) >> FIXED_POINT_FRACTIONAL_BITS_24x8); }
-static inline qfixed24x8_t divide24_8(qfixed24x8_t a, qfixed24x8_t b) { return (qfixed24x8_t)(((int64_t)a << FIXED_POINT_FRACTIONAL_BITS_24x8) / (int64_t)b); }
-static inline qfixed24x8_t angleToIndex(qfixed24x8_t a) { return (a >> 8) & 255; }
-static inline qfixed24x8_t FIXED_SIN(qfixed24x8_t a) { return SIN_LUT[angleToIndex(a)]; }
-static inline qfixed24x8_t FIXED_COS(qfixed24x8_t a) { return COS_LUT[angleToIndex(a)]; }
-static inline void init_tables() {
-    int step = 6.28318530718 / TABLE_SIZE;
-
-    float angle = 0.0;
-    for (int i = 0; i < 256; i++){
-        SIN_LUT[i] = (int)(sin(angle) * FP24_8_ONE);
-        COS_LUT[i] = (int)(cos(angle) * FP24_8_ONE);
-        angle += step;
-    }
-}
-
 static inline int min(int a, int b) { return (a < b) ? a : b; }
 static inline int max(int a, int b) { return (a > b) ? a : b; }
 static inline int clamp(int value, int minVal, int maxVal) { return max(minVal, min(value, maxVal)); }
@@ -81,7 +60,7 @@ static inline float unitToMeter(float x) { return x / worldUnit; }
 static inline float meterToUnit(float x) { return x * worldUnit; }
 static inline int randomInt(int a, int b) { return a + rand() % (b - a + 1); }
 static inline float randomFloat(float a, float b) { return a + (b - a) * ((float)rand() / (float)RAND_MAX); }
-static inline float dot(Vect3i a, Vect3i b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+static inline float dot(Vect3f a, Vect3f b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 static inline int inside(int x, int y) { return x >= sX && x < sX + sW && y >= sY && y < sY + sH; }
 static inline float degToRad(float deg) { return deg * (M_PI / 180.0f); }
 static inline float fade(float t) { return t * t * t * (t * (t * 6 - 15) + 10); }

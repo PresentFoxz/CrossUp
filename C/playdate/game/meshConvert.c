@@ -182,7 +182,6 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
         meshOut->color[i] = colorArr[i];
         meshOut->bfc[i] = 1;
 
-
         Vect3f face[3] = {
             {verts[tris[i][0]].x, verts[tris[i][0]].y, verts[tris[i][0]].z},
             {verts[tris[i][1]].x, verts[tris[i][1]].y, verts[tris[i][1]].z},

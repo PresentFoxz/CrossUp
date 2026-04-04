@@ -134,6 +134,7 @@ static int init() {
     // PlayMusic(&audioManager, "music/EITW", 1.0f, true, 0.0f);
     // PlayModuleMusic(&audioManager, "Echo in the Wind - Minecraft.wav");
 
+    frameBuffer();
     return 0;
 }
 

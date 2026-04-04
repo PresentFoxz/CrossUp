@@ -11,16 +11,12 @@ extern PlaydateAPI* pd;
 #define substeps 4
 #define worldUnit 16.0f
 
-#define resolution 2
-
 #define sX  0
 #define sY  0
 #define sW  400
 #define sH  240
 #define sW_H (sW / 2)
 #define sH_H (sH / 2)
-#define sW_L (sW / resolution)
-#define sH_L (sH / resolution)
 
 #define MAX_TRIS 0
 

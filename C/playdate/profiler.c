@@ -1,7 +1,7 @@
 #ifdef PROFILER_ENABLED
 
 #include "profiler.h"
-#include "../allFiles/library.h"   // pd, sW, sH, sW_L, sH_L
+#include "../allFiles/library.h"   // pd, sW, sH, sW_H, sH_H
 #include <string.h>
 
 // ---------------------------------------------------------------------------

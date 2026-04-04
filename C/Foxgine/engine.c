@@ -48,7 +48,7 @@ void generateMap(Mesh_t mapArray) {
             (Vect3f){mapArray.verts[triNum[0]].x, mapArray.verts[triNum[0]].y, mapArray.verts[triNum[0]].z},
             (Vect3f){mapArray.verts[triNum[1]].x, mapArray.verts[triNum[1]].y, mapArray.verts[triNum[1]].z},
             (Vect3f){mapArray.verts[triNum[2]].x, mapArray.verts[triNum[2]].y, mapArray.verts[triNum[2]].z},
-            SURFACE_NONE
+            mapArray.normal[i], SURFACE_NONE
         );
     }
 

@@ -91,7 +91,7 @@ void addTriggers(Vect3f pos, Vect3f size, int type, int id) {
     trig->id = id;
 }
 
-void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, SurfaceType type) {
+void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, Vect3f normal, SurfaceType type) {
     CollisionSurface surf;
 
     surf.v0 = v0;
@@ -101,29 +101,10 @@ void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, SurfaceType type) {
     surf.center.x = (v0.x + v1.x + v2.x) / 3.0f;
     surf.center.y = (v0.y + v1.y + v2.y) / 3.0f;
     surf.center.z = (v0.z + v1.z + v2.z) / 3.0f;
+    surf.normal = normal;
 
     float ux = v1.x - v0.x, uy = v1.y - v0.y, uz = v1.z - v0.z;
     float vx = v2.x - v0.x, vy = v2.y - v0.y, vz = v2.z - v0.z;
-
-    surf.normal.x = uy * vz - uz * vy;
-    surf.normal.y = uz * vx - ux * vz;
-    surf.normal.z = ux * vy - uy * vx;
-
-    float len = sqrtf(
-        surf.normal.x * surf.normal.x +
-        surf.normal.y * surf.normal.y +
-        surf.normal.z * surf.normal.z
-    );
-
-    if (len < 0.0001f) {
-        surf.normal = (Vect3f){0, 0, 0};
-        surf.type = SURFACE_NONE;
-        return;
-    }
-
-    surf.normal.x /= len;
-    surf.normal.y /= len;
-    surf.normal.z /= len;
 
     if (type == SURFACE_NONE) {
         float ny = surf.normal.y;

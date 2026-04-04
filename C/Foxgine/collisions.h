@@ -35,7 +35,7 @@ typedef struct {
 void resetTriggers();
 void resetCollisionSurface(Mesh_t mapArray);
 void addTriggers(Vect3f pos, Vect3f size, int type, int id);
-void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, SurfaceType type);
+void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, Vect3f normal, SurfaceType type);
 VectMf cylinderInTriangle(Vect3f pos, float radius, float height);
 Triggers cylinderInTrigger(Vect3f pos, float radius, float height);
 

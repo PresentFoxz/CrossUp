@@ -1,7 +1,12 @@
 #include "draw.h"
 
-static ALIGNED_32 uint8_t _screen[sW * sH] = {0};
+static ALIGNED_32 uint8_t _scn1[sW * sH] = {0};
+static ALIGNED_32 uint8_t _scn2[sW * sH] = {0};
+static ALIGNED_32 uint8_t* _scn;
+static ALIGNED_32 uint8_t* _scnOther;
+static bool _scnDirty[sH] = {false};
 static uint8_t* hwscreen;
+static int bufFrame = 0;
 
 static int interlaceFrame   = 0;
 static int interlaceHeight  = 1;
@@ -14,12 +19,19 @@ const uint32_t ordered_dither4x4[] = {
     0x5ad278f0,
 };
 
+void frameBuffer() {
+    _scn = bufFrame ? _scn1 : _scn2;
+    _scnOther = bufFrame ? _scn2 : _scn1;
+}
+
 static void hline(int x1, int x2, int y, uint8_t color) {
+    if (y < 0 || y >= sH) return;
     if (x1 < 0) x1 = 0;
     if (x2 >= sW) x2 = sW - 1;
     if (x2 < x1) return;
 
-    memset(_screen + y * sW + x1, color, x2 - x1 + 1);
+    _scnDirty[y] = true;
+    memset(_scn + y * sW + x1, color, x2 - x1 + 1);
 }
 
 INLINE uint32_t __SUBTEST_DUAL(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) {
@@ -64,18 +76,26 @@ void blitToScreen() {
     if (frameInterlacing) {
         for (int y = interlaceFrame; y < totalRows; y += interlaceHeight) {
             uint8_t* dst = hwscreen + y * LCD_ROWSIZE;
-            uint8_t* src = _screen + y * rowBytes;
+            uint8_t* src = _scn + y * rowBytes;
+            uint8_t* prev = _scnOther + y * rowBytes;
             const uint32_t threshold = ordered_dither4x4[y & 3];
             
-            for (int xbyte = 0; xbyte <= rowBytes - 8; xbyte += 8, dst++, src += 8) {
+            for (int xbyte = 0; xbyte <= rowBytes - 8; xbyte += 8, dst++, src += 8, prev += 8) {
                 uint32_t pixels0 = *(uint32_t*)(src);
                 uint32_t pixels1 = *(uint32_t*)(src + 4);
+                uint32_t old0 = *(uint32_t*)(prev);
+                uint32_t old1 = *(uint32_t*)(prev + 4);
+
+                pixels0 = (pixels0 + old0) >> 1;
+                pixels1 = (pixels1 + old1) >> 1;
+
                 *dst = __SUBTEST_DUAL(pixels0, threshold, pixels1, threshold);
             }
         }
 
-        for (int y = interlaceFrame; y < totalRows; y += interlaceHeight) {
-            memset(_screen + y * rowBytes, 0, rowBytes);
+        for (int y = 0; y < totalRows; y++) {
+            if (_scnDirty[y]) memset(_scn + y * rowBytes, 0, rowBytes);
+            _scnDirty[y] = false;
         }
 
         pd->graphics->markUpdatedRows(interlaceFrame, totalRows - 1);
@@ -83,20 +103,30 @@ void blitToScreen() {
     } else {
         for (int y = 0; y < totalRows; y++) {
             uint8_t* dst = hwscreen + y * LCD_ROWSIZE;
-            uint8_t* src = _screen + y * rowBytes;
+            uint8_t* src = _scn + y * rowBytes;
+            uint8_t* prev = _scnOther + y * rowBytes;
             const uint32_t threshold = ordered_dither4x4[y & 3];
 
-            for (int xbyte = 0; xbyte <= rowBytes - 8; xbyte += 8, dst++, src += 8) {
+            for (int xbyte = 0; xbyte <= rowBytes - 8; xbyte += 8, dst++, src += 8, prev += 8) {
                 uint32_t pixels0 = *(uint32_t*)(src);
                 uint32_t pixels1 = *(uint32_t*)(src + 4);
+                uint32_t old0 = *(uint32_t*)(prev);
+                uint32_t old1 = *(uint32_t*)(prev+4);
+
+                pixels0 = (pixels0 + old0) >> 1;
+                pixels1 = (pixels1 + old1) >> 1;
+
                 *dst = __SUBTEST_DUAL(pixels0, threshold, pixels1, threshold);
             }
         }
         
-        memset(_screen, 0, sW * sH);
+        memset(_scn, 0, sW * sH);
         pd->graphics->markUpdatedRows(0, totalRows - 1);
         interlaceFrame = 0;
     }
+
+    bufFrame = (bufFrame + 1) % 2;
+    frameBuffer();
 }
 
 void changeLacing(int l0, int l1, bool bType) {
@@ -197,7 +227,8 @@ void drawImg(int screenX, int screenY, float depth, int tX, int tY, int tW, int 
             int8_t color = texture[texY * texW + texX];
             if (color != -1) {
                 uint8_t brightness = color + ((interlaceFrame & 1) << 3);
-                _screen[gy * sW + gx] = brightness;
+                _scn[gy * sW + gx] = brightness;
+                _scnDirty[gy] = true;
             }
         }
     }
@@ -227,7 +258,8 @@ void drawImgNoScale(int x, int y, int tX, int tY, int tW, int tH, int8_t* textur
 
             if (color != -1) {
                 uint8_t brightness = color + ((interlaceFrame & 1) << 3);
-                _screen[gy * sW + gx] = brightness;
+                _scn[gy * sW + gx] = brightness;
+                _scnDirty[gy] = true;
             }
         }
     }

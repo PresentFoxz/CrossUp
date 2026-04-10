@@ -15,7 +15,6 @@ void project2D(int point[2], Vertex verts, float fov, float nearPlane) {
     point[1] = (int)(verts.y * -scale + sy);
 }
 
-
 void rotateVertexInPlace(Vertex* v, Vect3f camPos, float camMatrix[3][3]) {
     float x = (v->x - camPos.x); float y = (v->y - camPos.y); float z = (v->z - camPos.z);
 

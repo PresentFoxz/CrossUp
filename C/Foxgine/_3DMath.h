@@ -5,7 +5,6 @@
 
 void project2D(int point[2], Vertex verts, float fov, float nearPlane);
 int windingOrder2D(const int p0[2], const int p1[2], const int p2[2]);
-int windingOrder3D(const Vect3f* v0, const Vect3f* v1, const Vect3f* v2);
 
 int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, float nearPlane, float farPlane);
 

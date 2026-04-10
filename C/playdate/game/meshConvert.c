@@ -101,8 +101,8 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
         pd->system->logToConsole("Error: Could not open file %s\n", filename);
         return;
     }
-    
-    Vect3f* verts = NULL;
+
+    Vect3f* rawVerts = NULL;
     int vertCount = 0;
 
     int (*tris)[3] = NULL;
@@ -111,18 +111,54 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
     uint8_t* colorArr = NULL;
 
     char line[256];
+    
+    float minX = 1e30f, minY = 1e30f, minZ = 1e30f;
+    float maxX = -1e30f, maxY = -1e30f, maxZ = -1e30f;
+
+    while (pd_fgets(line, sizeof(line), fptr)) {
+        if (strncmp(line, "v ", 2) == 0) {
+            float x, y, z;
+            if (sscanf(line, "v %f %f %f", &x, &y, &z) == 3) {
+                rawVerts = pd_realloc(rawVerts, sizeof(Vect3f) * (vertCount + 1));
+                rawVerts[vertCount].x = x;
+                rawVerts[vertCount].y = y;
+                rawVerts[vertCount].z = z;
+                vertCount++;
+
+                if (x < minX) minX = x; if (x > maxX) maxX = x;
+                if (y < minY) minY = y; if (y > maxY) maxY = y;
+                if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+            }
+        }
+    }
+    
+    Vect3f center;
+    center.x = (minX + maxX) * 0.5f;
+    center.y = (minY + maxY) * 0.5f;
+    center.z = (minZ + maxZ) * 0.5f;
+
+    pd->file->close(fptr);
+    fptr = pd->file->open(filename, kFileRead | kFileReadData);
+    if (!fptr) {
+        pd->system->logToConsole("Error: Could not open file again %s\n", filename);
+        return;
+    }
+
+    vertCount = 0;
+    Vect3f* verts = NULL;
+
     while (pd_fgets(line, sizeof(line), fptr)) {
         if (strncmp(line, "v ", 2) == 0) {
             float x, y, z;
             if (sscanf(line, "v %f %f %f", &x, &y, &z) == 3) {
                 verts = pd_realloc(verts, sizeof(Vect3f) * (vertCount + 1));
-                verts[vertCount].x = x  * size.x;
-                verts[vertCount].y = y  * size.y;
-                verts[vertCount].z = -z * size.z;
+                verts[vertCount].x = (x - center.x) * size.x;
+                verts[vertCount].y = (y - center.y) * size.y;
+                verts[vertCount].z = -(z - center.z) * size.z;
                 vertCount++;
             }
         }
-        
+
         else if (strncmp(line, "f ", 2) == 0) {
             char* token = strtok(line + 2, " \t\n");
             int indices[4];
@@ -134,7 +170,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                 indices[idx++] = atoi(token) - 1;
                 token = strtok(NULL, " \t\n");
             }
-            
+
             if (idx == 3) {
                 tris = pd_realloc(tris, sizeof(int[3]) * (triCount + 1));
                 colorArr = pd_realloc(colorArr, sizeof(int) * (triCount + 1));
@@ -146,16 +182,16 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
                 colorArr[triCount] = randomInt(25, 254);
                 triCount++;
             }
-            
+
             else if (idx == 4) {
                 tris = pd_realloc(tris, sizeof(int[3]) * (triCount + 2));
                 colorArr = pd_realloc(colorArr, sizeof(int) * (triCount + 2));
-                
+
                 tris[triCount][0] = indices[0];
                 tris[triCount][1] = invert ? indices[2] : indices[1];
                 tris[triCount][2] = invert ? indices[1] : indices[2];
                 colorArr[triCount] = randomInt(25, 254);
-                
+
                 tris[triCount + 1][0] = indices[0];
                 tris[triCount + 1][1] = invert ? indices[3] : indices[2];
                 tris[triCount + 1][2] = invert ? indices[2] : indices[3];
@@ -167,25 +203,24 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
     }
 
     pd->file->close(fptr);
-
+    
     meshOut->verts = verts;
     meshOut->vertCount = vertCount;
-
     meshOut->tris = tris;
     meshOut->triCount = triCount;
 
     meshOut->color = pd_malloc(sizeof(int) * triCount);
     meshOut->bfc   = pd_malloc(sizeof(int) * triCount);
-    meshOut->normal   = pd_malloc(sizeof(Vect3f) * triCount);
+    meshOut->normal = pd_malloc(sizeof(Vect3f) * triCount);
 
     for (int i = 0; i < triCount; i++) {
         meshOut->color[i] = colorArr[i];
         meshOut->bfc[i] = 1;
 
         Vect3f face[3] = {
-            {verts[tris[i][0]].x, verts[tris[i][0]].y, verts[tris[i][0]].z},
-            {verts[tris[i][1]].x, verts[tris[i][1]].y, verts[tris[i][1]].z},
-            {verts[tris[i][2]].x, verts[tris[i][2]].y, verts[tris[i][2]].z},
+            verts[tris[i][0]],
+            verts[tris[i][1]],
+            verts[tris[i][2]]
         };
         meshOut->normal[i] = computeNormal(face);
     }

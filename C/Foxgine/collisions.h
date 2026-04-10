@@ -19,6 +19,14 @@ typedef struct {
     Vect3f normal;
     Vect3f center;
     SurfaceType type;
+
+    int minX, minY, minZ;
+    int maxX, maxY, maxZ;
+
+    float v0x, v0y, v0z;
+    float v1x, v1y, v1z;
+
+    float dot00, dot01, dot11, invDenom;
 } CollisionSurface;
 
 typedef struct {

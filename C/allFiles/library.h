@@ -22,6 +22,9 @@ extern PlaydateAPI* pd;
 
 #define FP_SHIFT 16
 #define FP_ONE   (1 << FP_SHIFT)
+#define TO_INT(x) ((x) >> FP_SHIFT)
+#define TO_INT_ROUND(x) (((x) + (1 << (FP_SHIFT - 1))) >> FP_SHIFT)
+
 static inline void* pd_realloc(void* ptr, size_t size) { return pd->system->realloc(ptr, size); }
 static inline void* pd_malloc(size_t size) { return pd->system->realloc(NULL, size); }
 static inline void pd_free(void* ptr) { pd->system->realloc(ptr, 0); }

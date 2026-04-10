@@ -172,11 +172,11 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
     uint8_t* colorArray = model.color;
     Vect3f* normal = model.normal;
 
-    int rotObjs = 0;
+    bool rotObjs = false;
     float rotMat[3][3];
     if (rot.x != 0.0f || rot.y != 0.0f || rot.z != 0.0f || size.x != 1.0f || size.y != 1.0f || size.z != 1.0f) {
         computeRotScaleMatrix(rotMat, rot.x, rot.y, rot.z, size.x, size.y, size.z);
-        rotObjs = 1;
+        rotObjs = true;
     }
 
     int triScn[3][2];
@@ -191,7 +191,7 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
         float sumX_ = 0.0f, sumY_ = 0.0f, sumZ_ = 0.0f;
         for (int j = 0; j < 3; j++) {
             int idx = tris[i][j];
-            if (rotObjs == 1) { rotateVertex(verticies[idx], rotMat, &r); } else { r = verticies[idx]; }
+            if (rotObjs) { rotateVertex(verticies[idx], rotMat, &r); } else { r = verticies[idx]; }
 
             wTris->verts[j].x = r.x + pos.x;
             wTris->verts[j].y = r.y + pos.y;
@@ -208,15 +208,23 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
             }
 
             rotateVertexInPlace(&wTris->verts[j], camPos, cCam.camMatrix);
-            project2D(&triScn[j][0], wTris->verts[j], cCam.fov, cCam.nearPlane);
         }
-        triFacing[triIndex] = windingOrder2D(triScn[0], triScn[1], triScn[2]);
-        if (wTris->verts[0].z < cCam.nearPlane && wTris->verts[1].z < cCam.nearPlane && wTris->verts[2].z < cCam.nearPlane) continue;
-        if (backFace[i] && !triFacing[triIndex]) { triIndex++; continue; }
 
         int cx = sumX * one_third;
         int cy = sumY * one_third;
         int cz = sumZ * one_third;
+
+        Vect3f fVect = {cx - camPos.x, cy - camPos.y, cz - camPos.z};
+        Vect3f n = normal[i];
+        if (rotObjs) {
+            rotateVertex(n, rotMat, &n);
+            float len = sqrtf(n.x*n.x + n.y*n.y + n.z*n.z);
+            if (len > 0.0f) { n.x /= len; n.y /= len; n.z /= len; }
+        }
+        float dot = n.x*fVect.x + n.y*fVect.y + n.z*fVect.z;
+        triFacing[triIndex] = (dot < 0.0f);
+        if (wTris->verts[0].z < cCam.nearPlane && wTris->verts[1].z < cCam.nearPlane && wTris->verts[2].z < cCam.nearPlane) continue;
+        if (backFace[i] && !triFacing[triIndex]) { triIndex++; continue; }
 
         int dx = cx - camPos.x;
         int dy = cy - camPos.y;

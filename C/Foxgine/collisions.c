@@ -115,21 +115,37 @@ void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, Vect3f normal, Surface
         surf.type = type;
     }
 
-    int minX = (int)(fminf(v0.x, fminf(v1.x, v2.x)));
-    int minY = (int)(fminf(v0.y, fminf(v1.y, v2.y)));
-    int minZ = (int)(fminf(v0.z, fminf(v1.z, v2.z)));
+    surf.minX = (int)(fminf(v0.x, fminf(v1.x, v2.x)));
+    surf.minY = (int)(fminf(v0.y, fminf(v1.y, v2.y)));
+    surf.minZ = (int)(fminf(v0.z, fminf(v1.z, v2.z)));
 
-    int maxX = (int)(fmaxf(v0.x, fmaxf(v1.x, v2.x)));
-    int maxY = (int)(fmaxf(v0.y, fmaxf(v1.y, v2.y)));
-    int maxZ = (int)(fmaxf(v0.z, fmaxf(v1.z, v2.z)));
+    surf.maxX = (int)(fmaxf(v0.x, fmaxf(v1.x, v2.x)));
+    surf.maxY = (int)(fmaxf(v0.y, fmaxf(v1.y, v2.y)));
+    surf.maxZ = (int)(fmaxf(v0.z, fmaxf(v1.z, v2.z)));
 
-    int minChunkX = getChunkPos(minX);
-    int minChunkY = getChunkPos(minY);
-    int minChunkZ = getChunkPos(minZ);
+    int minChunkX = getChunkPos(surf.minX);
+    int minChunkY = getChunkPos(surf.minY);
+    int minChunkZ = getChunkPos(surf.minZ);
 
-    int maxChunkX = getChunkPos(maxX);
-    int maxChunkY = getChunkPos(maxY);
-    int maxChunkZ = getChunkPos(maxZ);
+    int maxChunkX = getChunkPos(surf.maxX);
+    int maxChunkY = getChunkPos(surf.maxY);
+    int maxChunkZ = getChunkPos(surf.maxZ);
+
+    surf.v0x = v2.x - v0.x;
+    surf.v0y = v2.y - v0.y;
+    surf.v0z = v2.z - v0.z;
+
+    surf.v1x = v1.x - v0.x;
+    surf.v1y = v1.y - v0.y;
+    surf.v1z = v1.z - v0.z;
+
+    surf.dot00 = surf.v0x*surf.v0x + surf.v0y*surf.v0y + surf.v0z*surf.v0z;
+    surf.dot01 = surf.v0x*surf.v1x + surf.v0y*surf.v1y + surf.v0z*surf.v1z;
+    surf.dot11 = surf.v1x*surf.v1x + surf.v1y*surf.v1y + surf.v1z*surf.v1z;
+
+    float denom = surf.dot00 * surf.dot11 - surf.dot01 * surf.dot01;
+    if (fabsf(denom) < 0.00001f) { surf.invDenom = 0.0f; }
+    else { surf.invDenom = 1.0f / denom; }
 
     for (int c=0; c < chunkAmt; c++) {
         int cx = collisionChunkSurfaces[c].pos.x;
@@ -173,13 +189,18 @@ Triggers cylinderInTrigger(Vect3f pos, float radius, float height) {
     return (Triggers){0};
 }
 
-
 VectMf cylinderInTriangle(Vect3f pos, float radius, float height) {
     if ((pos.x < minX || pos.x >= maxX) || (pos.y < minY || pos.y >= maxY) || (pos.z < minZ || pos.z >= maxZ)) { return (VectMf){0, 0, 0, -1, -1, -1}; }
 
     VectMf pushPlayer = {0};
     float effectiveRadius = radius + TRI_EPSILON;
     float radius2 = effectiveRadius * effectiveRadius;
+    float pad = radius + 0.5f;
+
+    float px = pos.x;
+    float pz = pos.z;
+    float pyBottom = pos.y;
+    float pyTop    = pos.y + height;
 
     for (int c=0; c < chunkAmt; c++){
         int chunkPos[3] = {getChunkPos(pos.x), getChunkPos(pos.y), getChunkPos(pos.z)};
@@ -191,22 +212,13 @@ VectMf cylinderInTriangle(Vect3f pos, float radius, float height) {
             CollisionSurface *tri = &collSurface[i];
 
             if (tri->normal.x == 0 && tri->normal.y == 0 && tri->normal.z == 0) continue;
-
-            float minX = fminf(tri->v0.x, fminf(tri->v1.x, tri->v2.x));
-            float maxX = fmaxf(tri->v0.x, fmaxf(tri->v1.x, tri->v2.x));
-            float minY = fminf(tri->v0.y, fminf(tri->v1.y, tri->v2.y));
-            float maxY = fmaxf(tri->v0.y, fmaxf(tri->v1.y, tri->v2.y));
-            float minZ = fminf(tri->v0.z, fminf(tri->v1.z, tri->v2.z));
-            float maxZ = fmaxf(tri->v0.z, fmaxf(tri->v1.z, tri->v2.z));
-
-            float pad = radius + 0.5f;
-            if (pos.x + pad < minX || pos.x - pad > maxX || pos.y + pad < minY || pos.y - pad > maxY || pos.z + pad < minZ || pos.z - pad > maxZ) continue;
+            if (pos.x + pad < tri->minX || pos.x - pad > tri->maxX || pos.y + pad < tri->minY || pos.y - pad > tri->maxY || pos.z + pad < tri->minZ || pos.z - pad > tri->maxZ) continue;
 
             float dx = pos.x - tri->center.x;
             float dz = pos.z - tri->center.z;
 
             float bottomDist = dx * tri->normal.x + (pos.y - tri->center.y) * tri->normal.y + dz * tri->normal.z;
-            float topDist = dx * tri->normal.x + (pos.y + height - tri->center.y) * tri->normal.y + dz * tri->normal.z;
+            float topDist = dx * tri->normal.x + ((pos.y + height) - tri->center.y) * tri->normal.y + dz * tri->normal.z;
 
             if (bottomDist > radius && topDist > radius) continue;
             if (bottomDist < -radius && topDist < -radius) continue;
@@ -214,70 +226,49 @@ VectMf cylinderInTriangle(Vect3f pos, float radius, float height) {
             float t = 0.0f;
             if (bottomDist * topDist < 0.0f) t = bottomDist / (bottomDist - topDist);
             else t = (fabsf(bottomDist) < fabsf(topDist)) ? 0.0f : 1.0f;
+            
+            for (int h = 0; h < 2; h++) {
+                float py = (h == 0) ? pyBottom : pyTop;
+                float dist = (px - tri->center.x) * tri->normal.x + (py - tri->center.y) * tri->normal.y + (pz - tri->center.z) * tri->normal.z;
+                if (dist * dist > radius2) continue;
+                
+                float projX = px - dist * tri->normal.x;
+                float projY = py - dist * tri->normal.y;
+                float projZ = pz - dist * tri->normal.z;
+                
+                float v2x = projX - tri->v0.x;
+                float v2y = projY - tri->v0.y;
+                float v2z = projZ - tri->v0.z;
 
-            float px = pos.x;
-            float py = pos.y + t * height;
-            float pz = pos.z;
+                float dot02 = tri->v0x * v2x + tri->v0y * v2y + tri->v0z * v2z;
+                float dot12 = tri->v1x * v2x + tri->v1y * v2y + tri->v1z * v2z;
 
-            float dist = (px - tri->center.x) * tri->normal.x + (py - tri->center.y) * tri->normal.y + (pz - tri->center.z) * tri->normal.z;
+                float u = (tri->dot11 * dot02 - tri->dot01 * dot12) * tri->invDenom;
+                float v = (tri->dot00 * dot12 - tri->dot01 * dot02) * tri->invDenom;
 
-            if (dist * dist > radius2) continue;
+                if (u < -TRI_EPSILON || v < -TRI_EPSILON || (u + v > 1.0f + TRI_EPSILON)) continue;
 
-            float projX = px - dist * tri->normal.x;
-            float projY = py - dist * tri->normal.y;
-            float projZ = pz - dist * tri->normal.z;
+                float penetration = radius - (dist < 0 ? -dist : dist);
+                if (tri->type == OUT_OF_BOUNDS) return (VectMf){0, 0, 0, -1, -1, -1};
 
-            float v0x = tri->v2.x - tri->v0.x;
-            float v0y = tri->v2.y - tri->v0.y;
-            float v0z = tri->v2.z - tri->v0.z;
-
-            float v1x = tri->v1.x - tri->v0.x;
-            float v1y = tri->v1.y - tri->v0.y;
-            float v1z = tri->v1.z - tri->v0.z;
-
-            float v2x = projX - tri->v0.x;
-            float v2y = projY - tri->v0.y;
-            float v2z = projZ - tri->v0.z;
-
-            float dot00 = v0x*v0x + v0y*v0y + v0z*v0z;
-            float dot01 = v0x*v1x + v0y*v1y + v0z*v1z;
-            float dot11 = v1x*v1x + v1y*v1y + v1z*v1z;
-            float dot02 = v0x*v2x + v0y*v2y + v0z*v2z;
-            float dot12 = v1x*v2x + v1y*v2y + v1z*v2z;
-
-            float denom = dot00 * dot11 - dot01 * dot01;
-            if (fabsf(denom) < 0.00001f) continue;
-
-            float invDenom = 1.0f / denom;
-            float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
-            float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
-
-            if (u >= -TRI_EPSILON && v >= -TRI_EPSILON && (u + v <= 1.0f + TRI_EPSILON)) {
-                float penetration = radius - fabsf(dist);
-
-                if (tri->type == OUT_OF_BOUNDS) {
-                    return (VectMf){0, 0, 0, -1, -1, -1};
-                }
-
-                switch (tri->type) {
-                    case SURFACE_FLOOR:
-                    case SURFACE_CEILING:
-                        pushPlayer.pos.y += penetration * tri->normal.y;
-                        pushPlayer.floor |= (tri->type == SURFACE_FLOOR);
-                        pushPlayer.ceiling |= (tri->type == SURFACE_CEILING);
-                        break;
-
-                    case SURFACE_WALL:
-                        pushPlayer.pos.x += penetration * tri->normal.x;
-                        pushPlayer.pos.z += penetration * tri->normal.z;
-                        pushPlayer.wall = 1;
-                        break;
+                if (tri->type == SURFACE_FLOOR && h == 0 && dist < radius) {
+                    pushPlayer.pos.y += penetration;
+                    pushPlayer.floor = 1;
+                } 
+                else if (tri->type == SURFACE_CEILING && h == 1 && dist > -radius) {
+                    pushPlayer.pos.y -= penetration; // only top
+                    pushPlayer.ceiling = 1;
+                } 
+                else if (tri->type == SURFACE_WALL && fabsf(dist) < radius) {
+                    pushPlayer.pos.x += penetration * tri->normal.x;
+                    pushPlayer.pos.z += penetration * tri->normal.z;
+                    pushPlayer.wall = 1;
                 }
             }
         }
+
         break;
     }
-    
 
     return pushPlayer;
 }

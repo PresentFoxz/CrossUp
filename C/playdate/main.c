@@ -33,10 +33,10 @@ static int UnloadData();
 
 PDMenuItem* interlaceItem;
 void onInterlaceCycle(void* userdata) {
-    const char* names[] = { "1x", "2x", "4x" };
+    const char* names[] = { "OFF", "1x", "2x", "4x" };
     int value = pd->system->getMenuItemValue(interlaceItem);
     value++;
-    if (value > 2) value = 0;
+    if (value > 3) value = 0;
 
     char buffer[32];
     snprintf(buffer, sizeof(buffer), "Interlace: %s", names[value]);
@@ -44,9 +44,10 @@ void onInterlaceCycle(void* userdata) {
     pd->system->setMenuItemTitle(interlaceItem, buffer);
 
     if (value != lastVal) {
-        if (value == 0) { changeLacing(0, 1, false); }
-        else if (value == 1) { changeLacing(0, 2, true); }
-        else if (value == 2) { changeLacing(0, 4, true); }
+        if (value == 0) { changeLacing(0, 0, false); }
+        else if (value == 1) { changeLacing(0, 1, true); }
+        else if (value == 2) { changeLacing(0, 2, true); }
+        else if (value == 3) { changeLacing(0, 4, true); }
     } lastVal = value;
 
     pd->system->logToConsole("Interlace: %s", names[value]);
@@ -64,7 +65,7 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg)
 		pd->display->setRefreshRate(BASE_FPS);
 		pd->system->setUpdateCallback(update, NULL);
 
-        interlaceItem = pd->system->addMenuItem("Interlace: 1x", onInterlaceCycle, NULL);
+        interlaceItem = pd->system->addMenuItem("Interlace: OFF", onInterlaceCycle, NULL);
 	}
 
 	if ( event == kEventTerminate )
@@ -106,7 +107,7 @@ static int init() {
 
     cam = createCamera(0.0f, 3.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
     scnCam = createCamera(0.0f, 1.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
-    player = createEntity(0.0f, 20.0f, -5.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 1.8f, 0.55f, 0.08f, 0, D_3D);
+    player = createEntity(0.0f, 5.0f, -5.0f, 0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f, 2.5f, 6.5f, 0.55f, 0.08f, 0, D_3D);
     addLightPoint((Vect3f){0.0f, 2.0f, -5.0f}, 50, 10.0f);
     // generateEnts();
 
@@ -134,7 +135,6 @@ static int init() {
     // PlayMusic(&audioManager, "music/EITW", 1.0f, true, 0.0f);
     // PlayModuleMusic(&audioManager, "Echo in the Wind - Minecraft.wav");
 
-    frameBuffer();
     return 0;
 }
 
@@ -188,10 +188,11 @@ static void addPlayer() {
         player.currentFrame++;
         player.frameCount = 0;
     }
+
+    pd->system->logToConsole("Player Position: [ %f | %f | %f ] | Min/Max Height: [ %f | %f ]", player.position.x, player.position.y, player.position.z, player.position.y, player.position.y + player.height);
 }
 
 static void addEntities(int ents, int objs) {
-    float dx, dy, dz;
     for (int z = 0; z < entAmt; z++) {
         switch (allEnts[z].type) {
             case ENTITY:
@@ -207,7 +208,7 @@ static void addEntities(int ents, int objs) {
                 // }
             
                 AnimFrames* anims = entArray3D[ent_->type].anims[ent_->currentAnim];
-                int newFrame = anims->frames;
+                // int newFrame = anims->frames;
             
                 // if (ent_->currentFrame >= newFrame) {
                 //     ent_->frameCount = 0;
@@ -261,7 +262,7 @@ static void addMap() {
 static int gameRender() {
     if (camType == 0) {
         handleCameraInput(&cam);
-        updateCamera(&cam, &player, 7.0f);
+        updateCamera(&cam, &player, 12.0f);
     } else {
         flyCameraInput(&cam);
     }

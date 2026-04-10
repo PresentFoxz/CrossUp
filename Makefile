@@ -229,7 +229,7 @@ OBJ_SRC = C/Objects
 IMG_SRC = C/images
 AUDIO_SRC = C/Audio
 
-pdx-sim: sim_build/pdex.dll
+sim: sim_build/pdex.dll
 	@echo "Building simulator PDX..."
 	rm -rf $(CUSFOLDER)
 	mkdir -p $(CUSFOLDER)/pdex
@@ -244,7 +244,7 @@ pdx-sim: sim_build/pdex.dll
 	rm -rf $(CUSFOLDER)
 	rm -rf sim_build
 
-pdx-dev: device_build/pdex.elf
+dev: device_build/pdex.elf
 	@echo "Building device PDX..."
 	rm -rf $(CUDFOLDER)
 	mkdir -p $(CUDFOLDER)/pdex

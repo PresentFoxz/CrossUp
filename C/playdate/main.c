@@ -2,6 +2,7 @@
 #include "game/movement.h"
 #include "game/meshConvert.h"
 #include "sound/audio.h"
+#include "../Foxgine/collisions.h"
 
 #include "../Foxgine/engine.h"
 #include "profiler.h"
@@ -15,13 +16,16 @@ EntStruct player = {0};
 InputBuffer inpBuf = {0};
 
 Mesh_t mapArray = {0};
+Mesh_Chunks* sectorMesh;
+static int mapIndex  = 0;
+static int sectorAmt = 0;
+
 Mesh_t* objArray3D = NULL;
 VertAnims* entArray3D = NULL;
 textAnimsAtlas* allObjArray2D = NULL;
-// textAtlas* worldTextAtlasMem = NULL;
+textAtlas* worldTextAtlasMem = NULL;
 
 static int gameScreen = 0;
-static int mapIndex = 0;
 static int onStart = 0;
 static int camType = 0;
 
@@ -89,10 +93,10 @@ static int UnloadData() {
 
 static void generateEnts() {
     if (mapIndex == 0) {
-        addEnt((Vect3f){0.0f, 20.0f, -5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){1.0f, 1.0f, 1.0f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY, entArray3D, allEnts, D_3D);
-        addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray3D, allEnts, D_3D);
+        addEnt((Vector3f){0.0f, 20.0f, -5.0f}, (Vector3f){0.0f, 0.0f, 0.0f}, (Vector3f){1.0f, 1.0f, 1.0f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY, entArray3D, allEnts, D_3D);
+        addEnt((Vector3f){0.0f, 5.0f, 5.0f}, (Vector3f){0.0f, 0.0f, 0.0f}, (Vector3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray3D, allEnts, D_3D);
     } else if (mapIndex == 1) {
-        addEnt((Vect3f){0.0f, 5.0f, 5.0f}, (Vect3f){0.0f, 0.0f, 0.0f}, (Vect3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray3D, allEnts, D_3D);
+        addEnt((Vector3f){0.0f, 5.0f, 5.0f}, (Vector3f){0.0f, 0.0f, 0.0f}, (Vector3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray3D, allEnts, D_3D);
     }
 }
 
@@ -100,34 +104,38 @@ static int init() {
     allPointsCount = 0;
     entAmt = 0;
 
-    objArray3D = pd_malloc( sizeof(Mesh_t) * projDataCount3D);
-    entArray3D = pd_malloc(sizeof(VertAnims) * entDataCount3D);
-    allObjArray2D = pd_malloc( sizeof(textAnimsAtlas) * (entDataCount2D + projDataCount2D));
-    allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
+    // objArray3D = pd_malloc( sizeof(Mesh_t) * projDataCount3D);
+    // entArray3D = pd_malloc(sizeof(VertAnims) * entDataCount3D);
+    // allObjArray2D = pd_malloc( sizeof(textAnimsAtlas) * (entDataCount2D + projDataCount2D));
+    // allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
 
-    cam = createCamera(0.0f, 3.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
-    scnCam = createCamera(0.0f, 1.0f, 10.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
-    player = createEntity(0.0f, 5.0f, -5.0f, 0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f, 2.5f, 6.5f, 0.55f, 0.08f, 0, D_3D);
-    addLightPoint((Vect3f){0.0f, 2.0f, -5.0f}, 50, 10.0f);
+    cam = createCamera(0.0f, 3.0f, 0.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
+    scnCam = createCamera(0.0f, 3.0f, 0.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
+    player = createEntity(41.2f, 10.0f, -10.0f, 0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f, 2.5f, 6.5f, 0.55f, 0.08f, 0, D_3D);
+    addLightPoint((Vector3f){0.0f, 2.0f, -5.0f}, 50, 10.0f);
     // generateEnts();
 
-    convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, mapSize[mapIndex]);
+    // convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, mapSize[mapIndex]);
+    
+
+    // for (int i=0; i < projDataCount3D; i++) convertFileToMesh(projObjs3D[i], &objArray3D[i], projData3D[i][0], projData3D[i][1], 0, (Vector3f){1.0f, 1.0f, 1.0f});
+    // for (int i=0; i < entDataCount3D; i++){
+    //     int highest = allocAnimModel(&entArray3D[i], entData3D[i].totalAnims, entData3D[i].animFrameCounts, entData3D[i].animNames, 0, 1, 1, (Vector3f){1.0f, 1.0f, 1.0f});
+    //     allPointsCount += (highest * (entAmt+1));
+    //     entArray3D[i].count = highest;
+    // }
+
+    // for (int i=0; i < entDataCount2D; i++) {
+    //     allocAnimAtlas(&allObjArray2D[i], entData2D[i].totalAnims, entData2D[i].animFrameCounts, entData2D[i].animNames);
+    //     allPointsCount++;
+    // }
+
+    resetCollisionSurface();
+    sectorMesh = readMapData(mapLeaf[mapIndex], &sectorAmt);
+    for (int i=0; i < sectorAmt; i++) { generateMap(sectorMesh[i].map, sectorMesh[i].pos); }
+
     ambientLight = mapAmbientLight[mapIndex];
-
-    for (int i=0; i < projDataCount3D; i++) convertFileToMesh(projObjs3D[i], &objArray3D[i], projData3D[i][0], projData3D[i][1], 0, (Vect3f){1.0f, 1.0f, 1.0f});
-    for (int i=0; i < entDataCount3D; i++){
-        int highest = allocAnimModel(&entArray3D[i], entData3D[i].totalAnims, entData3D[i].animFrameCounts, entData3D[i].animNames, 0, 1, 1, (Vect3f){1.0f, 1.0f, 1.0f});
-        allPointsCount += (highest * (entAmt+1));
-        entArray3D[i].count = highest;
-    }
-
-    for (int i=0; i < entDataCount2D; i++) {
-        allocAnimAtlas(&allObjArray2D[i], entData2D[i].totalAnims, entData2D[i].animFrameCounts, entData2D[i].animNames);
-        allPointsCount++;
-    }
-
-    generateMap(mapArray);
-    // generateTriggers((Vect3f){5.0f, 5.0f, 5.0f}, (Vect3f){10.0f, 10.0f, 10.0f});
+    // generateTriggers((Vector3f){5.0f, 5.0f, 5.0f}, (Vector3f){10.0f, 10.0f, 10.0f});
 
     resetAllArrays();
 
@@ -139,10 +147,14 @@ static int init() {
 }
 
 static void addPlayer() {
+    movePlayerObj(&player, &cam, camType);
+    pd->system->logToConsole("Player Position: [ %f | %f | %f ] | Min/Max Height: [ %f | %f ]", player.position.x, player.position.y, player.position.z, player.position.y, player.position.y + player.height);
+    
+    return;
     if (player.type < 0) return;
     if (player.dimention == D_3D && player.type >= entDataCount3D) return;
     if (player.dimention == D_2D && player.type >= entDataCount2D) return;
-    movePlayerObj(&player, &cam, camType);
+    
 
     if (player.currentAnim != player.lastAnim) {
         player.frameCount = 0;
@@ -188,11 +200,11 @@ static void addPlayer() {
         player.currentFrame++;
         player.frameCount = 0;
     }
-
-    pd->system->logToConsole("Player Position: [ %f | %f | %f ] | Min/Max Height: [ %f | %f ]", player.position.x, player.position.y, player.position.z, player.position.y, player.position.y + player.height);
 }
 
 static void addEntities(int ents, int objs) {
+    return;
+
     for (int z = 0; z < entAmt; z++) {
         switch (allEnts[z].type) {
             case ENTITY:
@@ -248,15 +260,27 @@ static void addEntities(int ents, int objs) {
 }
 
 static void addMap() {
-    Vect3f pos = {0.0f, 0.0f, 0.0f};
-    Vect3f rot = {0.0f, 0.0f, 0.0f};
-    Vect3f size = {1.0f, 1.0f, 1.0f};
+    for (int i=0; i < sectorAmt; i++) {
+        Mesh_Chunks* sector = &sectorMesh[i];
 
-    addObjToWorld3D(
-        pos, rot, size,
-        cam, 0.0f,
-        mapArray, false
-    );
+        Mesh_t map = sector->map;
+        if (map.triCount <= 0) continue;
+
+        Vector3f pos = sector->pos;
+        Vector3f whd = sector->whd;
+
+        // Vector3f dist = {(pos.x + whd.x) * 0.5f, (pos.y + whd.y) * 0.5f, (pos.z + whd.z) * 0.5f};
+        // pd->system->logToConsole("Dist: [ %f | %f | %f ]", dist.x - s_cam.position.x, dist.y - s_cam.position.y, dist.z - s_cam.position.z);
+
+        Vector3f rot = {0.0f, 0.0f, 0.0f};
+        Vector3f size = {1.0f, 1.0f, 1.0f};
+
+        addObjToWorld3D(
+            pos, rot, size,
+            cam, 0.0f,
+            map, false
+        );
+    }
 }
 
 static int gameRender() {
@@ -278,15 +302,27 @@ static int gameRender() {
 static int titleRender() {
     scnCam.rotation.y += -0.02f;
 
-    Vect3f pos = {0.0f, 0.0f, 0.0f};
-    Vect3f rot = {0.0f, 0.0f, 0.0f};
-    Vect3f size = {1.0f, 1.0f, 1.0f};
+    for (int i=0; i < sectorAmt; i++) {
+        Mesh_Chunks* sector = &sectorMesh[i];
 
-    addObjToWorld3D(
-        pos, rot, size,
-        scnCam, 0.0f,
-        mapArray, false
-    );
+        Mesh_t map = sector->map;
+        if (map.triCount <= 0) continue;
+
+        Vector3f pos = sector->pos;
+        Vector3f whd = sector->whd;
+
+        // Vector3f dist = {(pos.x + whd.x) * 0.5f, (pos.y + whd.y) * 0.5f, (pos.z + whd.z) * 0.5f};
+        // pd->system->logToConsole("Dist: [ %f | %f | %f ]", dist.x - s_cam.position.x, dist.y - s_cam.position.y, dist.z - s_cam.position.z);
+
+        Vector3f rot = {0.0f, 0.0, 0.0f};
+        Vector3f size = {1.0f, 1.0f, 1.0f};
+
+        addObjToWorld3D(
+            pos, rot, size,
+            scnCam, 0.0f,
+            map, false
+        );
+    }
 
     shootRender(scnCam, NULL);
     return 0;

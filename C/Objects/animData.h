@@ -11,6 +11,7 @@
 
 
 // Map object
-#include "3D/map/mapdata.h"
+#include "3D/map_model/map-model.h"
+#include "3D/map_leaf/map-leaf.h"
 
 #endif

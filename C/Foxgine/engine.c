@@ -14,12 +14,12 @@ int allAmt = 0;
 Light_t* lightSource;
 int lightAmt = 0;
 
-void addLightPoint(Vect3f pos, uint8_t power, float falloff) {
+void addLightPoint(Vector3f pos, uint8_t power, float falloff) {
     lightSource = pd_realloc(lightSource, sizeof(Light_t) * (lightAmt + 1));
     lightSource[lightAmt++] = (Light_t){ .pos = pos, .power = power, .falloff = falloff };
 }
 
-void addEnt(Vect3f pos, Vect3f rot, Vect3f size, float radius, float height, float frict, float fallFrict, int type, ModelType objType, VertAnims* entArray, Objects* allEnts, Dimentions dimention) {
+void addEnt(Vector3f pos, Vector3f rot, Vector3f size, float radius, float height, float frict, float fallFrict, int type, ModelType objType, VertAnims* entArray, Objects* allEnts, Dimentions dimention) {
     if (entAmt < MAX_ENTITIES) {
         allEnts[entAmt].type = objType;
 
@@ -40,14 +40,16 @@ void addEnt(Vect3f pos, Vect3f rot, Vect3f size, float radius, float height, flo
     }
 }
 
-void generateMap(Mesh_t mapArray) {
-    resetCollisionSurface(mapArray); 
+void generateMap(Mesh_t mapArray, Vector3f pos) {
+    fixSurfaces(mapArray);
+    collisionChunks();
+
     for (int i=0; i < mapArray.triCount; i++){
         int* triNum = mapArray.tris[i];
         addCollisionSurface(
-            (Vect3f){mapArray.verts[triNum[0]].x, mapArray.verts[triNum[0]].y, mapArray.verts[triNum[0]].z},
-            (Vect3f){mapArray.verts[triNum[1]].x, mapArray.verts[triNum[1]].y, mapArray.verts[triNum[1]].z},
-            (Vect3f){mapArray.verts[triNum[2]].x, mapArray.verts[triNum[2]].y, mapArray.verts[triNum[2]].z},
+            (Vector3f){mapArray.verts[triNum[0]].x + pos.x, mapArray.verts[triNum[0]].y + pos.y, mapArray.verts[triNum[0]].z + pos.z},
+            (Vector3f){mapArray.verts[triNum[1]].x + pos.x, mapArray.verts[triNum[1]].y + pos.y, mapArray.verts[triNum[1]].z + pos.z},
+            (Vector3f){mapArray.verts[triNum[2]].x + pos.x, mapArray.verts[triNum[2]].y + pos.y, mapArray.verts[triNum[2]].z + pos.z},
             mapArray.normal[i], SURFACE_NONE
         );
     }
@@ -55,7 +57,7 @@ void generateMap(Mesh_t mapArray) {
     allPointsCount += mapArray.triCount;
 }
 
-void generateTriggers(Vect3f pos, Vect3f size) {
+void generateTriggers(Vector3f pos, Vector3f size) {
     resetTriggers();
     addTriggers(pos, size, 1, 2);
 }
@@ -84,7 +86,7 @@ static void quickSortIndices(TriangleOrdering* order, int left, int right) {
     if (i < right) quickSortIndices(order, i, right);
 }
 
-uint8_t calculateLightnessValue(Vect3f tri, Light_t light, Vect3f normal) {
+uint8_t calculateLightnessValue(Vector3f tri, Light_t light, Vector3f normal) {
     float dx = light.pos.x - tri.x;
     float dy = light.pos.y - tri.y;
     float dz = light.pos.z - tri.z;
@@ -109,7 +111,7 @@ uint8_t calculateLightnessValue(Vect3f tri, Light_t light, Vect3f normal) {
     return (uint8_t)val;
 }
 
-uint8_t getBrightness(Vect3f tri, Light_t* lights, Vect3f normal, uint8_t color) {
+uint8_t getBrightness(Vector3f tri, Light_t* lights, Vector3f normal, uint8_t color) {
     int brightness = ambientLight;
     for (int i = 0; i < lightAmt; i++) { brightness += calculateLightnessValue(tri, lights[i], normal); }
 
@@ -123,7 +125,7 @@ static void renderStart(Camera_t usedCam, textAnimsAtlas* allObjArray2D) {
     float fov = usedCam.fov;
     float nearPlane = usedCam.nearPlane;
     float farPlane = usedCam.farPlane;
-    Vect3f camPos = usedCam.position;
+    Vector3f camPos = usedCam.position;
     clippedTri clipped[2] = {0};
 
     int tri[3][2];
@@ -157,20 +159,20 @@ static void renderStart(Camera_t usedCam, textAnimsAtlas* allObjArray2D) {
     }
 }
 
-void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float depthOffset, Mesh_t model, bool lightUse) {
+void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float depthOffset, Mesh_t model, bool lightUse) {
     if (allAmt >= allPointsCount) return;
 
     worldTris* wTris;
-    Vect3f camPos = cCam.position;
+    Vector3f camPos = cCam.position;
     float renderRadiusSq = cCam.farPlane ? (cCam.farPlane * cCam.farPlane) : 0.0f;
 
     int triCount = model.triCount;
-    Vect3f* verticies = model.verts;
+    Vector3f* verticies = model.verts;
     int (*tris)[3] = model.tris;
     Edge* edges = model.edges;
     int* backFace = model.bfc;
     uint8_t* colorArray = model.color;
-    Vect3f* normal = model.normal;
+    Vector3f* normal = model.normal;
 
     bool rotObjs = false;
     float rotMat[3][3];
@@ -185,7 +187,7 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
         if (allAmt >= allPointsCount) return;
         wTris = &allPoints[allAmt];
 
-        Vect3f r;
+        Vector3f r;
         int base = i * 3;
         float sumX = 0.0f, sumY = 0.0f, sumZ = 0.0f;
         float sumX_ = 0.0f, sumY_ = 0.0f, sumZ_ = 0.0f;
@@ -214,8 +216,8 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
         int cy = sumY * one_third;
         int cz = sumZ * one_third;
 
-        Vect3f fVect = {cx - camPos.x, cy - camPos.y, cz - camPos.z};
-        Vect3f n = normal[i];
+        Vector3f fVect = {cx - camPos.x, cy - camPos.y, cz - camPos.z};
+        Vector3f n = normal[i];
         if (rotObjs) {
             rotateVertex(n, rotMat, &n);
             float len = sqrtf(n.x*n.x + n.y*n.y + n.z*n.z);
@@ -238,7 +240,7 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
             int cx_ = sumX_ * one_third;
             int cy_ = sumY_ * one_third;
             int cz_ = sumZ_ * one_third;
-            color = getBrightness((Vect3f){cx_, cy_, cz_}, lightSource, normal[i], color);
+            color = getBrightness((Vector3f){cx_, cy_, cz_}, lightSource, normal[i], color);
         }
         
         wTris->dimentions = D_3D;
@@ -256,11 +258,11 @@ void addObjToWorld3D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float d
     }
 }
 
-void addObjToWorld2D(Vect3f pos, Vect3f rot, Vect3f size, Camera_t cCam, float objDepthOffset, float sprtDepthOffset, int anim, int animFrame) {
+void addObjToWorld2D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float objDepthOffset, float sprtDepthOffset, int anim, int animFrame) {
     if (allAmt >= allPointsCount) return;
     
     worldTris* wTris = &allPoints[allAmt];
-    Vect3f camPos = cCam.position;
+    Vector3f camPos = cCam.position;
     float renderRadiusSq = cCam.farPlane ? (cCam.farPlane * cCam.farPlane) : 0.0f;
 
     float dx = pos.x - camPos.x;
@@ -299,7 +301,7 @@ void resetAllArrays() {
 }
 
 void precomputedFunctions(Camera_t* cam) { 
-    Vect3f cRot = cam->rotation;
+    Vector3f cRot = cam->rotation;
 
     computeCamMatrix(cam->camMatrix, cRot.x, cRot.y, cRot.z);
     cam->projDist = (sW_H * 0.5f) / tanf(cam->fov * 0.5f);

@@ -4,46 +4,44 @@ Triggers* triggers;
 
 #define CHUNK_SIZE 50
 #define TRI_EPSILON 0
+#define FIX_BORDER 40
+
+#define INT_MAX  2147483647
+#define INT_MIN -2147483648
 
 int triggerCount = 0;
 int chunkAmt = 0;
 
-int minX; int minY; int minZ;
-int maxX; int maxY; int maxZ;
+int minX_Stored = INT_MAX; int minY_Stored = INT_MAX; int minZ_Stored = INT_MAX;
+int maxX_Stored = INT_MIN; int maxY_Stored = INT_MIN; int maxZ_Stored = INT_MIN;
 
 static inline int getChunkPos(int dot) {
     return (dot / CHUNK_SIZE);
 }
 
-void resetCollisionSurface(Mesh_t mapArray) {
+void resetCollisionSurface() {
     collisionChunkSurfaces = NULL;
     chunkAmt = 0;
+}
 
-    Vect3f v0 = mapArray.verts[0];
-    Vect3f v1 = mapArray.verts[1];
-    Vect3f v2 = mapArray.verts[2];
+void fixSurfaces(Mesh_t mapArray) {
+    int minX = INT_MAX, minY = INT_MAX, minZ = INT_MAX;
+    int maxX = INT_MIN, maxY = INT_MIN, maxZ = INT_MIN;
 
-    minX = (int)floorf(fminf(v0.x, fminf(v1.x, v2.x)));
-    minY = (int)floorf(fminf(v0.y, fminf(v1.y, v2.y)));
-    minZ = (int)floorf(fminf(v0.z, fminf(v1.z, v2.z)));
-
-    maxX = (int)ceilf (fmaxf(v0.x, fmaxf(v1.x, v2.x)));
-    maxY = (int)ceilf (fmaxf(v0.y, fmaxf(v1.y, v2.y)));
-    maxZ = (int)ceilf (fmaxf(v0.z, fmaxf(v1.z, v2.z)));
-
-    for (int i=0; i < mapArray.triCount; i++){
+    for (int i = 0; i < mapArray.triCount; i++) {
         int* tris = mapArray.tris[i];
-        v0 = mapArray.verts[tris[0]];
-        v1 = mapArray.verts[tris[1]];
-        v2 = mapArray.verts[tris[2]];
 
-        int minX_ = (int)(fminf(v0.x, fminf(v1.x, v2.x)));
-        int minY_ = (int)(fminf(v0.y, fminf(v1.y, v2.y)));
-        int minZ_ = (int)(fminf(v0.z, fminf(v1.z, v2.z)));
+        Vector3f v0 = mapArray.verts[tris[0]];
+        Vector3f v1 = mapArray.verts[tris[1]];
+        Vector3f v2 = mapArray.verts[tris[2]];
 
-        int maxX_ = (int)(fmaxf(v0.x, fmaxf(v1.x, v2.x)));
-        int maxY_ = (int)(fmaxf(v0.y, fmaxf(v1.y, v2.y)));
-        int maxZ_ = (int)(fmaxf(v0.z, fmaxf(v1.z, v2.z)));
+        int minX_ = (int)floorf(fminf(v0.x, fminf(v1.x, v2.x)));
+        int minY_ = (int)floorf(fminf(v0.y, fminf(v1.y, v2.y)));
+        int minZ_ = (int)floorf(fminf(v0.z, fminf(v1.z, v2.z)));
+
+        int maxX_ = (int)ceilf(fmaxf(v0.x, fmaxf(v1.x, v2.x)));
+        int maxY_ = (int)ceilf(fmaxf(v0.y, fmaxf(v1.y, v2.y)));
+        int maxZ_ = (int)ceilf(fmaxf(v0.z, fmaxf(v1.z, v2.z)));
 
         if (minX_ < minX) minX = minX_;
         if (minY_ < minY) minY = minY_;
@@ -54,22 +52,36 @@ void resetCollisionSurface(Mesh_t mapArray) {
         if (maxZ_ > maxZ) maxZ = maxZ_;
     }
 
-    int minChunkX = getChunkPos((int)floorf(minX));
-    int minChunkY = getChunkPos((int)floorf(minY));
-    int minChunkZ = getChunkPos((int)floorf(minZ));
+    if (minX < minX_Stored) minX_Stored = minX;
+    if (minY < minY_Stored) minY_Stored = minY;
+    if (minZ < minZ_Stored) minZ_Stored = minZ;
 
-    int maxChunkX = getChunkPos((int)floorf(maxX));
-    int maxChunkY = getChunkPos((int)floorf(maxY));
-    int maxChunkZ = getChunkPos((int)floorf(maxZ));
+    if (maxX > maxX_Stored) maxX_Stored = maxX;
+    if (maxY > maxY_Stored) maxY_Stored = maxY;
+    if (maxZ > maxZ_Stored) maxZ_Stored = maxZ;
+}
 
+void collisionChunks() {
+    int minChunkX = getChunkPos(minX_Stored);
+    int minChunkY = getChunkPos(minY_Stored);
+    int minChunkZ = getChunkPos(minZ_Stored);
+
+    int maxChunkX = getChunkPos(maxX_Stored);
+    int maxChunkY = getChunkPos(maxY_Stored);
+    int maxChunkZ = getChunkPos(maxZ_Stored);
+
+    int checkSurface = 0;
     for (int cx = minChunkX; cx <= maxChunkX; cx++) {
         for (int cy = minChunkY; cy <= maxChunkY; cy++) {
             for (int cz = minChunkZ; cz <= maxChunkZ; cz++) {
+                CollisionChunks* coll = &collisionChunkSurfaces[checkSurface];
+                if (coll && (coll->pos.x == cx && coll->pos.y == cy && coll->pos.z == cz)) continue;
                 collisionChunkSurfaces = pd_realloc(collisionChunkSurfaces, sizeof(CollisionChunks) * (chunkAmt + 1));
-                collisionChunkSurfaces[chunkAmt].pos = (Vect3f){cx, cy, cz};
+                collisionChunkSurfaces[chunkAmt].pos = (Vector3f){cx, cy, cz};
                 collisionChunkSurfaces[chunkAmt].amt = 0;
                 collisionChunkSurfaces[chunkAmt].collisions = NULL;
 
+                checkSurface++;
                 chunkAmt++;
             }
         }
@@ -81,7 +93,7 @@ void resetTriggers() {
     triggerCount = 0;
 }
 
-void addTriggers(Vect3f pos, Vect3f size, int type, int id) {
+void addTriggers(Vector3f pos, Vector3f size, int type, int id) {
     triggers = pd_realloc(triggers, (triggerCount + 1) * sizeof(Triggers));
 
     Triggers* trig = &triggers[triggerCount++];
@@ -91,7 +103,7 @@ void addTriggers(Vect3f pos, Vect3f size, int type, int id) {
     trig->id = id;
 }
 
-void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, Vect3f normal, SurfaceType type) {
+void addCollisionSurface(Vector3f v0, Vector3f v1, Vector3f v2, Vector3f normal, SurfaceType type) {
     CollisionSurface surf;
 
     surf.v0 = v0;
@@ -159,7 +171,7 @@ void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, Vect3f normal, Surface
     }
 }
 
-Triggers cylinderInTrigger(Vect3f pos, float radius, float height) {
+Triggers cylinderInTrigger(Vector3f pos, float radius, float height) {
     float radius2 = radius * radius;
 
     for (int i = 0; i < triggerCount; i++) {
@@ -189,9 +201,14 @@ Triggers cylinderInTrigger(Vect3f pos, float radius, float height) {
     return (Triggers){0};
 }
 
-VectMf cylinderInTriangle(Vect3f pos, float radius, float height) {
-    if ((pos.x < minX || pos.x >= maxX) || (pos.y < minY || pos.y >= maxY) || (pos.z < minZ || pos.z >= maxZ)) { return (VectMf){0, 0, 0, -1, -1, -1}; }
+VectMf cylinderInTriangle(Vector3f pos, float radius, float height) {
+    int inside =
+        pos.x >= (minX_Stored - FIX_BORDER) && pos.x <= (maxX_Stored + FIX_BORDER) &&
+        pos.y >= (minY_Stored - FIX_BORDER) && pos.y <= (maxY_Stored + FIX_BORDER) &&
+        pos.z >= (minZ_Stored - FIX_BORDER) && pos.z <= (maxZ_Stored + FIX_BORDER);
 
+    if (!inside) return (VectMf){0, 0, 0, -1, -1, -1};
+    
     VectMf pushPlayer = {0};
     float effectiveRadius = radius + TRI_EPSILON;
     float radius2 = effectiveRadius * effectiveRadius;

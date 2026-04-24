@@ -28,13 +28,13 @@ typedef struct {
 } worldTris;
 
 typedef struct {
-    Vect3f* verts;
+    Vector3f* verts;
     int vertCount;
 
     int (*tris)[3];
     int triCount;
 
-    Vect3f* normal;
+    Vector3f* normal;
 
     Edge* edges;
     int edgeCount;
@@ -42,6 +42,12 @@ typedef struct {
     uint8_t* color;
     int* bfc;
 } Mesh_t;
+
+typedef struct {
+    Mesh_t map;
+    Vector3f pos;
+    Vector3f whd;
+} Mesh_Chunks;
 
 typedef struct {
     Mesh_t* meshModel;

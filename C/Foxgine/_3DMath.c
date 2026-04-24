@@ -15,7 +15,7 @@ void project2D(int point[2], Vertex verts, float fov, float nearPlane) {
     point[1] = (int)(verts.y * -scale + sy);
 }
 
-void rotateVertexInPlace(Vertex* v, Vect3f camPos, float camMatrix[3][3]) {
+void rotateVertexInPlace(Vertex* v, Vector3f camPos, float camMatrix[3][3]) {
     float x = (v->x - camPos.x); float y = (v->y - camPos.y); float z = (v->z - camPos.z);
 
     v->x = x * camMatrix[0][0] + y * camMatrix[1][0] + z * camMatrix[2][0];
@@ -23,7 +23,7 @@ void rotateVertexInPlace(Vertex* v, Vect3f camPos, float camMatrix[3][3]) {
     v->z = x * camMatrix[0][2] + y * camMatrix[1][2] + z * camMatrix[2][2];
 }
 
-void rotateVertex(Vect3f verts, float rotMat[3][3], Vect3f* vertsOut) {
+void rotateVertex(Vector3f verts, float rotMat[3][3], Vector3f* vertsOut) {
     vertsOut->x = verts.x * rotMat[0][0] + verts.y * rotMat[0][1] + verts.z * rotMat[0][2];
     vertsOut->y = verts.x * rotMat[1][0] + verts.y * rotMat[1][1] + verts.z * rotMat[1][2];
     vertsOut->z = verts.x * rotMat[2][0] + verts.y * rotMat[2][1] + verts.z * rotMat[2][2];
@@ -70,7 +70,7 @@ int windingOrder2D(const int p0[2], const int p1[2], const int p2[2]) {
     return cross > 0;
 }
 
-int windingOrder3D(const Vect3f* v0, const Vect3f* v1, const Vect3f* v2) {
+int windingOrder3D(const Vector3f* v0, const Vector3f* v1, const Vector3f* v2) {
     long cross = (long)v0->x * (long)v1->y - (long)v0->y * (long)v1->x + (long)v1->x * (long)v2->y - (long)v1->y * (long)v2->x + (long)v2->x * (long)v0->y - (long)v2->y * (long)v0->x;
     return cross > 0;
 }

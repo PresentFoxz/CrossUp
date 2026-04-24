@@ -15,9 +15,9 @@ typedef enum {
 } SurfaceType;
 
 typedef struct {
-    Vect3f v0, v1, v2;
-    Vect3f normal;
-    Vect3f center;
+    Vector3f v0, v1, v2;
+    Vector3f normal;
+    Vector3f center;
     SurfaceType type;
 
     int minX, minY, minZ;
@@ -31,7 +31,7 @@ typedef struct {
 
 typedef struct {
     CollisionSurface* collisions;
-    Vect3f pos;
+    Vector3f pos;
     int amt;
 } CollisionChunks;
 
@@ -41,10 +41,12 @@ typedef struct {
 } OOBArea;
 
 void resetTriggers();
-void resetCollisionSurface(Mesh_t mapArray);
-void addTriggers(Vect3f pos, Vect3f size, int type, int id);
-void addCollisionSurface(Vect3f v0, Vect3f v1, Vect3f v2, Vect3f normal, SurfaceType type);
-VectMf cylinderInTriangle(Vect3f pos, float radius, float height);
-Triggers cylinderInTrigger(Vect3f pos, float radius, float height);
+void resetCollisionSurface();
+void fixSurfaces(Mesh_t mapArray);
+void collisionChunks();
+void addTriggers(Vector3f pos, Vector3f size, int type, int id);
+void addCollisionSurface(Vector3f v0, Vector3f v1, Vector3f v2, Vector3f normal, SurfaceType type);
+VectMf cylinderInTriangle(Vector3f pos, float radius, float height);
+Triggers cylinderInTrigger(Vector3f pos, float radius, float height);
 
 #endif

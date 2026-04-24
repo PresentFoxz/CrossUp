@@ -13,23 +13,38 @@ typedef enum {
     OBJECT
 } ModelType;
 
-typedef struct {
-    float x, y;
-} Vect2f;
-typedef struct {
-    float x, y, z;
-} Vect3f;
+typedef enum {
+    SLICE_NONE,
+    SLICE_SECTOR,
+    SLICE_WALL,
+    SLICE_ENTITY,
+    SLICE_OBJECT
+} SliceType;
 
 typedef struct {
-    Vect3f min, max;
+    int x, z;
+} Vector2i;
+typedef struct {
+    int x, y, z;
+} Vector3i;
+
+typedef struct {
+    float x, z;
+} Vector2f;
+typedef struct {
+    float x, y, z;
+} Vector3f;
+
+typedef struct {
+    Vector3f min, max;
 } MinMax3f;
 
 typedef struct {
-    Vect2f min, max;
+    Vector2f min, max;
 } MinMax2f;
 
 typedef struct {
-    Vect3f pos;
+    Vector3f pos;
     int floor, ceiling, wall;
 } VectMf;
 typedef struct {
@@ -42,9 +57,9 @@ typedef struct {
 } clippedTri;
 
 typedef struct {
-    Vect3f position;
-    Vect3f rotation;
-    Vect3f fVect;
+    Vector3f position;
+    Vector3f rotation;
+    Vector3f fVect;
     float camMatrix[3][3];
     float fov, nearPlane, farPlane;
     float projDist;
@@ -67,10 +82,10 @@ typedef struct {
 typedef struct {
     Dimentions dimention;
 
-    Vect3f position;
-    Vect3f rotation;
-    Vect3f size;
-    Vect3f velocity;
+    Vector3f position;
+    Vector3f rotation;
+    Vector3f size;
+    Vector3f velocity;
     float surfRot;
     float radius, height;
     int type, grounded, groundTimer;
@@ -90,10 +105,10 @@ typedef struct {
 
     int timer;
     int type;
-    Vect3f position;
-    Vect3f rotation;
-    Vect3f size;
-    Vect3f velocity;
+    Vector3f position;
+    Vector3f rotation;
+    Vector3f size;
+    Vector3f velocity;
 } ObjStruct;
 
 typedef struct {
@@ -107,8 +122,8 @@ typedef struct {
 } Objects;
 
 typedef struct {
-    Vect3f pos;
-    Vect3f size;
+    Vector3f pos;
+    Vector3f size;
     int type, id;
 } Triggers;
 
@@ -119,7 +134,7 @@ typedef struct {
 } ChunkCount;
 
 typedef struct {
-    Vect3f pos;
+    Vector3f pos;
     uint8_t power;
     float falloff;
 } Light_t;
@@ -132,5 +147,44 @@ typedef struct {
     uint8_t A;
     uint8_t B;
 } InputBuffer;
+
+typedef struct {
+    Vector2i* points;
+    float y[2];
+    int pallete;
+    int count;
+    int normal;
+} SectorSlice;
+
+typedef struct {
+    Vector2i points[2];
+    float y[2];
+    int pallete;
+    int normal;
+} WallSlice;
+
+typedef struct {
+    Vector3f pos;
+    Vector3f rot;
+    Vector3f size;
+    int type;
+} ObjectSlice;
+
+typedef struct {
+    SectorSlice* sectors;
+    int sectorCount;
+
+    WallSlice* walls;
+    int wallCount;
+
+    ObjectSlice* objects;
+    int objectCount;
+
+    ObjectSlice* entities;
+    int entityCount;
+
+    Vector3f chunkPos;
+    Vector3f chunkWHD;
+} WorldChunks;
 
 #endif

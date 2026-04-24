@@ -100,7 +100,7 @@ static void rotatePlrTowards(EntStruct* p, float rot, float step){
 }
 
 static void runColl(EntStruct* p) {
-    Vect3f pCollisionPos = p->position;
+    Vector3f pCollisionPos = p->position;
     float stepX = p->velocity.x / substeps;
     float stepY = p->velocity.y / substeps;
     float stepZ = p->velocity.z / substeps;
@@ -135,6 +135,8 @@ static void runColl(EntStruct* p) {
             p->velocity.y = 0.0f;
             p->position.y += movePlr.pos.y;
             stepY = p->velocity.y / substeps;
+
+            pd->system->logToConsole("Collided with Floor");
         }
         if (movePlr.ceiling == 1) {
             if (p->velocity.y < 0.0f) p->velocity.y = -0.5f;
@@ -142,10 +144,14 @@ static void runColl(EntStruct* p) {
             p->coyote = 20;
             p->position.y += movePlr.pos.y;
             stepY = p->velocity.y / substeps;
+
+            pd->system->logToConsole("Collided with Cieling");
         }
         if (movePlr.wall == 1) {
             p->position.x += movePlr.pos.x;
             p->position.z += movePlr.pos.z;
+
+            pd->system->logToConsole("Collided with Wall");
         }
 
         hitTrig = cylinderInTrigger(pCollisionPos, pRadius, pHeight);
@@ -163,7 +169,7 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int type){
     float yawCam = c->rotation.y;
     float mainYaw = p->rotation.y;
     float secondaryStrength = 0.5f;
-    float jumpFrict = 0.54f;
+    float jumpFrict = 0.85f;
     
     if (type == 0) {
         if (inpBuf.A && (p->grounded == 1 || p->coyote <= 10)) {

@@ -10,7 +10,7 @@ static const int mapData[][2] = {
     {0, 0},
 };
 
-static const Vect3f mapSize[] = {
+static const Vector3f mapSize[] = {
     {4.0f, 4.0f, 4.0f},
 };
 

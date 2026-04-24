@@ -59,7 +59,7 @@ static inline float unitToMeter(float x) { return x / worldUnit; }
 static inline float meterToUnit(float x) { return x * worldUnit; }
 static inline int randomInt(int a, int b) { return a + rand() % (b - a + 1); }
 static inline float randomFloat(float a, float b) { return a + (b - a) * ((float)rand() / (float)RAND_MAX); }
-static inline float dot(Vect3f a, Vect3f b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+static inline float dot(Vector3f a, Vector3f b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 static inline int inside(int x, int y) { return x >= sX && x < sX + sW && y >= sY && y < sY + sH; }
 static inline float degToRad(float deg) { return deg * (M_PI / 180.0f); }
 static inline float fade(float t) { return t * t * t * (t * (t * 6 - 15) + 10); }

@@ -2,5 +2,5 @@ name=CrossUp
 author=PresentFox
 version=4.1
 bundleID=com.presentfox.crossup
-pdxversion=30005
-buildtime=830359067
+pdxversion=30003
+buildtime=830394133

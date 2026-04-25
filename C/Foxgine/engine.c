@@ -41,7 +41,7 @@ void addEnt(Vector3f pos, Vector3f rot, Vector3f size, float radius, float heigh
 }
 
 void generateMap(Mesh_t mapArray, Vector3f pos) {
-    fixSurfaces(mapArray);
+    fixSurfaces(mapArray, (Vector2f){pos.x, pos.z});
     collisionChunks();
 
     for (int i=0; i < mapArray.triCount; i++){

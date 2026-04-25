@@ -270,8 +270,8 @@ static void addMap() {
         Vector3f pos = sector->pos; Vector3f whd = sector->whd;
 
         Vector2f dist = {
-            (pos.x + whd.x * 0.5f) - s_cam.position.x,
-            (pos.z + whd.z * 0.5f) - s_cam.position.z
+            (pos.x + whd.x * 0.5f) - cam.position.x,
+            (pos.z + whd.z * 0.5f) - cam.position.z
         }; float distSq = dist.x*dist.x + dist.z*dist.z;
         Vector2f halfWD = {
             (whd.x * 0.5f),
@@ -319,20 +319,31 @@ static int titleRender() {
         if (map.triCount <= 0) continue;
 
         Vector3f pos = sector->pos; Vector3f whd = sector->whd;
+        // Vector3f p = cam.position;
+        // float minX = pos.x; float maxX = pos.x + whd.x;
+        // float minZ = pos.z; float maxZ = pos.z + whd.z;
+
+        // int inside = (p.x >= minX && p.x <= maxX && p.z >= minZ && p.z <= maxZ);
+        // if (!inside) {
+        //     Vertex v = { .x = pos.x + (whd.x * 0.5f), .y = pos.y + (whd.y * 0.5f), .z = pos.z + (whd.z * 0.5f) };
+        //     rotateVertexInPlace(&v, cam.position, cam.camMatrix);
+
+        //     if (v.z < cam.nearPlane || v.z >= cam.farPlane) continue;
+        // } else if (inside) {
+        //     pd->system->logToConsole("In Chunk!!");
+        // }
 
         Vector2f dist = {
-            (pos.x + whd.x * 0.5f) - scnCam.position.x,
-            (pos.z + whd.z * 0.5f) - scnCam.position.z
+            (pos.x + whd.x * 0.5f) - cam.position.x,
+            (pos.z + whd.z * 0.5f) - cam.position.z
         }; float distSq = dist.x*dist.x + dist.z*dist.z;
         Vector2f halfWD = {
             (whd.x * 0.5f),
             (whd.z * 0.5f)
-        }; float chunkRadius = sqrtf(halfWD.x*halfWD.x + halfWD.z*halfWD.z);
-        float maxDist = renderDist + chunkRadius;
+        }; float chunkRadius = halfWD.x*halfWD.x + halfWD.z*halfWD.z;
+        float maxDist = RENDER_DIST + chunkRadius;
 
-        float maxDistSq = maxDist * maxDist;
-
-        if (distSq >= maxDistSq) continue;
+        if (distSq >= maxDist) continue;
 
         Vector3f rot = {0.0f, 0.0, 0.0f};
         Vector3f size = {1.0f, 1.0f, 1.0f};

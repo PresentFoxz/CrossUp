@@ -42,7 +42,7 @@ typedef struct {
 
 void resetTriggers();
 void resetCollisionSurface();
-void fixSurfaces(Mesh_t mapArray);
+void fixSurfaces(Mesh_t mapArray, Vector2f pos);
 void collisionChunks();
 void addTriggers(Vector3f pos, Vector3f size, int type, int id);
 void addCollisionSurface(Vector3f v0, Vector3f v1, Vector3f v2, Vector3f normal, SurfaceType type);

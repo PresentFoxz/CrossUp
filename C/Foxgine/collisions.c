@@ -24,7 +24,7 @@ void resetCollisionSurface() {
     chunkAmt = 0;
 }
 
-void fixSurfaces(Mesh_t mapArray) {
+void fixSurfaces(Mesh_t mapArray, Vector2f pos) {
     int minX = INT_MAX, minY = INT_MAX, minZ = INT_MAX;
     int maxX = INT_MIN, maxY = INT_MIN, maxZ = INT_MIN;
 
@@ -34,6 +34,14 @@ void fixSurfaces(Mesh_t mapArray) {
         Vector3f v0 = mapArray.verts[tris[0]];
         Vector3f v1 = mapArray.verts[tris[1]];
         Vector3f v2 = mapArray.verts[tris[2]];
+
+        v0.x += pos.x;
+        v1.x += pos.x;
+        v2.x += pos.x;
+
+        v0.z += pos.z;
+        v1.z += pos.z;
+        v2.z += pos.z;
 
         int minX_ = (int)floorf(fminf(v0.x, fminf(v1.x, v2.x)));
         int minY_ = (int)floorf(fminf(v0.y, fminf(v1.y, v2.y)));

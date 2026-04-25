@@ -148,7 +148,6 @@ static int init() {
 
 static void addPlayer() {
     movePlayerObj(&player, &cam, camType);
-    pd->system->logToConsole("Player Position: [ %f | %f | %f ] | Min/Max Height: [ %f | %f ]", player.position.x, player.position.y, player.position.z, player.position.y, player.position.y + player.height);
     
     return;
     if (player.type < 0) return;
@@ -259,18 +258,28 @@ static void addEntities(int ents, int objs) {
     }
 }
 
+#define RENDER_DIST 150758.0f
 static void addMap() {
+    float renderDist = cam.farPlane * 0.8f;
     for (int i=0; i < sectorAmt; i++) {
         Mesh_Chunks* sector = &sectorMesh[i];
 
         Mesh_t map = sector->map;
         if (map.triCount <= 0) continue;
 
-        Vector3f pos = sector->pos;
-        Vector3f whd = sector->whd;
+        Vector3f pos = sector->pos; Vector3f whd = sector->whd;
 
-        // Vector3f dist = {(pos.x + whd.x) * 0.5f, (pos.y + whd.y) * 0.5f, (pos.z + whd.z) * 0.5f};
-        // pd->system->logToConsole("Dist: [ %f | %f | %f ]", dist.x - s_cam.position.x, dist.y - s_cam.position.y, dist.z - s_cam.position.z);
+        Vector2f dist = {
+            (pos.x + whd.x * 0.5f) - s_cam.position.x,
+            (pos.z + whd.z * 0.5f) - s_cam.position.z
+        }; float distSq = dist.x*dist.x + dist.z*dist.z;
+        Vector2f halfWD = {
+            (whd.x * 0.5f),
+            (whd.z * 0.5f)
+        }; float chunkRadius = halfWD.x*halfWD.x + halfWD.z*halfWD.z;
+        float maxDist = RENDER_DIST + chunkRadius;
+
+        if (distSq >= maxDist) continue;
 
         Vector3f rot = {0.0f, 0.0f, 0.0f};
         Vector3f size = {1.0f, 1.0f, 1.0f};
@@ -302,17 +311,28 @@ static int gameRender() {
 static int titleRender() {
     scnCam.rotation.y += -0.02f;
 
+    float renderDist = scnCam.farPlane * 0.8f;
     for (int i=0; i < sectorAmt; i++) {
         Mesh_Chunks* sector = &sectorMesh[i];
 
         Mesh_t map = sector->map;
         if (map.triCount <= 0) continue;
 
-        Vector3f pos = sector->pos;
-        Vector3f whd = sector->whd;
+        Vector3f pos = sector->pos; Vector3f whd = sector->whd;
 
-        // Vector3f dist = {(pos.x + whd.x) * 0.5f, (pos.y + whd.y) * 0.5f, (pos.z + whd.z) * 0.5f};
-        // pd->system->logToConsole("Dist: [ %f | %f | %f ]", dist.x - s_cam.position.x, dist.y - s_cam.position.y, dist.z - s_cam.position.z);
+        Vector2f dist = {
+            (pos.x + whd.x * 0.5f) - scnCam.position.x,
+            (pos.z + whd.z * 0.5f) - scnCam.position.z
+        }; float distSq = dist.x*dist.x + dist.z*dist.z;
+        Vector2f halfWD = {
+            (whd.x * 0.5f),
+            (whd.z * 0.5f)
+        }; float chunkRadius = sqrtf(halfWD.x*halfWD.x + halfWD.z*halfWD.z);
+        float maxDist = renderDist + chunkRadius;
+
+        float maxDistSq = maxDist * maxDist;
+
+        if (distSq >= maxDistSq) continue;
 
         Vector3f rot = {0.0f, 0.0, 0.0f};
         Vector3f size = {1.0f, 1.0f, 1.0f};

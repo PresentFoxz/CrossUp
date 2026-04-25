@@ -135,8 +135,6 @@ static void runColl(EntStruct* p) {
             p->velocity.y = 0.0f;
             p->position.y += movePlr.pos.y;
             stepY = p->velocity.y / substeps;
-
-            pd->system->logToConsole("Collided with Floor");
         }
         if (movePlr.ceiling == 1) {
             if (p->velocity.y < 0.0f) p->velocity.y = -0.5f;
@@ -144,14 +142,10 @@ static void runColl(EntStruct* p) {
             p->coyote = 20;
             p->position.y += movePlr.pos.y;
             stepY = p->velocity.y / substeps;
-
-            pd->system->logToConsole("Collided with Cieling");
         }
         if (movePlr.wall == 1) {
             p->position.x += movePlr.pos.x;
             p->position.z += movePlr.pos.z;
-
-            pd->system->logToConsole("Collided with Wall");
         }
 
         hitTrig = cylinderInTrigger(pCollisionPos, pRadius, pHeight);

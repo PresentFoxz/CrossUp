@@ -413,6 +413,18 @@ static void writeChunkData(Mesh_t* map, WorldChunks* chunk) {
         float x0 = slice->points[0].x; float z0 = slice->points[0].z;
         float x1 = slice->points[1].x; float z1 = slice->points[1].z;
 
+        if (x0 > x1) {
+            float tmpX = x0; float tmpZ = z0;
+            x0 = x1; z0 = z1;
+            x1 = tmpX; z1 = tmpZ;
+        }
+
+        if (z0 > z1) {
+            float tmpX = x0; float tmpZ = z0;
+            x0 = x1; z0 = z1;
+            x1 = tmpX; z1 = tmpZ;
+        }
+
         pushTri(map, x0, yMin, z0, x1, yMin, z1, x1, yMax, z1, wind, color);
         pushTri(map, x0, yMin, z0, x1, yMax, z1, x0, yMax, z0, wind, color);
     }

@@ -149,11 +149,17 @@ typedef struct {
 } InputBuffer;
 
 typedef struct {
+    float y;
+    Vector2i min, max;
+} WaterSlice;
+
+typedef struct {
     Vector2i* points;
     float y[2];
     int pallete;
     int count;
     int normal;
+    int type;
 } SectorSlice;
 
 typedef struct {
@@ -161,6 +167,7 @@ typedef struct {
     float y[2];
     int pallete;
     int normal;
+    int type;
 } WallSlice;
 
 typedef struct {

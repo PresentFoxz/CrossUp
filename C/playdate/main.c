@@ -17,8 +17,10 @@ InputBuffer inpBuf = {0};
 
 Mesh_t mapArray = {0};
 Mesh_Chunks* sectorMesh;
+WaterSlice* waterSlice;
 static int mapIndex  = 0;
 static int sectorAmt = 0;
+static int waterAmt  = 0;
 
 Mesh_t* objArray3D = NULL;
 VertAnims* entArray3D = NULL;
@@ -111,7 +113,7 @@ static int init() {
 
     cam = createCamera(0.0f, 3.0f, 0.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
     scnCam = createCamera(0.0f, 3.0f, 0.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
-    player = createEntity(41.2f, 10.0f, -10.0f, 0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f, 2.5f, 6.5f, 0.55f, 0.08f, 0, D_3D);
+    player = createEntity(33.8f, 10.0f, -7.8f, 0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f, 2.5f, 6.5f, 0.55f, 0.08f, 0, D_3D);
     addLightPoint((Vector3f){0.0f, 2.0f, -5.0f}, 50, 10.0f);
     // generateEnts();
 
@@ -131,7 +133,7 @@ static int init() {
     // }
 
     resetCollisionSurface();
-    sectorMesh = readMapData(mapLeaf[mapIndex], &sectorAmt);
+    sectorMesh = readMapData(mapLeaf[mapIndex], &sectorAmt, &waterSlice, &waterAmt);
     for (int i=0; i < sectorAmt; i++) { generateMap(sectorMesh[i].map, sectorMesh[i].pos); }
 
     ambientLight = mapAmbientLight[mapIndex];

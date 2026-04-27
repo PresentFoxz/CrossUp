@@ -6,9 +6,6 @@ Triggers* triggers;
 #define TRI_EPSILON 0
 #define FIX_BORDER 40
 
-#define INT_MAX  2147483647
-#define INT_MIN -2147483648
-
 int triggerCount = 0;
 int chunkAmt = 0;
 

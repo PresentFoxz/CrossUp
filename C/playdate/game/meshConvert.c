@@ -372,7 +372,7 @@ static void pushTri(Mesh_t* map, float x0,float y0,float z0, float x1,float y1,f
     map->triCount++;
 }
 
-static void writeChunkData(Mesh_t* map, WorldChunks* chunk) {
+static void writeChunkData(Mesh_t* map, WorldChunks* chunk, WaterSlice** water, int* waterAmt) {
     float x0, z0;
     float x1, z1;
     float x2, z2;
@@ -389,6 +389,29 @@ static void writeChunkData(Mesh_t* map, WorldChunks* chunk) {
         int color = slice->pallete;
         yMin = slice->y[0];
         yMax = slice->y[1];
+
+        if (slice->type == 1) {
+            int minX = INT_MAX; int minZ = INT_MAX;
+            int maxX = INT_MIN; int maxZ = INT_MIN;
+            for (int s = 0; s < count; s++) {
+                int x = slice->points[s].x; int z = slice->points[s].z;
+
+                if (minX > x) minX = x;
+                if (maxX < x) maxX = x;
+
+                if (minZ > z) minZ = z;
+                if (maxZ < z) maxZ = z;
+            }
+
+            *water = pd_realloc(*water, sizeof(WaterSlice) * (*waterAmt + 1));
+            (*water)[*waterAmt++] = (WaterSlice) {
+                .y = yMin,
+                .min = (Vector2i){minX, minZ},
+                .max = (Vector2i){maxX, maxZ}
+            };
+
+            color = 3;
+        }
 
         for (int s = 1; s < count - 1; s++) {
             x0 = slice->points[0].x; z0 = slice->points[0].z;
@@ -441,6 +464,7 @@ static void readChunkData(SDFile* fptr, WorldChunks* chunk) {
 
     int pVal = 0;
     int normal = 0;
+    int splitType = 0;
     int sVal = 0; int wVal = 0; int oVal = 0; int eVal = 0;
 
     SliceType type = SLICE_NONE;
@@ -477,6 +501,7 @@ static void readChunkData(SDFile* fptr, WorldChunks* chunk) {
                 sector->pallete = 0;
                 sector->normal = 0;
                 sector->count = 0;
+                sector->type = 0;
 
                 type = SLICE_SECTOR;
             }
@@ -495,6 +520,7 @@ static void readChunkData(SDFile* fptr, WorldChunks* chunk) {
                 wall->y[1] = 0;
                 wall->pallete = 0;
                 wall->normal = 0;
+                wall->type = 0;
 
                 type = SLICE_WALL;
             }
@@ -513,6 +539,10 @@ static void readChunkData(SDFile* fptr, WorldChunks* chunk) {
 
             if (type == SLICE_SECTOR) { sector->normal = normal; }
             else if (type == SLICE_WALL) { wall->normal = normal; }
+        } else if (strncmp(line, "t ", 2) == 0) {
+            sscanf(line + 2, "%d", &splitType);
+            
+            if (type == SLICE_SECTOR) { sector->type = splitType; }
         } else if (strncmp(line, "f ", 2) == 0) {
             sscanf(line + 2, "%d %d", &yMin, &yMax);
 
@@ -550,6 +580,7 @@ static void readChunkData(SDFile* fptr, WorldChunks* chunk) {
         pd->system->logToConsole("Memory - Pallete: %d", sector->pallete);
         pd->system->logToConsole("Memory - yMin: %d | yMax: %d", sector->y[0], sector->y[1]);
         pd->system->logToConsole("Memory - Nomral: %d", sector->normal);
+        if (sector->type == 1) pd->system->logToConsole("Water Sector!");
     }
 
     pd->system->logToConsole("\nWalls");
@@ -575,7 +606,7 @@ static int readChunkCount(SDFile* fptr) {
     return atoi(line);
 }
 
-Mesh_Chunks* readMapData(const char* filename, int* outSectorAmt) {
+Mesh_Chunks* readMapData(const char* filename, int* outSectorAmt, WaterSlice** water, int* waterAmt) {
     Mesh_Chunks* chunks = NULL;
     *outSectorAmt = 0;
 
@@ -590,6 +621,7 @@ Mesh_Chunks* readMapData(const char* filename, int* outSectorAmt) {
     chunks = pd_malloc(sizeof(Mesh_Chunks) * chunkAmt);
     memset(chunks, 0, sizeof(Mesh_Chunks) * chunkAmt);
 
+    *waterAmt = 0;
     for (int i=0; i < chunkAmt; i++) {
         memset(points, 0, sizeof(WorldChunks));
         readChunkData(fptr, points);
@@ -597,7 +629,7 @@ Mesh_Chunks* readMapData(const char* filename, int* outSectorAmt) {
         memset(&chunks[i].map, 0, sizeof(Mesh_t));
         chunks[i].pos = points->chunkPos;
         chunks[i].whd = points->chunkWHD;
-        writeChunkData(&chunks[i].map, points);
+        writeChunkData(&chunks[i].map, points, water, waterAmt);
     }
     
     *outSectorAmt = chunkAmt;

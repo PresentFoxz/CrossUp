@@ -20,6 +20,9 @@ extern PlaydateAPI* pd;
 
 #define MAX_TRIS 0
 
+#define INT_MAX  2147483647
+#define INT_MIN -2147483648
+
 #define FP_SHIFT 16
 #define FP_ONE   (1 << FP_SHIFT)
 #define TO_INT(x) ((x) >> FP_SHIFT)

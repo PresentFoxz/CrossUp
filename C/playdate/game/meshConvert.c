@@ -407,7 +407,8 @@ static void writeChunkData(Mesh_t* map, WorldChunks* chunk, WaterSlice** water, 
             (*water)[*waterAmt++] = (WaterSlice) {
                 .y = yMin,
                 .min = (Vector2i){minX, minZ},
-                .max = (Vector2i){maxX, maxZ}
+                .max = (Vector2i){maxX, maxZ},
+                .lines = NULL
             };
 
             color = 3;

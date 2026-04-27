@@ -149,8 +149,16 @@ typedef struct {
 } InputBuffer;
 
 typedef struct {
+    Vector3f p0, p1;
+    Vector3f rot;
+    int length
+    uint8_t color;
+} LineSlice;
+
+typedef struct {
     float y;
     Vector2i min, max;
+    LineSlice* lines;
 } WaterSlice;
 
 typedef struct {

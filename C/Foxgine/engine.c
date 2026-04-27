@@ -258,6 +258,10 @@ void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, f
     }
 }
 
+void addLineToWorld(Vector3f p0, Vector3f p1, Vector3f rot, int length, uint8_t color) {
+
+}
+
 void addObjToWorld2D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float objDepthOffset, float sprtDepthOffset, int anim, int animFrame) {
     if (allAmt >= allPointsCount) return;
     

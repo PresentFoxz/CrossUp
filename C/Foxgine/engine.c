@@ -258,8 +258,93 @@ void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, f
     }
 }
 
-void addLineToWorld(Vector3f p0, Vector3f p1, Vector3f rot, int length, uint8_t color) {
+void addWaves(WaterSlice* water, int index, int wAmt) {
+    Vector2i min = water[index].min;
+    Vector2i max = water[index].max;
 
+    float y = water[index].y;
+
+    int oldCount = water[index].lineCount;
+    int newCount = oldCount + wAmt;
+
+    water[index].lines = pd_realloc(water[index].lines, sizeof(LineSlice) * newCount);
+
+    for (int w = 0; w < wAmt; w++) {
+        int i = oldCount + w;
+
+        float x = randomFloat(min.x, max.x);
+        float z = randomFloat(min.z, max.z);
+        int length = 11;
+
+        water[index].lines[i] = (LineSlice) {
+            .point = (Vector3f){x, y, z}, .z = length,
+            .y = {y - 5, y + 5, 0.0f},
+            .yDir = 0, .yVel = 0.0f, .yRange = {0.2f, -0.2f},
+            .zVel = randomFloat(0.2f, 1.2f), .length = length, .color = randomInt(20, 31)
+        };
+
+        pd->system->logToConsole("X: %f | Z: %f | Index: %d", x, z, i);
+    }
+
+    water[index].lineCount = newCount;
+
+    pd->system->logToConsole("%d water waves made!", wAmt);
+}
+
+void addWaveToWorld3D(LineSlice* line, Vector2i boundMin, Vector2i boundMax, Camera_t cCam) {
+    Mesh_t waves = {0};
+
+    float depth = line->length;
+    Vector3f p0 = {0.0f, 0.0f, 0.0f};
+    Vector3f p1 = {0.0f, 0.0f, depth};
+
+    line->y[2] += line->yVel;
+    if (line->yDir == 0) {
+        if (line->y[2] < line->yRange[1]) { line->yVel += 0.2f; }
+        else { line->yVel += 0.05f; }
+        if (line->y[2] > line->yRange[0]) line->yDir = 1;
+    } else {
+        if (line->y[2] > line->yRange[0]) { line->yVel -= 0.2f;}
+        else { line->yVel -= 0.05f; }
+        if (line->y[2] < line->yRange[1]) line->yDir = 0;
+    }
+
+    if (line->yVel >= 0.8f) { line->yVel = 0.8f; }
+    else if (line->yVel <= -0.8f) { line->yVel = -0.8f; }
+
+    line->point.z += line->zVel;
+    if (line->point.z > boundMin.z + line->length) {
+        float x = randomFloat(boundMin.x, boundMax.x);
+        line->point = (Vector3f){x, line->point.y, boundMax.z + line->length};
+        line->y[2] = 0.0f;
+        line->yVel = 0.0f;
+        line->yDir = 0;
+        line->zVel = randomFloat(0.2f, 1.2f);
+        line->color = randomInt(20, 31);
+    }
+    
+    float y0 = line->y[0];
+    float y1 = line->y[1];
+    float y2 = line->y[2];
+
+    int color = line->color;
+
+    Vector3f l0 = {p0.x + (y2*0.5f), y0, p0.z};
+    Vector3f l1 = {p1.x, y0 + y2, p1.z};
+    Vector3f l2 = {p1.x, y1 + y2, p1.z};
+
+    Vector3f r0 = {p0.x, y0 + y2, p0.z + depth};
+    Vector3f r1 = {p1.x - (y2*0.5f), y0, p1.z + depth};
+    Vector3f r2 = {p0.x, y1 + y2, p0.z + depth};
+    
+    pushTri(&waves, l0.x, l0.y, l0.z, l2.x, l2.y, l2.z, l1.x, l1.y, l1.z, 0, color);
+    pushTri(&waves, r0.x, r0.y, r0.z, r1.x, r1.y, r1.z, r2.x, r2.y, r2.z, 0, color);
+
+    Vector3f pos  = line->point;
+    Vector3f rot  = {0.0f, 0.0f, 0.0f};
+    Vector3f size = {0.5f, 0.2f, 0.5f};
+
+    addObjToWorld3D(pos, rot, size, cCam, 50.0f, waves, false);
 }
 
 void addObjToWorld2D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float objDepthOffset, float sprtDepthOffset, int anim, int animFrame) {

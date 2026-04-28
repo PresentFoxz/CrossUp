@@ -276,7 +276,7 @@ void flyCameraInput(Camera_t* cam) {
     float rotY_delta = -0.03f;
     float rotX_delta = -0.1f;
     float crankDelta = pd->system->getCrankChange();
-    float flyVel  = 0.008f;
+    float flyVel  = 0.55f;
     float camRotXSPD = 0.08f;
     float camRotYSPD = 0.0f;
 

@@ -134,6 +134,7 @@ static int init() {
 
     resetCollisionSurface();
     sectorMesh = readMapData(mapLeaf[mapIndex], &sectorAmt, &waterSlice, &waterAmt);
+    for (int i=0; i < waterAmt; i++) { addWaves(waterSlice, i, randomInt(3, 5)); }
     for (int i=0; i < sectorAmt; i++) { generateMap(sectorMesh[i].map, sectorMesh[i].pos); }
 
     ambientLight = mapAmbientLight[mapIndex];
@@ -261,6 +262,7 @@ static void addEntities(int ents, int objs) {
 }
 
 #define RENDER_DIST 150758.0f
+#define RENDER_DIST_WATER 75379.0f
 static void addMap() {
     float renderDist = cam.farPlane * 0.8f;
     for (int i=0; i < sectorAmt; i++) {
@@ -292,6 +294,30 @@ static void addMap() {
             map, false
         );
     }
+
+    for (int w=0; w < waterAmt; w++) {
+        int amt = waterSlice[w].lineCount;
+        if (amt == 0) continue;
+    
+        Vector2i pos = waterSlice[w].min;
+        Vector2i whd = waterSlice[w].max;
+
+        Vector2f dist = {
+            (pos.x + whd.x * 0.5f) - cam.position.x,
+            (pos.z + whd.z * 0.5f) - cam.position.z
+        }; float distSq = dist.x*dist.x + dist.z*dist.z;
+        Vector2f halfWD = {
+            (whd.x * 0.5f),
+            (whd.z * 0.5f)
+        }; float chunkRadius = halfWD.x*halfWD.x + halfWD.z*halfWD.z;
+        float maxDist = RENDER_DIST_WATER + chunkRadius;
+
+        if (distSq >= maxDist) continue;
+
+        for (int i=0; i < waterSlice[w].lineCount; i++) {
+            addWaveToWorld3D(&waterSlice[w].lines[i], waterSlice[w].min, waterSlice[w].max, cam);
+        }
+    }
 }
 
 static int gameRender() {
@@ -302,6 +328,7 @@ static int gameRender() {
         flyCameraInput(&cam);
     }
     
+    // pd->system->logToConsole("Cam at: [ %f | %f | %f ]", cam.position.x, cam.position.y, cam.position.z);
     addMap();
     // addEntities(1, 0);
     addPlayer();
@@ -321,19 +348,6 @@ static int titleRender() {
         if (map.triCount <= 0) continue;
 
         Vector3f pos = sector->pos; Vector3f whd = sector->whd;
-        // Vector3f p = cam.position;
-        // float minX = pos.x; float maxX = pos.x + whd.x;
-        // float minZ = pos.z; float maxZ = pos.z + whd.z;
-
-        // int inside = (p.x >= minX && p.x <= maxX && p.z >= minZ && p.z <= maxZ);
-        // if (!inside) {
-        //     Vertex v = { .x = pos.x + (whd.x * 0.5f), .y = pos.y + (whd.y * 0.5f), .z = pos.z + (whd.z * 0.5f) };
-        //     rotateVertexInPlace(&v, cam.position, cam.camMatrix);
-
-        //     if (v.z < cam.nearPlane || v.z >= cam.farPlane) continue;
-        // } else if (inside) {
-        //     pd->system->logToConsole("In Chunk!!");
-        // }
 
         Vector2f dist = {
             (pos.x + whd.x * 0.5f) - cam.position.x,

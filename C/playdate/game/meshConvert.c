@@ -398,7 +398,7 @@ static void writeChunkData(Mesh_t* map, WorldChunks* chunk, WaterSlice** water, 
     }
 }
 
-static void readChunkData(SDFile* fptr, WorldChunks* chunk) {
+static void readChunkData(SDFile* fptr, WorldChunks* chunk, EntStruct* player, Objects* allEnts) {
     int xMin = 0, zMin = 0;
     int xMax = 0, zMax = 0;
     int x0 = 0, z0 = 0;
@@ -551,7 +551,7 @@ static int readChunkCount(SDFile* fptr) {
     return atoi(line);
 }
 
-Mesh_Chunks* readMapData(const char* filename, int* outSectorAmt, WaterSlice** water, int* waterAmt) {
+Mesh_Chunks* readMapData(const char* filename, int* outSectorAmt, WaterSlice** water, int* waterAmt, EntStruct* player, Objects* allEnts) {
     Mesh_Chunks* chunks = NULL;
     *outSectorAmt = 0;
 
@@ -569,7 +569,7 @@ Mesh_Chunks* readMapData(const char* filename, int* outSectorAmt, WaterSlice** w
     *waterAmt = 0;
     for (int i=0; i < chunkAmt; i++) {
         memset(points, 0, sizeof(WorldChunks));
-        readChunkData(fptr, points);
+        readChunkData(fptr, points, player, allEnts);
 
         memset(&chunks[i].map, 0, sizeof(Mesh_t));
         chunks[i].pos = points->chunkPos;

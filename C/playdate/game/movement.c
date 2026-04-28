@@ -152,13 +152,6 @@ static void runColl(EntStruct* p) {
     }
 }
 
-void stateMachine(EntStruct* p){
-    p->currentAnim = 0;
-
-    if (p->grounded == 1 && ((p->velocity.x > 0.02 || p->velocity.x < -0.02) || (p->velocity.z > 0.02 || p->velocity.z < -0.02))) { p->currentAnim = 1; }
-    else if (p->actions.plr.spin.actionUsed > 0) { p->currentAnim = 1; }
-}
-
 void movePlayerObj(EntStruct* p, Camera_t* c, int type){
     float yawCam = c->rotation.y;
     float mainYaw = p->rotation.y;
@@ -186,9 +179,9 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int type){
         
         if (dirX != 0.0f || dirZ != 0.0f) {
             float targetYaw = atan2f(dirX, dirZ);
-            rotateSurfTowards(p, targetYaw, 0.2f);
-                
-            if (p->grounded == 1 && p->groundTimer >= 3) rotatePlrTowards(p, targetYaw, 0.2f);
+
+            p->surfRot = targetYaw;
+            p->rotation.y = targetYaw;
 
             p->ifMove++;
         } else {
@@ -222,7 +215,6 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int type){
         }
 
         if (p->actions.plr.spin.timer > 0) p->actions.plr.spin.timer--;
-        stateMachine(p);
     } else {
         p->velocity.y -= p->fallFrict;
         if (p->velocity.y < -5.0f){ p->velocity.y = -5.0f; }
@@ -231,7 +223,6 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int type){
         moveEnt(p, p->rotation.y, p->surfRot, secondaryStrength, p->frict, 0.12f, 0.05f, 1);
 
         if (p->actions.plr.spin.timer > 0) p->actions.plr.spin.timer--;
-        stateMachine(p);
     }
 }
 
@@ -351,14 +342,13 @@ void moveEntObj(EntStruct* e, EntStruct* p) {
         float targetYaw = atan2f(inputX, inputZ);
 
         e->rotation.y = targetYaw;
-        e->surfRot = e->rotation.y;
+        e->surfRot = targetYaw;
         if (randomInt(0, 100) > 99 && (e->grounded == 1 || e->coyote <= 10)) { e->velocity.y = 0.94f; e->grounded = 0; }
 
         e->actions.ent.countdown = randomInt(30, 100);
     }
 
     moveEnt(e, e->rotation.y, e->surfRot, secondaryStrength, e->frict, 0.13f, 0.0f, 1);
-    // stateMachine(e);
 }
 
 static void objectTypes(ObjStruct obj){

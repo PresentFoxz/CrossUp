@@ -93,15 +93,6 @@ static int UnloadData() {
     pd->system->removeMenuItem(interlaceItem);
 }
 
-static void generateEnts() {
-    if (mapIndex == 0) {
-        addEnt((Vector3f){0.0f, 20.0f, -5.0f}, (Vector3f){0.0f, 0.0f, 0.0f}, (Vector3f){1.0f, 1.0f, 1.0f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, ENTITY, entArray3D, allEnts, D_3D);
-        addEnt((Vector3f){0.0f, 5.0f, 5.0f}, (Vector3f){0.0f, 0.0f, 0.0f}, (Vector3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray3D, allEnts, D_3D);
-    } else if (mapIndex == 1) {
-        addEnt((Vector3f){0.0f, 5.0f, 5.0f}, (Vector3f){0.0f, 0.0f, 0.0f}, (Vector3f){0.5f, 0.5f, 0.5f}, 0.5f, 1.8f, 0.56f, 0.08f, 0, OBJECT, entArray3D, allEnts, D_3D);
-    }
-}
-
 static int init() {
     allPointsCount = 0;
     entAmt = 0;
@@ -115,7 +106,6 @@ static int init() {
     scnCam = createCamera(0.0f, 3.0f, 0.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
     player = createEntity(33.8f, 10.0f, -7.8f, 0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f, 2.5f, 6.5f, 0.55f, 0.08f, 0, D_3D);
     addLightPoint((Vector3f){0.0f, 2.0f, -5.0f}, 50, 10.0f);
-    // generateEnts();
 
     // convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, mapSize[mapIndex]);
     
@@ -133,7 +123,7 @@ static int init() {
     // }
 
     resetCollisionSurface();
-    sectorMesh = readMapData(mapLeaf[mapIndex], &sectorAmt, &waterSlice, &waterAmt);
+    sectorMesh = readMapData(mapLeaf[mapIndex], &sectorAmt, &waterSlice, &waterAmt, &player, allEnts);
     for (int i=0; i < waterAmt; i++) { addWaves(waterSlice, i, randomInt(3, 5)); }
     for (int i=0; i < sectorAmt; i++) { generateMap(sectorMesh[i].map, sectorMesh[i].pos); }
 
@@ -151,6 +141,8 @@ static int init() {
 
 static void addPlayer() {
     movePlayerObj(&player, &cam, camType);
+
+    addBilboard(player.position, player.size, cam);
     
     return;
     if (player.type < 0) return;

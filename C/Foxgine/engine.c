@@ -19,27 +19,6 @@ void addLightPoint(Vector3f pos, uint8_t power, float falloff) {
     lightSource[lightAmt++] = (Light_t){ .pos = pos, .power = power, .falloff = falloff };
 }
 
-void addEnt(Vector3f pos, Vector3f rot, Vector3f size, float radius, float height, float frict, float fallFrict, int type, ModelType objType, VertAnims* entArray, Objects* allEnts, Dimentions dimention) {
-    if (entAmt < MAX_ENTITIES) {
-        allEnts[entAmt].type = objType;
-
-        switch(objType) {
-            case ENTITY:
-                allEnts[entAmt].data.ent = createEntity(pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, size.x, size.y, size.z, radius, height, frict, fallFrict, type, dimention);
-                break;
-            case OBJECT:
-                allEnts[entAmt].data.obj = createObject(pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, size.x, size.y, size.z, type, 1000, dimention);
-                break;
-        }
-        entAmt++;
-
-        if (objType != OBJECT) {
-            int newPoint = (allPointsCount + entArray[type].count);
-            if (newPoint > allPointsCount) { allPointsCount = (newPoint + 50); }
-        }
-    }
-}
-
 void generateMap(Mesh_t mapArray, Vector3f pos) {
     fixSurfaces(mapArray, (Vector2f){pos.x, pos.z});
     collisionChunks();
@@ -345,6 +324,34 @@ void addWaveToWorld3D(LineSlice* line, Vector2i boundMin, Vector2i boundMax, Cam
     Vector3f size = {0.5f, 0.2f, 0.5f};
 
     addObjToWorld3D(pos, rot, size, cCam, 50.0f, waves, false);
+}
+
+void addBilboard(Vector3f pos, Vector3f size, Camera_t cCam) {
+    Mesh_t bilboard = {0};
+
+    float yaw = cCam.rotation.y + M_PI;
+
+    float s = sinf(yaw);
+    float c = cosf(yaw);
+
+    float hw = size.x * 0.5f;
+    float hh = size.y * 0.5f;
+
+    Vector3f v0 = {-0.5f, 0, -0.5f};
+    Vector3f v1 = {0.5f, 0, -0.5f};
+    Vector3f v2 = {0.5f, 2, -0.5f};
+    Vector3f v3 = {-0.5f, 2, -0.5f};
+
+    pushTri(&bilboard, v0.x, v0.y, v0.z, v2.x, v2.y, v2.z, v1.x, v1.y, v1.z, 0, 15);
+    pushTri(&bilboard, v0.x, v0.y, v0.z, v3.x, v3.y, v3.z, v2.x, v2.y, v2.z, 0, 25);
+
+    float dx = cCam.position.x - pos.x;
+    float dz = cCam.position.z - pos.z;
+
+    float facingCamAngle = atan2f(dx, dz);
+    Vector3f rot = {0, facingCamAngle, 0};
+
+    addObjToWorld3D(pos, rot, size, cCam, 50.0f, bilboard, false);
 }
 
 void addObjToWorld2D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float objDepthOffset, float sprtDepthOffset, int anim, int animFrame) {

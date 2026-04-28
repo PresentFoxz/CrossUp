@@ -2,6 +2,7 @@
 #define MESHCONVERT_H
 #include "libRay.h"
 #include "../../Foxgine/_3DMath.h"
+#include "../../Foxgine/entities.h"
 
 void allocateMeshes(VertAnims* mesh, int maxAnims, const int* framesPerAnim);
 void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int invert, int outline, Vector3f size);
@@ -9,6 +10,6 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
 int allocAnimModel(VertAnims* mesh, int maxAnims, const int* framesPerAnim, const char** names[], int color, int invert, int outline, Vector3f size);
 void allocAnimAtlas(textAnimsAtlas* atlas, int maxAnims, const int* framesPerAnim, const char* names[]);
 
-Mesh_Chunks* readMapData(const char* filename, int* outSectorAmt, WaterSlice** water, int* waterAmt);
+Mesh_Chunks* readMapData(const char* filename, int* outSectorAmt, WaterSlice** water, int* waterAmt, EntStruct* player, Objects* allEnts);
 
 #endif

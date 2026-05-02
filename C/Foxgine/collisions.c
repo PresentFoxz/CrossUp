@@ -125,9 +125,9 @@ void addCollisionSurface(Vector3f v0, Vector3f v1, Vector3f v2, Vector3f normal,
 
     if (type == SURFACE_NONE) {
         float ny = surf.normal.y;
-        if (ny > 0.7f)      surf.type = SURFACE_FLOOR;
-        else if (ny < -0.7f) surf.type = SURFACE_CEILING;
-        else                 surf.type = SURFACE_WALL;
+        if (ny > 0.7f)       { surf.type = SURFACE_FLOOR;   pd->system->logToConsole("Floor"); }
+        else if (ny < -0.7f) { surf.type = SURFACE_CEILING; pd->system->logToConsole("Cieling"); }
+        else                 { surf.type = SURFACE_WALL;    pd->system->logToConsole("Wall"); }
     } else {
         surf.type = type;
     }
@@ -207,12 +207,12 @@ Triggers cylinderInTrigger(Vector3f pos, float radius, float height) {
 }
 
 VectMf cylinderInTriangle(Vector3f pos, float radius, float height) {
-    int inside =
-        pos.x >= (minX_Stored - FIX_BORDER) && pos.x <= (maxX_Stored + FIX_BORDER) &&
-        pos.y >= (minY_Stored - FIX_BORDER) && pos.y <= (maxY_Stored + FIX_BORDER) &&
-        pos.z >= (minZ_Stored - FIX_BORDER) && pos.z <= (maxZ_Stored + FIX_BORDER);
+    // int inside =
+    //     pos.x >= (minX_Stored - FIX_BORDER) && pos.x <= (maxX_Stored + FIX_BORDER) &&
+    //     pos.y >= (minY_Stored - FIX_BORDER) && pos.y <= (maxY_Stored + FIX_BORDER) &&
+    //     pos.z >= (minZ_Stored - FIX_BORDER) && pos.z <= (maxZ_Stored + FIX_BORDER);
 
-    if (!inside) return (VectMf){0, 0, 0, -1, -1, -1};
+    // if (!inside) return (VectMf){0, 0, 0, -1, -1, -1};
     
     VectMf pushPlayer = {0};
     float effectiveRadius = radius + TRI_EPSILON;
@@ -232,31 +232,18 @@ VectMf cylinderInTriangle(Vector3f pos, float radius, float height) {
         CollisionSurface* collSurface = collisionChunkSurfaces[c].collisions;
         for (int i = 0; i < collisionChunkSurfaces[c].amt; i++) {
             CollisionSurface *tri = &collSurface[i];
-
-            if (tri->normal.x == 0 && tri->normal.y == 0 && tri->normal.z == 0) continue;
-            if (pos.x + pad < tri->minX || pos.x - pad > tri->maxX || pos.y + pad < tri->minY || pos.y - pad > tri->maxY || pos.z + pad < tri->minZ || pos.z - pad > tri->maxZ) continue;
-
-            float dx = pos.x - tri->center.x;
-            float dz = pos.z - tri->center.z;
-
-            float bottomDist = dx * tri->normal.x + (pos.y - tri->center.y) * tri->normal.y + dz * tri->normal.z;
-            float topDist = dx * tri->normal.x + ((pos.y + height) - tri->center.y) * tri->normal.y + dz * tri->normal.z;
-
-            if (bottomDist > radius && topDist > radius) continue;
-            if (bottomDist < -radius && topDist < -radius) continue;
-
-            float t = 0.0f;
-            if (bottomDist * topDist < 0.0f) t = bottomDist / (bottomDist - topDist);
-            else t = (fabsf(bottomDist) < fabsf(topDist)) ? 0.0f : 1.0f;
             
+            bool hit = false;
             for (int h = 0; h < 2; h++) {
                 float py = (h == 0) ? pyBottom : pyTop;
-                float dist = (px - tri->center.x) * tri->normal.x + (py - tri->center.y) * tri->normal.y + (pz - tri->center.z) * tri->normal.z;
-                if (dist * dist > radius2) continue;
+                if (pos.x + pad < tri->minX || pos.x - pad > tri->maxX || py + pad < tri->minY || py - pad > tri->maxY || pos.z + pad < tri->minZ || pos.z - pad > tri->maxZ) continue;
+
+                float dot = (px - tri->center.x) * tri->normal.x + (py - tri->center.y) * tri->normal.y + (pz - tri->center.z) * tri->normal.z;
+                if (dot * dot > radius2) continue;
                 
-                float projX = px - dist * tri->normal.x;
-                float projY = py - dist * tri->normal.y;
-                float projZ = pz - dist * tri->normal.z;
+                float projX = px - dot * tri->normal.x;
+                float projY = py - dot * tri->normal.y;
+                float projZ = pz - dot * tri->normal.z;
                 
                 float v2x = projX - tri->v0.x;
                 float v2y = projY - tri->v0.y;
@@ -270,23 +257,34 @@ VectMf cylinderInTriangle(Vector3f pos, float radius, float height) {
 
                 if (u < -TRI_EPSILON || v < -TRI_EPSILON || (u + v > 1.0f + TRI_EPSILON)) continue;
 
-                float penetration = radius - (dist < 0 ? -dist : dist);
+                float penetration = radius - dot;
                 if (tri->type == OUT_OF_BOUNDS) return (VectMf){0, 0, 0, -1, -1, -1};
 
-                if (tri->type == SURFACE_FLOOR && h == 0 && dist < radius) {
-                    pushPlayer.pos.y += penetration;
-                    pushPlayer.floor = 1;
-                } 
-                else if (tri->type == SURFACE_CEILING && h == 1 && dist > -radius) {
-                    pushPlayer.pos.y -= penetration; // only top
-                    pushPlayer.ceiling = 1;
-                } 
-                else if (tri->type == SURFACE_WALL && fabsf(dist) < radius) {
+                if (h == 0) {
+                    if (tri->type == SURFACE_FLOOR && dot < radius) {
+                        pushPlayer.pos.y += penetration;
+                        pushPlayer.floor = 1;
+
+                        hit = true;
+                    } 
+                } else {
+                    if (tri->type == SURFACE_CEILING && dot < radius) {
+                        pushPlayer.pos.y -= penetration;
+                        pushPlayer.ceiling = 1;
+
+                        hit = true;
+                    } 
+                }
+                
+                if (tri->type == SURFACE_WALL && fabsf(dot) < radius) {
                     pushPlayer.pos.x += penetration * tri->normal.x;
                     pushPlayer.pos.z += penetration * tri->normal.z;
                     pushPlayer.wall = 1;
+
+                    hit = true;
                 }
             }
+            if (hit) return pushPlayer;
         }
 
         break;

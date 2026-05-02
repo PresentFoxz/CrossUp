@@ -88,10 +88,10 @@ typedef struct {
     Vector3f velocity;
     float surfRot;
     float radius, height;
+    float frict, fallFrict;
     int type, grounded, groundTimer;
     int coyote, ifMove;
     int countdown;
-    float frict, fallFrict;
     int frameCount, currentFrame;
     int currentAnim, lastAnim;
     union {

@@ -127,13 +127,17 @@ static void renderStart(Camera_t usedCam, textAnimsAtlas* allObjArray2D) {
                 drawTriangle(tri, src->color);
             }
         } else if (src->dimentions == D_2D) {
-            continue;
-
             project2D(&tri[0][0], src->verts[0], fov, nearPlane);
 
-            textAtlas* textAtlasMem = &allObjArray2D->animation[t]->animData;
-            drawImg(tri[0][0], tri[0][1], src->distMod, 0, 0, 30, 30, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h, usedCam.projDist); 
-            // drawImgNoScale(tri[0][0], tri[0][1], 0, 0, 30, 30, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h);
+            if (src->textID == -1) {
+                drawRect(tri[0][0], tri[0][1], 5, 5, 20);
+            } else {
+                continue;
+
+                textAtlas* textAtlasMem = &allObjArray2D->animation[t]->animData;
+                drawImg(tri[0][0], tri[0][1], src->distMod, 0, 0, 30, 30, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h, usedCam.projDist); 
+                // drawImgNoScale(tri[0][0], tri[0][1], 0, 0, 30, 30, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h);
+            }
         }
     }
 }
@@ -354,7 +358,7 @@ void addBilboard(Vector3f pos, Vector3f size, Camera_t cCam) {
     addObjToWorld3D(pos, rot, size, cCam, 50.0f, bilboard, false);
 }
 
-void addObjToWorld2D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float objDepthOffset, float sprtDepthOffset, int anim, int animFrame) {
+void addObjToWorld2D(Vector3f pos, Camera_t cCam, float objDepthOffset, float sprtDepthOffset, int anim, int animFrame) {
     if (allAmt >= allPointsCount) return;
     
     worldTris* wTris = &allPoints[allAmt];
@@ -368,10 +372,11 @@ void addObjToWorld2D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, f
 
     if (cCam.farPlane && dist > renderRadiusSq) return;
 
+    wTris->verts[0].x = pos.x; wTris->verts[0].y = pos.y; wTris->verts[0].z = pos.z;
+
     rotateVertexInPlace(&wTris->verts[0], camPos, cCam.camMatrix);
     if (wTris->verts[0].z < cCam.nearPlane || wTris->verts[0].z > cCam.farPlane) return;
 
-    wTris->verts[0].x = pos.x; wTris->verts[0].y = pos.y; wTris->verts[0].z = pos.z;
     wTris->dimentions = D_2D;
     wTris->distMod    = sqrtf(dist) + sprtDepthOffset;
     wTris->textID     = anim;

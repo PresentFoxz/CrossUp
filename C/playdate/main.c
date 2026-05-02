@@ -10,7 +10,6 @@
 PlaydateAPI* pd;
 
 Camera_t cam = {0};
-Camera_t scnCam = {0};
 Objects* allEnts = NULL;
 EntStruct player = {0};
 InputBuffer inpBuf = {0};
@@ -102,13 +101,11 @@ static int init() {
     // allObjArray2D = pd_malloc( sizeof(textAnimsAtlas) * (entDataCount2D + projDataCount2D));
     // allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
 
-    cam = createCamera(0.0f, 3.0f, 0.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
-    scnCam = createCamera(0.0f, 3.0f, 0.0f, 0.0f, 180.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
-    player = createEntity(33.8f, 10.0f, -7.8f, 0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f, 2.5f, 6.5f, 0.55f, 0.08f, 0, D_3D);
+    cam = createCamera(0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
+    player = createEntity(33.8f, 10.0f, -7.8f, 0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f, 2.5f, 4.0f, 0.55f, 0.08f, 0, D_3D);
     addLightPoint((Vector3f){0.0f, 2.0f, -5.0f}, 50, 10.0f);
 
     // convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, mapSize[mapIndex]);
-    
 
     // for (int i=0; i < projDataCount3D; i++) convertFileToMesh(projObjs3D[i], &objArray3D[i], projData3D[i][0], projData3D[i][1], 0, (Vector3f){1.0f, 1.0f, 1.0f});
     // for (int i=0; i < entDataCount3D; i++){
@@ -124,6 +121,8 @@ static int init() {
 
     resetCollisionSurface();
     sectorMesh = readMapData(mapLeaf[mapIndex], &sectorAmt, &waterSlice, &waterAmt, &player, allEnts);
+    allPointsCount += ((waterAmt * 2) + (entAmt * 2) + 2);
+
     for (int i=0; i < waterAmt; i++) { addWaves(waterSlice, i, randomInt(3, 5)); }
     for (int i=0; i < sectorAmt; i++) { generateMap(sectorMesh[i].map, sectorMesh[i].pos); }
 
@@ -141,113 +140,29 @@ static int init() {
 
 static void addPlayer() {
     movePlayerObj(&player, &cam, camType);
-
     addBilboard(player.position, player.size, cam);
-    
-    return;
-    if (player.type < 0) return;
-    if (player.dimention == D_3D && player.type >= entDataCount3D) return;
-    if (player.dimention == D_2D && player.type >= entDataCount2D) return;
-    
 
-    if (player.currentAnim != player.lastAnim) {
-        player.frameCount = 0;
-        player.currentFrame = 0;
-    }
-
-    if (player.dimention == D_3D) {
-        AnimFrames* anims = entArray3D[player.type].anims[player.currentAnim];
-        int newFrame = anims->frames;
-
-        if (player.currentFrame >= newFrame) {
-            player.frameCount = 0;
-            player.currentFrame = 0;
-        }
-
-        Mesh_t model = anims->meshModel[player.currentFrame];
-        if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) {
-            addObjToWorld3D(
-                player.position, player.rotation, player.size,
-                cam, 20.0f,
-                model, false
-            );
-        }
-    } else if (player.dimention == D_2D) {
-        textAtlasFrames* anims = allObjArray2D[player.type].animation[player.currentAnim];
-        int newFrame = anims->frames;
-
-        if (player.currentFrame >= newFrame) {
-            player.frameCount = 0;
-            player.currentFrame = 0;
-        }
-
-        addObjToWorld2D(
-            player.position, player.rotation, player.size,
-            cam, 10.0f, 10.0f,
-            player.currentAnim, player.currentFrame
-        );
-    }
-
-    player.lastAnim = player.currentAnim;
-    player.frameCount++;
-    if (player.frameCount > 4) {
-        player.currentFrame++;
-        player.frameCount = 0;
-    }
+    // Vector3f nPos = {player.position.x, player.position.y + player.height, player.position.z};
+    // addObjToWorld2D(nPos, cam, 10, 10, -1, 0);
+    // addObjToWorld2D(player.position, cam, 0, 10, -1, 0);
 }
 
 static void addEntities(int ents, int objs) {
-    return;
-
     for (int z = 0; z < entAmt; z++) {
         switch (allEnts[z].type) {
             case ENTITY:
                 if (!ents) break;
+
                 EntStruct *ent_ = &allEnts[z].data.ent;
-
-                moveEntObj(ent_, &player);
-                if (ent_->type < 0 || ent_->type >= entDataCount3D) break;
-
-                // if (ent_->currentAnim != ent_->lastAnim) {
-                //     ent_->frameCount = 0;
-                //     ent_->currentFrame = 0;
-                // }
-            
-                AnimFrames* anims = entArray3D[ent_->type].anims[ent_->currentAnim];
-                // int newFrame = anims->frames;
-            
-                // if (ent_->currentFrame >= newFrame) {
-                //     ent_->frameCount = 0;
-                //     ent_->currentFrame = 0;
-                // }
-            
-                Mesh_t model = anims->meshModel[ent_->currentFrame];
-                if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) {
-                    addObjToWorld3D(
-                        ent_->position, ent_->rotation, ent_->size,
-                        cam, 10.0f,
-                        model, false
-                    );
-                }
-
-                // ent_->lastAnim = ent_->currentAnim;
-                // ent_->frameCount++;
-                // if (ent_->frameCount > 4) {
-                //     ent_->currentFrame++;
-                //     ent_->frameCount = 0;
-                // }
+                addBilboard(ent_->position, ent_->size, cam);
 
                 break;
             case OBJECT:
                 if (!objs) break;
+
                 ObjStruct *obj_ = &allEnts[z].data.obj;
-                // objectTypes(obj_);
-                
-                addObjToWorld3D(
-                    obj_->position, obj_->rotation, obj_->size,
-                    cam, 0.0f,
-                    objArray3D[obj_->type], false
-                );
+                addBilboard(obj_->position, obj_->size, cam);
+
                 break;
         }
     }
@@ -312,7 +227,7 @@ static void addMap() {
     }
 }
 
-static int gameRender() {
+static void gameRender() {
     if (camType == 0) {
         handleCameraInput(&cam);
         updateCamera(&cam, &player, 12.0f);
@@ -326,45 +241,11 @@ static int gameRender() {
     addPlayer();
 
     shootRender(cam, allObjArray2D);
-    return 0;
 }
 
-static int titleRender() {
-    scnCam.rotation.y += -0.02f;
-
-    float renderDist = scnCam.farPlane * 0.8f;
-    for (int i=0; i < sectorAmt; i++) {
-        Mesh_Chunks* sector = &sectorMesh[i];
-
-        Mesh_t map = sector->map;
-        if (map.triCount <= 0) continue;
-
-        Vector3f pos = sector->pos; Vector3f whd = sector->whd;
-
-        Vector2f dist = {
-            (pos.x + whd.x * 0.5f) - cam.position.x,
-            (pos.z + whd.z * 0.5f) - cam.position.z
-        }; float distSq = dist.x*dist.x + dist.z*dist.z;
-        Vector2f halfWD = {
-            (whd.x * 0.5f),
-            (whd.z * 0.5f)
-        }; float chunkRadius = halfWD.x*halfWD.x + halfWD.z*halfWD.z;
-        float maxDist = RENDER_DIST + chunkRadius;
-
-        if (distSq >= maxDist) continue;
-
-        Vector3f rot = {0.0f, 0.0, 0.0f};
-        Vector3f size = {1.0f, 1.0f, 1.0f};
-
-        addObjToWorld3D(
-            pos, rot, size,
-            scnCam, 0.0f,
-            map, false
-        );
-    }
-
-    shootRender(scnCam, NULL);
-    return 0;
+static void titleRender() {
+    cam.rotation.y += -0.02f;
+    addMap();
 }
 
 static int update(void* userdata) {
@@ -381,7 +262,7 @@ static int update(void* userdata) {
 
     if (gameScreen == 0) {
         pd->graphics->setDrawMode(kDrawModeFillWhite);
-        precomputedFunctions(&scnCam);
+        precomputedFunctions(&cam);
         titleRender();
         blitToScreen();
 

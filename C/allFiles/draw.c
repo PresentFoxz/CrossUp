@@ -120,6 +120,16 @@ void changeLacing(int l0, int l1, bool bType) {
     frameInterlacing = bType;
 }
 
+void drawRect(int x, int y, int w, int h, uint8_t color) {
+    if (x > sW) return;
+    if (y > sH) return;
+    if (x + w < 0) return;
+    if (y + h < 0) return;
+    for (int y_=0; y_ < h; y_++) {
+        hline(x, (x + w), y + y_, color);
+    }
+}
+
 void drawTriangle(int tris[3][2], uint8_t shade) {
     int* v0 = tris[0];
     int* v1 = tris[1];

@@ -26,6 +26,16 @@ static void hline(int x1, int x2, int y, uint8_t color) {
     _scnDirty[y] = true;
 }
 
+static void drawPixel(int x, int y, uint8_t color) {
+    if (x < 0 || x >= sW) return;
+    if (y < 0 || y >= sH) return;
+
+    uint8_t brightness = color + ((interlaceFrame & 1) << 3);
+
+    _screen[y * sW + x] = brightness;
+    _scnDirty[y] = true;
+}
+
 INLINE uint32_t __SUBTEST_DUAL(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1) {
     #if TARGET_PLAYDATE
             uint32_t result0, result1;
@@ -181,7 +191,75 @@ void drawTriangle(int tris[3][2], uint8_t shade) {
     }
 }
 
-void drawImg(int screenX, int screenY, float depth, int tX, int tY, int tW, int tH, int8_t* texture, int texW, int texH, float projDist) {
+void drawTexturedTriangle(int tris[3][2], Vector2f uvs[3], float z0, float z1, float z2, int tx, int ty, int tw, int th, int* texture, int texW, int texH) {
+    float x0 = tris[0][0], y0 = tris[0][1];
+    float x1 = tris[1][0], y1 = tris[1][1];
+    float x2 = tris[2][0], y2 = tris[2][1];
+
+    float u0 = uvs[0].x; float v0 = uvs[0].z;
+    float u1 = uvs[1].x; float v1 = uvs[1].z;
+    float u2 = uvs[2].x; float v2 = uvs[2].z;
+
+    float minX = x0, maxX = x0;
+    float minY = y0, maxY = y0;
+
+    if (x1 < minX) minX = x1;
+    if (x2 < minX) minX = x2;
+    if (x1 > maxX) maxX = x1;
+    if (x2 > maxX) maxX = x2;
+
+    if (y1 < minY) minY = y1;
+    if (y2 < minY) minY = y2;
+    if (y1 > maxY) maxY = y1;
+    if (y2 > maxY) maxY = y2;
+
+    if (minX < 0) minX = 0;
+    if (minY < 0) minY = 0;
+    if (maxX >= sW) maxX = sW - 1;
+    if (maxY >= sH) maxY = sH - 1;
+    
+    float denom = (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0);
+    if (denom == 0.0f) return;
+
+    float invDenom = 1.0f / denom;
+
+    float iz0 = 1.0f / z0;
+    float iz1 = 1.0f / z1;
+    float iz2 = 1.0f / z2;
+
+    float u0p = u0 * iz0, v0p = v0 * iz0;
+    float u1p = u1 * iz1, v1p = v1 * iz1;
+    float u2p = u2 * iz2, v2p = v2 * iz2;
+
+    for (int y = minY; y <= maxY; y++) {
+        for (int x = minX; x <= maxX; x++) {
+            float w0 = ((y1 - y2)*(x - x2) + (x2 - x1)*(y - y2)) * invDenom;
+            float w1 = ((y2 - y0)*(x - x2) + (x0 - x2)*(y - y2)) * invDenom;
+            float w2 = 1.0f - w0 - w1;
+
+            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+                float invZ = w0 * iz0 + w1 * iz1 + w2 * iz2;
+                if (invZ == 0.0f) continue;
+
+                float u = (w0 * u0p + w1 * u1p + w2 * u2p) / invZ;
+                float v = (w0 * v0p + w1 * v1p + w2 * v2p) / invZ;
+
+                if (u < 0.0f) u = 0.0f;
+                if (u > 1.0f) u = 1.0f;
+                if (v < 0.0f) v = 0.0f;
+                if (v > 1.0f) v = 1.0f;
+
+                int TexX = (int)(u * (texW - 1));
+                int TexY = (int)(v * (texH - 1));
+
+                int shade = texture[TexY * texW + TexX];
+                if (shade != -1) drawPixel(x, y, (uint8_t)(shade));
+            }
+        }
+    }
+}
+
+void drawImg(int screenX, int screenY, float depth, int tX, int tY, int tW, int tH, int* texture, int texW, int texH, float projDist) {
     int minX = tW < tX ? tW : tX;
     int maxX = tW > tX ? tW : tX;
     int minY = tH < tY ? tH : tY;
@@ -217,7 +295,7 @@ void drawImg(int screenX, int screenY, float depth, int tX, int tY, int tW, int 
             int texX = minX + (i * spriteW) / scaledW;
             int texY = minY + (j * spriteH) / scaledH;
 
-            int8_t color = texture[texY * texW + texX];
+            int color = texture[texY * texW + texX];
             if (color != -1) {
                 uint8_t brightness = color + ((interlaceFrame & 1) << 3);
                 _screen[gy * sW + gx] = brightness;
@@ -226,7 +304,7 @@ void drawImg(int screenX, int screenY, float depth, int tX, int tY, int tW, int 
     }
 }
 
-void drawImgNoScale(int x, int y, int tX, int tY, int tW, int tH, int8_t* texture, int texW, int texH) {
+void drawImgNoScale(int x, int y, int tX, int tY, int tW, int tH, int* texture, int texW, int texH) {
     if (tX >= texW || tY >= texH) return;
     if (tW >= texW) tW = texW - 1;
     if (tH >= texH) tH = texH - 1;

@@ -75,6 +75,19 @@ int windingOrder3D(const Vector3f* v0, const Vector3f* v1, const Vector3f* v2) {
     return cross > 0;
 }
 
+static Vertex lerpVertex(Vertex a, Vertex b, float t) {
+    Vertex r;
+
+    r.x = a.x + t * (b.x - a.x);
+    r.y = a.y + t * (b.y - a.y);
+    r.z = a.z + t * (b.z - a.z);
+
+    r.u = a.u + t * (b.u - a.u);
+    r.v = a.v + t * (b.v - a.v);
+
+    return r;
+}
+
 int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, float nearPlane, float farPlane) {
     int inScreen[3], outScreen[3];
     int inAmt = 0, outAmt = 0;
@@ -108,13 +121,8 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
         float t0 = (plane0 - verts[out0].z) / (verts[in0].z - verts[out0].z);
         float t1 = (plane1 - verts[out1].z) / (verts[in0].z - verts[out1].z);
 
-        cross0.x = verts[out0].x + t0 * (verts[in0].x - verts[out0].x);
-        cross0.y = verts[out0].y + t0 * (verts[in0].y - verts[out0].y);
-        cross0.z = verts[out0].z + t0 * (verts[in0].z - verts[out0].z);
-
-        cross1.x = verts[out1].x + t1 * (verts[in0].x - verts[out1].x);
-        cross1.y = verts[out1].y + t1 * (verts[in0].y - verts[out1].y);
-        cross1.z = verts[out1].z + t1 * (verts[in0].z - verts[out1].z);
+        cross0 = lerpVertex(verts[out0], verts[in0], t0);
+        cross1 = lerpVertex(verts[out1], verts[in0], t1);
 
         *outTri1 = (clippedTri){verts[in0], cross0, cross1};
         return 1;
@@ -126,13 +134,8 @@ int TriangleClipping(Vertex verts[3], clippedTri* outTri1, clippedTri* outTri2, 
         float t0 = (plane - verts[out0].z) / (verts[in0].z - verts[out0].z);
         float t1 = (plane - verts[out0].z) / (verts[in1].z - verts[out0].z);
 
-        cross0.x = verts[out0].x + t0 * (verts[in0].x - verts[out0].x);
-        cross0.y = verts[out0].y + t0 * (verts[in0].y - verts[out0].y);
-        cross0.z = verts[out0].z + t0 * (verts[in0].z - verts[out0].z);
-
-        cross1.x = verts[out0].x + t1 * (verts[in1].x - verts[out0].x);
-        cross1.y = verts[out0].y + t1 * (verts[in1].y - verts[out0].y);
-        cross1.z = verts[out0].z + t1 * (verts[in1].z - verts[out0].z);
+        cross0 = lerpVertex(verts[out0], verts[in0], t0);
+        cross1 = lerpVertex(verts[out0], verts[in1], t1);
 
         *outTri1 = (clippedTri){verts[in0], verts[in1], cross0};
         *outTri2 = (clippedTri){verts[in1], cross1, cross0};
@@ -168,7 +171,7 @@ Vector3f computeNormal(Vector3f tri[3]) {
 }
 
 const static int maxColor = 31;
-void pushTri(Mesh_t* map, float x0,float y0,float z0, float x1,float y1,float z1, float x2,float y2,float z2, int wind, int color) {
+void pushTri(Mesh_t* map, float x0,float y0,float z0, float x1,float y1,float z1, float x2,float y2,float z2, Vector2f uvs[3], int wind, int color) {
     int base = map->vertCount;
 
     if (wind == -1) {
@@ -197,7 +200,9 @@ void pushTri(Mesh_t* map, float x0,float y0,float z0, float x1,float y1,float z1
     map->bfc = pd_realloc(map->bfc, sizeof(int) * (triIndex + 1));
     map->color = pd_realloc(map->color, sizeof(uint8_t) * (triIndex + 1));
     map->normal = pd_realloc(map->normal, sizeof(Vector3f) * (triIndex + 1));
+    map->uvs = pd_realloc(map->uvs, sizeof(Vector2f[3]) * (triIndex + 1));
 
+    for (int i = 0; i < 3; i++) { map->uvs[triIndex][i] = uvs[i]; }
     if (wind == 0) { map->bfc[triIndex] = 0; } else { map->bfc[triIndex] = 1; }
     map->normal[triIndex] = computeNormal(face);
     

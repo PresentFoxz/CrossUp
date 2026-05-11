@@ -214,7 +214,7 @@ void convertFileToAtlas(const char* filename, textAtlas* atlasOut) {
     int pixelIndex = 0;
     int width = 0;
     int height = 0;
-    int8_t* pixels = NULL;
+    int* pixels = NULL;
 
     char line[4096];
     while (pd_fgets(line, sizeof(line), fptr)) {
@@ -224,7 +224,7 @@ void convertFileToAtlas(const char* filename, textAtlas* atlasOut) {
             height = atoi(line + 7);
         } else if (strncmp(line, "color ", 6) == 0) {
             if (width > 0 && height > 0 && pixels == NULL) {
-                pixels = pd_malloc(width * height * sizeof(int8_t));
+                pixels = pd_malloc(width * height * sizeof(int));
                 if (!pixels) {
                     pd->system->logToConsole("Memory allocation failed\n");
                     fclose(fptr);
@@ -235,7 +235,7 @@ void convertFileToAtlas(const char* filename, textAtlas* atlasOut) {
             char* token = strtok(line + 6, " \t\n");
             while (token) {
                 if (pixelIndex < width * height) {
-                    pixels[pixelIndex++] = (int8_t)atoi(token);
+                    pixels[pixelIndex++] = (int)atoi(token);
                 }
                 token = strtok(NULL, " \t\n");
             }
@@ -309,6 +309,7 @@ static void writeChunkData(Mesh_t* map, WorldChunks* chunk, WaterSlice** water, 
     float x1, z1;
     float x2, z2;
     int yMin, yMax;
+    Vector2f uvs[3];
 
     initMesh(map);
     for (int sCount=0; sCount < chunk->sectorCount; sCount++) {
@@ -363,8 +364,8 @@ static void writeChunkData(Mesh_t* map, WorldChunks* chunk, WaterSlice** water, 
             x1 = slice->points[s].x; z1 = slice->points[s].z;
             x2 = slice->points[s + 1].x; z2 = slice->points[s + 1].z;
 
-            pushTri(map, x0,yMax,z0, x1,yMax,z1, x2,yMax,z2, wind, color);
-            if (yMin != yMax) pushTri(map, x0,yMin,z0, x2,yMin,z2, x1,yMin,z1, wind, color);
+            pushTri(map, x0,yMax,z0, x1,yMax,z1, x2,yMax,z2, uvs, wind, color);
+            if (yMin != yMax) pushTri(map, x0,yMin,z0, x2,yMin,z2, x1,yMin,z1, uvs, wind, color);
         }
     }
 
@@ -393,8 +394,8 @@ static void writeChunkData(Mesh_t* map, WorldChunks* chunk, WaterSlice** water, 
             x1 = tmpX; z1 = tmpZ;
         }
 
-        pushTri(map, x0, yMin, z0, x1, yMin, z1, x1, yMax, z1, wind, color);
-        pushTri(map, x0, yMin, z0, x1, yMax, z1, x0, yMax, z0, wind, color);
+        pushTri(map, x0, yMin, z0, x1, yMin, z1, x1, yMax, z1, uvs, wind, color);
+        pushTri(map, x0, yMin, z0, x1, yMax, z1, x0, yMax, z0, uvs, wind, color);
     }
 }
 

@@ -120,11 +120,25 @@ static void renderStart(Camera_t usedCam, textAnimsAtlas* allObjArray2D) {
 
             Vertex tmp[3];
             for (int c = 0; c < output; c++) {
-                tmp[0].x = clipped[c].t1.x; tmp[0].y = clipped[c].t1.y; tmp[0].z = clipped[c].t1.z;
-                tmp[1].x = clipped[c].t2.x; tmp[1].y = clipped[c].t2.y; tmp[1].z = clipped[c].t2.z;
-                tmp[2].x = clipped[c].t3.x; tmp[2].y = clipped[c].t3.y; tmp[2].z = clipped[c].t3.z;
+                tmp[0].x = clipped[c].t1.x; tmp[0].y = clipped[c].t1.y; tmp[0].z = clipped[c].t1.z; tmp[0].u = clipped[c].t1.u;  tmp[0].v = clipped[c].t1.v;
+                tmp[1].x = clipped[c].t2.x; tmp[1].y = clipped[c].t2.y; tmp[1].z = clipped[c].t2.z; tmp[1].u = clipped[c].t2.u;  tmp[1].v = clipped[c].t2.v;
+                tmp[2].x = clipped[c].t3.x; tmp[2].y = clipped[c].t3.y; tmp[2].z = clipped[c].t3.z; tmp[2].u = clipped[c].t3.u;  tmp[2].v = clipped[c].t3.v;
                 for (int z = 0; z < 3; z++) { project2D(&tri[z][0], tmp[z], fov, nearPlane); }
-                drawTriangle(tri, src->color);
+
+                if (src->uvUse) {
+                    if (src->textID == -1) {
+                        drawTriangle(tri, src->color);
+                    } else {
+                        textAtlas* textAtlasMem = &allObjArray2D->animation[t]->animData;
+
+                        Vector2f uvs[3];
+                        uvs[0].x = tmp[0].u; uvs[0].z = tmp[0].v;
+                        uvs[1].x = tmp[1].u; uvs[1].z = tmp[1].v;
+                        uvs[2].x = tmp[2].u; uvs[2].z = tmp[2].v;
+
+                        drawTexturedTriangle(tri, uvs, tmp[0].z, tmp[1].z, tmp[2].z, 0, 0, 60, 60, textAtlasMem->pixels, textAtlasMem->w, textAtlasMem->h);
+                    }
+                } else { drawTriangle(tri, src->color); }
             }
         } else if (src->dimentions == D_2D) {
             project2D(&tri[0][0], src->verts[0], fov, nearPlane);
@@ -142,7 +156,7 @@ static void renderStart(Camera_t usedCam, textAnimsAtlas* allObjArray2D) {
     }
 }
 
-void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float depthOffset, Mesh_t model, bool lightUse) {
+void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float depthOffset, Mesh_t model, bool lightUse, int textureID) {
     if (allAmt >= allPointsCount) return;
 
     worldTris* wTris;
@@ -229,11 +243,14 @@ void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, f
         wTris->dimentions = D_3D;
         wTris->color      = color;
         wTris->distMod    = 0.0f;
-        wTris->textID     = -1;
+        wTris->textID     = textureID;
+        wTris->uvUse = (textureID != -1) ? true : false;
 
-        wTris->verts[0].u = 0.0f; wTris->verts[0].v = 0.0f;
-        wTris->verts[1].u = 1.0f; wTris->verts[1].v = 0.0f;
-        wTris->verts[2].u = 0.0f; wTris->verts[2].v = 1.0f;
+        if (wTris->uvUse) {
+            wTris->verts[0].u = model.uvs[i][0].x; wTris->verts[0].v = model.uvs[i][0].z;
+            wTris->verts[1].u = model.uvs[i][1].x; wTris->verts[1].v = model.uvs[i][1].z;
+            wTris->verts[2].u = model.uvs[i][2].x; wTris->verts[2].v = model.uvs[i][2].z;
+        }
 
         triOrder[allAmt].idx = allAmt;
         triOrder[allAmt].dist = dist - depthOffset;
@@ -319,18 +336,20 @@ void addWaveToWorld3D(LineSlice* line, Vector2i boundMin, Vector2i boundMax, Cam
     Vector3f r0 = {p0.x, y0 + y2, p0.z + depth};
     Vector3f r1 = {p1.x - (y2*0.5f), y0, p1.z + depth};
     Vector3f r2 = {p0.x, y1 + y2, p0.z + depth};
+
+    Vector2f uvs[3];
     
-    pushTri(&waves, l0.x, l0.y, l0.z, l2.x, l2.y, l2.z, l1.x, l1.y, l1.z, 0, color);
-    pushTri(&waves, r0.x, r0.y, r0.z, r1.x, r1.y, r1.z, r2.x, r2.y, r2.z, 0, color);
+    pushTri(&waves, l0.x, l0.y, l0.z, l2.x, l2.y, l2.z, l1.x, l1.y, l1.z, uvs, 0, color);
+    pushTri(&waves, r0.x, r0.y, r0.z, r1.x, r1.y, r1.z, r2.x, r2.y, r2.z, uvs, 0, color);
 
     Vector3f pos  = line->point;
     Vector3f rot  = {0.0f, 0.0f, 0.0f};
     Vector3f size = {0.5f, 0.2f, 0.5f};
 
-    addObjToWorld3D(pos, rot, size, cCam, 50.0f, waves, false);
+    addObjToWorld3D(pos, rot, size, cCam, 50.0f, waves, false, -1);
 }
 
-void addBilboard(Vector3f pos, Vector3f size, Camera_t cCam) {
+void addBilboard(Vector3f pos, Vector3f size, Camera_t cCam, int textureID) {
     Mesh_t bilboard = {0};
 
     float yaw = cCam.rotation.y + M_PI;
@@ -346,8 +365,20 @@ void addBilboard(Vector3f pos, Vector3f size, Camera_t cCam) {
     Vector3f v2 = {0.5f, 2, -0.5f};
     Vector3f v3 = {-0.5f, 2, -0.5f};
 
-    pushTri(&bilboard, v0.x, v0.y, v0.z, v2.x, v2.y, v2.z, v1.x, v1.y, v1.z, 0, 15);
-    pushTri(&bilboard, v0.x, v0.y, v0.z, v3.x, v3.y, v3.z, v2.x, v2.y, v2.z, 0, 25);
+    Vector2f uvTri1[3] = {
+        {1.0f, 1.0f},
+        {0.0f, 0.0f},
+        {0.0f, 1.0f}
+    };
+
+    Vector2f uvTri2[3] = {
+        {1.0f, 1.0f},
+        {1.0f, 0.0f},
+        {0.0f, 0.0f}
+    };
+
+    pushTri(&bilboard, v0.x, v0.y, v0.z, v2.x, v2.y, v2.z, v1.x, v1.y, v1.z, uvTri1, 0, 15);
+    pushTri(&bilboard, v0.x, v0.y, v0.z, v3.x, v3.y, v3.z, v2.x, v2.y, v2.z, uvTri2, 0, 25);
 
     float dx = cCam.position.x - pos.x;
     float dz = cCam.position.z - pos.z;
@@ -355,7 +386,7 @@ void addBilboard(Vector3f pos, Vector3f size, Camera_t cCam) {
     float facingCamAngle = atan2f(dx, dz);
     Vector3f rot = {0, facingCamAngle, 0};
 
-    addObjToWorld3D(pos, rot, size, cCam, 50.0f, bilboard, false);
+    addObjToWorld3D(pos, rot, size, cCam, 50.0f, bilboard, false, textureID);
 }
 
 void addObjToWorld2D(Vector3f pos, Camera_t cCam, float objDepthOffset, float sprtDepthOffset, int anim, int animFrame) {

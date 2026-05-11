@@ -23,7 +23,7 @@ static int waterAmt  = 0;
 
 Mesh_t* objArray3D = NULL;
 VertAnims* entArray3D = NULL;
-textAnimsAtlas* allObjArray2D = NULL;
+textAnimsAtlas* allTexArray2D = NULL;
 textAtlas* worldTextAtlasMem = NULL;
 
 static int gameScreen = 0;
@@ -58,6 +58,22 @@ void onInterlaceCycle(void* userdata) {
     pd->system->logToConsole("Interlace: %s", names[value]);
 }
 
+PDMenuItem* camStyle;
+void onCameraSwap(void* userdata) {
+    const char* names[] = { "Cam-Lock", "Cam-Float" };
+    int value = pd->system->getMenuItemValue(camStyle);
+    value++;
+    if (value > 1) value = 0;
+
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "Interlace: %s", names[value]);
+    pd->system->setMenuItemValue(camStyle, value);
+    pd->system->setMenuItemTitle(camStyle, buffer);
+    camType = value;
+
+    pd->system->logToConsole("Interlace: %s", names[camType]);
+}
+
 #ifdef _WINDLL
 __declspec(dllexport)
 #endif
@@ -71,6 +87,7 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg)
 		pd->system->setUpdateCallback(update, NULL);
 
         interlaceItem = pd->system->addMenuItem("Interlace: OFF", onInterlaceCycle, NULL);
+        camStyle = pd->system->addMenuItem("Cam-Lock", onCameraSwap, NULL);
 	}
 
 	if ( event == kEventTerminate )
@@ -86,7 +103,7 @@ static int UnloadData() {
     pd_free(allEnts);
     pd_free(objArray3D);
     pd_free(entArray3D);
-    pd_free(allObjArray2D);
+    pd_free(allTexArray2D);
     // pd_free(worldTextAtlasMem);
 
     pd->system->removeMenuItem(interlaceItem);
@@ -98,8 +115,8 @@ static int init() {
 
     // objArray3D = pd_malloc( sizeof(Mesh_t) * projDataCount3D);
     // entArray3D = pd_malloc(sizeof(VertAnims) * entDataCount3D);
-    // allObjArray2D = pd_malloc( sizeof(textAnimsAtlas) * (entDataCount2D + projDataCount2D));
-    // allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
+    allTexArray2D = pd_malloc( sizeof(textAnimsAtlas) * (entDataCount2D + projDataCount2D));
+    allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
 
     cam = createCamera(0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
     player = createEntity(33.8f, 10.0f, -7.8f, 0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f, 2.5f, 4.0f, 0.55f, 0.08f, 0, D_3D);
@@ -114,10 +131,9 @@ static int init() {
     //     entArray3D[i].count = highest;
     // }
 
-    // for (int i=0; i < entDataCount2D; i++) {
-    //     allocAnimAtlas(&allObjArray2D[i], entData2D[i].totalAnims, entData2D[i].animFrameCounts, entData2D[i].animNames);
-    //     allPointsCount++;
-    // }
+    for (int i=0; i < entDataCount2D; i++) {
+        allocAnimAtlas(&allTexArray2D[i], entData2D[i].totalAnims, entData2D[i].animFrameCounts, entData2D[i].animNames);
+    }
 
     resetCollisionSurface();
     sectorMesh = readMapData(mapLeaf[mapIndex], &sectorAmt, &waterSlice, &waterAmt, &player, allEnts);
@@ -140,7 +156,7 @@ static int init() {
 
 static void addPlayer() {
     movePlayerObj(&player, &cam, camType);
-    addBilboard(player.position, player.size, cam);
+    addBilboard(player.position, player.size, cam, 0);
 
     // Vector3f nPos = {player.position.x, player.position.y + player.height, player.position.z};
     // addObjToWorld2D(nPos, cam, 10, 10, -1, 0);
@@ -154,14 +170,14 @@ static void addEntities(int ents, int objs) {
                 if (!ents) break;
 
                 EntStruct *ent_ = &allEnts[z].data.ent;
-                addBilboard(ent_->position, ent_->size, cam);
+                addBilboard(ent_->position, ent_->size, cam, -1);
 
                 break;
             case OBJECT:
                 if (!objs) break;
 
                 ObjStruct *obj_ = &allEnts[z].data.obj;
-                addBilboard(obj_->position, obj_->size, cam);
+                addBilboard(obj_->position, obj_->size, cam, -1);
 
                 break;
         }
@@ -198,7 +214,7 @@ static void addMap() {
         addObjToWorld3D(
             pos, rot, size,
             cam, 0.0f,
-            map, false
+            map, false, -1
         );
     }
 
@@ -240,7 +256,7 @@ static void gameRender() {
     // addEntities(1, 0);
     addPlayer();
 
-    shootRender(cam, allObjArray2D);
+    shootRender(cam, allTexArray2D);
 }
 
 static void titleRender() {

@@ -22,6 +22,7 @@ typedef struct {
     
     Vertex verts[3];
     EdgeDraw edges[3];
+    bool uvUse;
     float distMod;
     uint8_t color;
     int textID;
@@ -33,6 +34,8 @@ typedef struct {
 
     int (*tris)[3];
     int triCount;
+
+    Vector2f (*uvs)[3];
 
     Vector3f* normal;
 
@@ -60,7 +63,7 @@ typedef struct {
 } VertAnims;
 
 typedef struct {
-    int8_t* pixels;
+    int* pixels;
     int w;
     int h;
 } textAtlas;

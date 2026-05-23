@@ -3,7 +3,6 @@
 
 worldTris* allPoints;
 TriangleOrdering* triOrder;
-int* triFacing;
 int chnkAmt = 0;
 
 const float one_third = 0.3333333f;
@@ -156,10 +155,14 @@ static void renderStart(Camera_t usedCam, textAnimsAtlas* allObjArray2D) {
     }
 }
 
-void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float depthOffset, Mesh_t model, bool lightUse, int textureID) {
+void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float depthOffset, Mesh_t model, bool lightUse, int textureID, bool outline) {
     if (allAmt >= allPointsCount) return;
 
+    bool triFacing = false;
+    float inflate = 0.4f;
+
     worldTris* wTris;
+    worldTris* oTris;
     Vector3f camPos = cCam.position;
     float renderRadiusSq = cCam.farPlane ? (cCam.farPlane * cCam.farPlane) : 0.0f;
 
@@ -173,8 +176,10 @@ void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, f
 
     bool rotObjs = false;
     float rotMat[3][3];
+    float scaleRotMat[3][3];
     if (rot.x != 0.0f || rot.y != 0.0f || rot.z != 0.0f || size.x != 1.0f || size.y != 1.0f || size.z != 1.0f) {
         computeRotScaleMatrix(rotMat, rot.x, rot.y, rot.z, size.x, size.y, size.z);
+        if (outline) computeRotScaleMatrix(scaleRotMat, rot.x, rot.y, rot.z, size.x + inflate, size.y + inflate, size.z + inflate);
         rotObjs = true;
     }
 
@@ -182,7 +187,9 @@ void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, f
     int triIndex = allAmt;
     for (int i = 0; i < triCount; i++) {
         if (allAmt >= allPointsCount) return;
+
         wTris = &allPoints[allAmt];
+        oTris = &allPoints[allAmt];
 
         Vector3f r;
         int base = i * 3;
@@ -221,40 +228,75 @@ void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, f
             if (len > 0.0f) { n.x /= len; n.y /= len; n.z /= len; }
         }
         float dot = n.x*fVect.x + n.y*fVect.y + n.z*fVect.z;
-        triFacing[triIndex] = (dot < 0.0f);
+        triFacing = (dot < 0.0f) ? true : false;
         if (wTris->verts[0].z < cCam.nearPlane && wTris->verts[1].z < cCam.nearPlane && wTris->verts[2].z < cCam.nearPlane) continue;
-        if (backFace[i] && !triFacing[triIndex]) { triIndex++; continue; }
+        if (backFace[i] && !triFacing) {
+            if (outline) {
+                sumX = 0.0f, sumY = 0.0f, sumZ = 0.0f;
+                for (int j = 0; j < 3; j++) {
+                    int idx = tris[i][j];
+                    if (rotObjs) { rotateVertex(verticies[idx], scaleRotMat, &r); } else { r = verticies[idx]; }
 
-        int dx = cx - camPos.x;
-        int dy = cy - camPos.y;
-        int dz = cz - camPos.z;
-        int dist = (dx*dx + dy*dy + dz*dz);
+                    oTris->verts[j].x = r.x + pos.x;
+                    oTris->verts[j].y = r.y + pos.y;
+                    oTris->verts[j].z = r.z + pos.z;
 
-        if (cCam.farPlane && dist > renderRadiusSq) continue;
+                    sumX += oTris->verts[j].x;
+                    sumY += oTris->verts[j].y;
+                    sumZ += oTris->verts[j].z;
 
-        uint8_t color = colorArray[i];
-        if (lightUse && lightAmt > 0) {
-            int cx_ = sumX_ * one_third;
-            int cy_ = sumY_ * one_third;
-            int cz_ = sumZ_ * one_third;
-            color = getBrightness((Vector3f){cx_, cy_, cz_}, lightSource, normal[i], color);
+                    rotateVertexInPlace(&oTris->verts[j], camPos, cCam.camMatrix);
+                }
+
+                int ox = (sumX * one_third) - camPos.x;
+                int oy = (sumY * one_third) - camPos.y;
+                int oz = (sumZ * one_third) - camPos.z;
+                int oDist = (ox*ox + oy*oy + oz*oz);
+
+                oTris->dimentions = D_3D;
+                oTris->color      = 0;
+                oTris->distMod    = 0.0f;
+                oTris->textID     = -1;
+                oTris->uvUse      = false;
+
+                triOrder[allAmt].idx = allAmt;
+                triOrder[allAmt].dist = oDist - depthOffset;
+                allAmt++;
+            }
+
+            continue;
+        } else {
+            int dx = cx - camPos.x;
+            int dy = cy - camPos.y;
+            int dz = cz - camPos.z;
+            int dist = (dx*dx + dy*dy + dz*dz);
+            if (cCam.farPlane && dist > renderRadiusSq) continue;
+
+            uint8_t color = colorArray[i];
+            if (lightUse && lightAmt > 0) {
+                int cx_ = sumX_ * one_third;
+                int cy_ = sumY_ * one_third;
+                int cz_ = sumZ_ * one_third;
+                color = getBrightness((Vector3f){cx_, cy_, cz_}, lightSource, normal[i], color);
+            }
+            
+            wTris->dimentions = D_3D;
+            wTris->color      = color;
+            wTris->distMod    = 0.0f;
+            wTris->textID     = textureID;
+            wTris->uvUse      = (textureID != -1) ? true : false;
+
+            if (wTris->uvUse) {
+                wTris->verts[0].u = model.uvs[i][0].x; wTris->verts[0].v = model.uvs[i][0].z;
+                wTris->verts[1].u = model.uvs[i][1].x; wTris->verts[1].v = model.uvs[i][1].z;
+                wTris->verts[2].u = model.uvs[i][2].x; wTris->verts[2].v = model.uvs[i][2].z;
+            }
+
+            triOrder[allAmt].idx = allAmt;
+            triOrder[allAmt].dist = dist - depthOffset;
+
+            allAmt++;
         }
-        
-        wTris->dimentions = D_3D;
-        wTris->color      = color;
-        wTris->distMod    = 0.0f;
-        wTris->textID     = textureID;
-        wTris->uvUse = (textureID != -1) ? true : false;
-
-        if (wTris->uvUse) {
-            wTris->verts[0].u = model.uvs[i][0].x; wTris->verts[0].v = model.uvs[i][0].z;
-            wTris->verts[1].u = model.uvs[i][1].x; wTris->verts[1].v = model.uvs[i][1].z;
-            wTris->verts[2].u = model.uvs[i][2].x; wTris->verts[2].v = model.uvs[i][2].z;
-        }
-
-        triOrder[allAmt].idx = allAmt;
-        triOrder[allAmt].dist = dist - depthOffset;
-        allAmt++;
     }
 }
 
@@ -346,7 +388,7 @@ void addWaveToWorld3D(LineSlice* line, Vector2i boundMin, Vector2i boundMax, Cam
     Vector3f rot  = {0.0f, 0.0f, 0.0f};
     Vector3f size = {0.5f, 0.2f, 0.5f};
 
-    addObjToWorld3D(pos, rot, size, cCam, 50.0f, waves, false, -1);
+    addObjToWorld3D(pos, rot, size, cCam, 50.0f, waves, false, -1, false);
 }
 
 void addBilboard(Vector3f pos, Vector3f size, Camera_t cCam, int textureID) {
@@ -386,7 +428,7 @@ void addBilboard(Vector3f pos, Vector3f size, Camera_t cCam, int textureID) {
     float facingCamAngle = atan2f(dx, dz);
     Vector3f rot = {0, facingCamAngle, 0};
 
-    addObjToWorld3D(pos, rot, size, cCam, 50.0f, bilboard, false, textureID);
+    addObjToWorld3D(pos, rot, size, cCam, 50.0f, bilboard, false, textureID, false);
 }
 
 void addObjToWorld2D(Vector3f pos, Camera_t cCam, float objDepthOffset, float sprtDepthOffset, int anim, int animFrame) {
@@ -428,7 +470,6 @@ void shootRender(Camera_t cam, textAnimsAtlas* allObjArray2D) {
 void resetAllArrays() {
     allPoints = pd_malloc(sizeof(worldTris) * allPointsCount);
     triOrder = pd_malloc(sizeof(TriangleOrdering) * allPointsCount);
-    triFacing = pd_malloc(sizeof(int) * allPointsCount);
     allAmt = 0;
 }
 

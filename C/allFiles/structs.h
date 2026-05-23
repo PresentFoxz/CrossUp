@@ -4,7 +4,7 @@
 typedef unsigned int uint;
 
 typedef enum {
-    D_2D, D_3D
+    D_2D, D_3D, D_BB
 } Dimentions;
 
 typedef enum {

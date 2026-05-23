@@ -9,7 +9,7 @@ void generateTriggers(Vector3f pos, Vector3f size);
 void addWaves(WaterSlice* water, int index, int wAmt);
 void addBilboard(Vector3f pos, Vector3f size, Camera_t cCam, int textureID);
 void addWaveToWorld3D(LineSlice* line, Vector2i boundMin, Vector2i boundMax, Camera_t cCam);
-void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float depthOffset, Mesh_t model, bool lightUse, int textureID);
+void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float depthOffset, Mesh_t model, bool lightUse, int textureID, bool outline);
 void addObjToWorld2D(Vector3f pos, Camera_t cCam, float objDepthOffset, float sprtDepthOffset, int anim, int animFrame);
 
 void shootRender(Camera_t cam, textAnimsAtlas* allObjArray2D);

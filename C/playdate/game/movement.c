@@ -17,6 +17,13 @@ static void wrapPositionFloat(float* x, float* y, float* z) {
     *z = wrapFloat(*z, MINCOLZ, MAXCOLZ);
 }
 
+static void stateMachine(EntStruct* p){
+    p->currentAnim = 0;
+
+    if (p->grounded == 1 && ((p->velocity.x > 0.08 || p->velocity.x < -0.08) || (p->velocity.z > 0.08 || p->velocity.z < -0.08))) { p->currentAnim = 1; }
+    else if (p->actions.plr.spin.actionUsed > 0) { p->currentAnim = 1; }
+}
+
 static void moveEnt(EntStruct* p, float mainYaw, float secondaryYaw, float secondaryStrength, float frict, float groundDelta, float airDelta, int type) {
     float forwardX = sinf(mainYaw);
     float forwardZ = cosf(mainYaw);
@@ -224,6 +231,8 @@ void movePlayerObj(EntStruct* p, Camera_t* c, int type){
 
         if (p->actions.plr.spin.timer > 0) p->actions.plr.spin.timer--;
     }
+
+    stateMachine(p);
 }
 
 void updateCamera(Camera_t* cam, EntStruct* ent, float radius) {

@@ -113,8 +113,8 @@ static int init() {
     allPointsCount = 0;
     entAmt = 0;
 
-    // objArray3D = pd_malloc( sizeof(Mesh_t) * projDataCount3D);
-    // entArray3D = pd_malloc(sizeof(VertAnims) * entDataCount3D);
+    objArray3D = pd_malloc( sizeof(Mesh_t) * projDataCount3D);
+    entArray3D = pd_malloc(sizeof(VertAnims) * entDataCount3D);
     allTexArray2D = pd_malloc( sizeof(textAnimsAtlas) * (entDataCount2D + projDataCount2D));
     allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
 
@@ -124,12 +124,12 @@ static int init() {
 
     // convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, mapSize[mapIndex]);
 
-    // for (int i=0; i < projDataCount3D; i++) convertFileToMesh(projObjs3D[i], &objArray3D[i], projData3D[i][0], projData3D[i][1], 0, (Vector3f){1.0f, 1.0f, 1.0f});
-    // for (int i=0; i < entDataCount3D; i++){
-    //     int highest = allocAnimModel(&entArray3D[i], entData3D[i].totalAnims, entData3D[i].animFrameCounts, entData3D[i].animNames, 0, 1, 1, (Vector3f){1.0f, 1.0f, 1.0f});
-    //     allPointsCount += (highest * (entAmt+1));
-    //     entArray3D[i].count = highest;
-    // }
+    for (int i=0; i < projDataCount3D; i++) convertFileToMesh(projObjs3D[i], &objArray3D[i], projData3D[i][0], projData3D[i][1], 0, (Vector3f){1.0f, 1.0f, 1.0f});
+    for (int i=0; i < entDataCount3D; i++){
+        int highest = allocAnimModel(&entArray3D[i], entData3D[i].totalAnims, entData3D[i].animFrameCounts, entData3D[i].animNames, 0, 1, 1, (Vector3f){1.0f, 1.0f, 1.0f});
+        allPointsCount += ((highest * 2) * (entAmt+1));
+        entArray3D[i].count = highest;
+    }
 
     for (int i=0; i < entDataCount2D; i++) {
         allocAnimAtlas(&allTexArray2D[i], entData2D[i].totalAnims, entData2D[i].animFrameCounts, entData2D[i].animNames);
@@ -155,12 +155,39 @@ static int init() {
 }
 
 static void addPlayer() {
+    if (player.type < 0) return;
+    if (player.dimention == D_3D && player.type >= entDataCount3D) return;
+    if (player.dimention == D_2D && player.type >= entDataCount2D) return;
     movePlayerObj(&player, &cam, camType);
-    addBilboard(player.position, player.size, cam, 0);
 
-    // Vector3f nPos = {player.position.x, player.position.y + player.height, player.position.z};
-    // addObjToWorld2D(nPos, cam, 10, 10, -1, 0);
-    // addObjToWorld2D(player.position, cam, 0, 10, -1, 0);
+    if (player.currentAnim != player.lastAnim) {
+        player.frameCount = 0;
+        player.currentFrame = 0;
+    }
+
+    if (player.dimention == D_3D) {
+        AnimFrames* anims = entArray3D[player.type].anims[player.currentAnim];
+        int newFrame = anims->frames;
+
+        if (player.currentFrame >= newFrame) {
+            player.frameCount = 0;
+            player.currentFrame = 0;
+        }
+
+        Mesh_t model = anims->meshModel[player.currentFrame];
+        if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) { addObjToWorld3D(player.position, player.rotation, player.size, cam, 10.0f, model, false, -1, true); }
+    } else if (player.dimention == D_BB) {
+        addBilboard(player.position, player.size, cam, 0);
+    } else if (player.dimention == D_2D) {
+        addObjToWorld2D(player.position, cam, 10, 10, 0, 0);
+    }
+
+    player.lastAnim = player.currentAnim;
+    player.frameCount++;
+    if (player.frameCount > 4) {
+        player.currentFrame++;
+        player.frameCount = 0;
+    }
 }
 
 static void addEntities(int ents, int objs) {
@@ -211,11 +238,7 @@ static void addMap() {
         Vector3f rot = {0.0f, 0.0f, 0.0f};
         Vector3f size = {1.0f, 1.0f, 1.0f};
 
-        addObjToWorld3D(
-            pos, rot, size,
-            cam, 0.0f,
-            map, false, -1
-        );
+        addObjToWorld3D(pos, rot, size, cam, 0.0f, map, false, -1, false);
     }
 
     for (int w=0; w < waterAmt; w++) {

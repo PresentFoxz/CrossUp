@@ -262,9 +262,7 @@ void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, f
                 triOrder[allAmt].idx = allAmt;
                 triOrder[allAmt].dist = oDist - depthOffset;
                 allAmt++;
-            }
-
-            continue;
+            } continue;
         } else {
             int dx = cx - camPos.x;
             int dy = cy - camPos.y;

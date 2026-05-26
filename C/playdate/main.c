@@ -118,8 +118,8 @@ static int init() {
     allTexArray2D = pd_malloc( sizeof(textAnimsAtlas) * (entDataCount2D + projDataCount2D));
     allEnts = pd_malloc(sizeof(EntStruct) * MAX_ENTITIES);
 
-    cam = createCamera(0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
-    player = createEntity(33.8f, 10.0f, -7.8f, 0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f, 2.5f, 4.0f, 0.55f, 0.08f, 0, D_3D);
+    cam = createCamera(0.0f, 40.0f, -10.0f, 0.0f, 0.0f, 0.0f, 90.0f, 0.1f, 1000.0f);
+    player = createEntity(0.0f, 20.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 3.0f, 3.0f, 2.5f, 4.0f, 0.55f, 0.08f, 0, D_3D);
     addLightPoint((Vector3f){0.0f, 2.0f, -5.0f}, 50, 10.0f);
 
     // convertFileToMesh(mapObjs[mapIndex], &mapArray, mapData[mapIndex][0], mapData[mapIndex][1], 0, mapSize[mapIndex]);
@@ -221,7 +221,11 @@ static void addMap() {
         Mesh_t map = sector->map;
         if (map.triCount <= 0) continue;
 
-        Vector3f pos = sector->pos; Vector3f whd = sector->whd;
+        Vector3f pos = sector->pos;
+        Vector3f whd = sector->whd;
+
+        Vector3f rot = {0.0f, 0.0f, 0.0f};
+        Vector3f size = {1.0f, 1.0f, 1.0f};
 
         Vector2f dist = {
             (pos.x + whd.x * 0.5f) - cam.position.x,
@@ -234,9 +238,6 @@ static void addMap() {
         float maxDist = RENDER_DIST + chunkRadius;
 
         if (distSq >= maxDist) continue;
-
-        Vector3f rot = {0.0f, 0.0f, 0.0f};
-        Vector3f size = {1.0f, 1.0f, 1.0f};
 
         addObjToWorld3D(pos, rot, size, cam, 0.0f, map, false, -1, false);
     }

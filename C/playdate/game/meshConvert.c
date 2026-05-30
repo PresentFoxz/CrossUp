@@ -80,11 +80,6 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
     Vector3f* rawVerts = NULL;
     int vertCount = 0;
 
-    int (*tris)[3] = NULL;
-    int triCount = 0;
-
-    uint8_t* colorArr = NULL;
-
     char line[256];
     
     float minX = 1e30f, minY = 1e30f, minZ = 1e30f;
@@ -112,6 +107,8 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
     center.y = (minY + maxY) * 0.5f;
     center.z = (minZ + maxZ) * 0.5f;
 
+    pd_free(rawVerts);
+
     pd->file->close(fptr);
     fptr = pd->file->open(filename, kFileRead | kFileReadData);
     if (!fptr) {
@@ -121,15 +118,26 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
 
     vertCount = 0;
     Vector3f* verts = NULL;
+    uint16_t* colorAvg = NULL;
+
+    int (*tris)[3] = NULL;
+    int triCount = 0;
+
+    uint8_t* colorArr = NULL;
 
     while (pd_fgets(line, sizeof(line), fptr)) {
         if (strncmp(line, "v ", 2) == 0) {
             float x, y, z;
-            if (sscanf(line, "v %f %f %f", &x, &y, &z) == 3) {
+            float r, g, b;
+            if (sscanf(line, "v %f %f %f %f %f %f", &x, &y, &z, &r, &g, &b) >= 3) {
                 verts = pd_realloc(verts, sizeof(Vector3f) * (vertCount + 1));
+                colorAvg = pd_realloc(colorAvg, sizeof(uint16_t) * (vertCount + 1));
+
                 verts[vertCount].x = (x - center.x) * size.x;
                 verts[vertCount].y = (y - center.y) * size.y;
                 verts[vertCount].z = -(z - center.z) * size.z;
+
+                colorAvg[vertCount] = (uint16_t)(((r + g + b) / 3.0f) * 255.0f);
                 vertCount++;
             }
         }
@@ -148,29 +156,29 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
 
             if (idx == 3) {
                 tris = pd_realloc(tris, sizeof(int[3]) * (triCount + 1));
-                colorArr = pd_realloc(colorArr, sizeof(int) * (triCount + 1));
+                colorArr = pd_realloc(colorArr, sizeof(uint8_t) * (triCount + 1));
 
                 tris[triCount][0] = indices[0];
                 tris[triCount][1] = invert ? indices[2] : indices[1];
                 tris[triCount][2] = invert ? indices[1] : indices[2];
 
-                colorArr[triCount] = randomInt(25, 254);
+                colorArr[triCount] = (uint8_t)((colorAvg[indices[0]] + colorAvg[indices[1]] + colorAvg[indices[2]]) / 3);
                 triCount++;
             }
 
             else if (idx == 4) {
                 tris = pd_realloc(tris, sizeof(int[3]) * (triCount + 2));
-                colorArr = pd_realloc(colorArr, sizeof(int) * (triCount + 2));
+                colorArr = pd_realloc(colorArr, sizeof(uint8_t) * (triCount + 2));
 
                 tris[triCount][0] = indices[0];
                 tris[triCount][1] = invert ? indices[2] : indices[1];
                 tris[triCount][2] = invert ? indices[1] : indices[2];
-                colorArr[triCount] = randomInt(25, 254);
+                colorArr[triCount] = (uint8_t)((colorAvg[indices[0]] + colorAvg[indices[1]] + colorAvg[indices[2]]) / 3);
 
                 tris[triCount + 1][0] = indices[0];
                 tris[triCount + 1][1] = invert ? indices[3] : indices[2];
                 tris[triCount + 1][2] = invert ? indices[2] : indices[3];
-                colorArr[triCount + 1] = randomInt(25, 254);
+                colorArr[triCount + 1] = (uint8_t)((colorAvg[indices[0]] + colorAvg[indices[2]] + colorAvg[indices[3]]) / 3);
 
                 triCount += 2;
             }
@@ -184,7 +192,7 @@ void convertFileToMesh(const char* filename, Mesh_t* meshOut, int color, int inv
     meshOut->tris = tris;
     meshOut->triCount = triCount;
 
-    meshOut->color = pd_malloc(sizeof(int) * triCount);
+    meshOut->color = pd_malloc(sizeof(uint8_t) * triCount);
     meshOut->bfc   = pd_malloc(sizeof(int) * triCount);
     meshOut->normal = pd_malloc(sizeof(Vector3f) * triCount);
 
@@ -314,7 +322,8 @@ static void writeChunkData(Mesh_t* map, WorldChunks* chunk, WaterSlice** water, 
     initMesh(map);
     for (int sCount=0; sCount < chunk->sectorCount; sCount++) {
         Vector3f pos = chunk->chunkPos;
-        Vector3f whd = chunk->chunkWHD;
+        Vector3f min = chunk->chunkMin;
+        Vector3f max = chunk->chunkMax;
         SectorSlice* slice = &chunk->sectors[sCount];
 
         int count = slice->count;
@@ -344,12 +353,12 @@ static void writeChunkData(Mesh_t* map, WorldChunks* chunk, WaterSlice** water, 
             if (!*water) return;
 
             minX += pos.x; maxX += pos.x;
-            minZ -= pos.z; maxZ -= pos.z;
+            minZ += pos.z; maxZ += pos.z;
 
             (*water)[index] = (WaterSlice){
                 .y = yMin,
-                .min = (Vector2i){minX, -minZ},
-                .max = (Vector2i){maxX, -maxZ},
+                .min = (Vector2i){minX, minZ},
+                .max = (Vector2i){maxX, maxZ},
                 .lines = NULL,
                 .lineCount = 0
             };
@@ -400,8 +409,8 @@ static void writeChunkData(Mesh_t* map, WorldChunks* chunk, WaterSlice** water, 
 }
 
 static void readChunkData(SDFile* fptr, WorldChunks* chunk, EntStruct* player, Objects* allEnts) {
-    int xMin = 0, zMin = 0;
-    int xMax = 0, zMax = 0;
+    int xMin = INT_MAX, zMin = INT_MAX;
+    int xMax = INT_MIN, zMax = INT_MIN;
     int x0 = 0, z0 = 0;
     int x1 = 0, z1 = 0;
 
@@ -413,6 +422,9 @@ static void readChunkData(SDFile* fptr, WorldChunks* chunk, EntStruct* player, O
     int splitType = 0;
     int sVal = 0; int wVal = 0; int oVal = 0; int eVal = 0;
 
+    int x0Pos = 0, z0Pos = 0;
+    int x1Pos = 0, z1Pos = 0;
+
     SliceType type = SLICE_NONE;
     SectorSlice* sector = NULL;
     WallSlice* wall = NULL;
@@ -420,9 +432,13 @@ static void readChunkData(SDFile* fptr, WorldChunks* chunk, EntStruct* player, O
     char line[4096];
     while (pd_fgets(line, sizeof(line), fptr)) {
         if (strncmp(line, "chunk ", 6) == 0) {
-            sscanf(line + 6, "%d %d %d %d", &xMin, &zMin, &xMax, &zMax);
-            xMin *= 8; zMin *= 8;
-            xMax *= 8; zMax *= 8;
+            sscanf(line + 6, "%d %d %d %d", &x0Pos, &z0Pos, &x1Pos, &z1Pos);
+            
+            x0Pos *= 8; z0Pos *= 8;
+            x1Pos *= 8; z1Pos *= 8;
+
+            xMin = INT_MAX; zMin = INT_MAX;
+            xMax = INT_MIN; zMax = INT_MIN;
         } else if (strncmp(line, "i ", 2) == 0) {
             sscanf(line + 2, "%d %d %d %d", &sVal, &wVal, &oVal, &eVal);
             
@@ -456,6 +472,11 @@ static void readChunkData(SDFile* fptr, WorldChunks* chunk, EntStruct* player, O
 
             sector->points = pd_realloc(sector->points, sizeof(Vector2i) * (sector->count + 1));
             sector->points[sector->count++] = (Vector2i){ .x = x0, .z = z0 };
+
+            if (x0 < xMin) xMin = x0;
+            if (z0 < zMin) zMin = z0;
+            if (x0 > xMax) xMax = x0;
+            if (z0 > zMax) zMax = z0;
         } else if (strncmp(line, "w ", 2) == 0) {
             if (type != SLICE_WALL) {
                 wall = &chunk->walls[chunk->wallCount++];
@@ -475,6 +496,11 @@ static void readChunkData(SDFile* fptr, WorldChunks* chunk, EntStruct* player, O
 
             wall->points[0] = (Vector2i){ .x = x0, .z = z0 };
             wall->points[1] = (Vector2i){ .x = x1, .z = z1 };
+
+            if (x0 < xMin) xMin = x0;
+            if (z0 < zMin) zMin = z0;
+            if (x1 > xMax) xMax = x1;
+            if (z1 > zMax) zMax = z1;
         } else if (strncmp(line, "p ", 2) == 0) {
             sscanf(line + 2, "%d", &pVal);
 
@@ -507,8 +533,10 @@ static void readChunkData(SDFile* fptr, WorldChunks* chunk, EntStruct* player, O
 
             type = SLICE_NONE;
         } else if (strncmp(line, "ok", 2) == 0) {
-            chunk->chunkPos = (Vector3f){ .x = (float)xMin, .y = 0.0f, .z = (float)-zMin};
-            chunk->chunkWHD = (Vector3f){ .x = (float)(xMax - xMin), .y = (float)yMax_, .z = (float)(zMax - zMin)};
+            chunk->chunkPos = (Vector3f){ .x = (float)x0Pos, .y = 0.0f, .z = (float)-z0Pos};
+
+            chunk->chunkMin = (Vector3f){ .x = xMin + x0Pos, .y = yMin_, .z = -zMax - z0Pos};
+            chunk->chunkMax = (Vector3f){ .x = xMax + x0Pos, .y = yMax_, .z = -zMin - z0Pos};
             break;
         }
     }
@@ -516,29 +544,29 @@ static void readChunkData(SDFile* fptr, WorldChunks* chunk, EntStruct* player, O
     pd->system->logToConsole("Counts [ Sector: %d | Wall: %d | Entity: %d | Object: %d ]", chunk->sectorCount, chunk->wallCount, chunk->entityCount, chunk->objectCount);
     if (chunk->sectorCount <= 0 && chunk->wallCount <= 0 && chunk->entityCount <= 0 && chunk->objectCount <= 0) return;
 
-    pd->system->logToConsole("Sectors");
-    for (int i=0; i < chunk->sectorCount; i++) {
-        sector = &chunk->sectors[i];
-        Vector2i* p = sector->points;
+    // pd->system->logToConsole("Sectors");
+    // for (int i=0; i < chunk->sectorCount; i++) {
+    //     sector = &chunk->sectors[i];
+    //     Vector2i* p = sector->points;
 
-        for (int c=0; c < sector->count; c++) { pd->system->logToConsole("Memory - Sector = [ X: %d | Z: %d ]", p[c].x, p[c].z); }
-        pd->system->logToConsole("Memory - count: %d", sector->count);
-        pd->system->logToConsole("Memory - Pallete: %d", sector->pallete);
-        pd->system->logToConsole("Memory - yMin: %d | yMax: %d", sector->y[0], sector->y[1]);
-        pd->system->logToConsole("Memory - Nomral: %d", sector->normal);
-        if (sector->type == 1) pd->system->logToConsole("Water Sector!");
-    }
+    //     for (int c=0; c < sector->count; c++) { pd->system->logToConsole("Memory - Sector = [ X: %d | Z: %d ]", p[c].x, p[c].z); }
+    //     pd->system->logToConsole("Memory - count: %d", sector->count);
+    //     pd->system->logToConsole("Memory - Pallete: %d", sector->pallete);
+    //     pd->system->logToConsole("Memory - yMin: %d | yMax: %d", sector->y[0], sector->y[1]);
+    //     pd->system->logToConsole("Memory - Nomral: %d", sector->normal);
+    //     if (sector->type == 1) pd->system->logToConsole("Water Sector!");
+    // }
 
-    pd->system->logToConsole("\nWalls");
-    for (int i=0; i < chunk->wallCount; i++) {
-        wall = &chunk->walls[i];
-        Vector2i p[2] = {wall->points[0], wall->points[1]};
+    // pd->system->logToConsole("\nWalls");
+    // for (int i=0; i < chunk->wallCount; i++) {
+    //     wall = &chunk->walls[i];
+    //     Vector2i p[2] = {wall->points[0], wall->points[1]};
 
-        pd->system->logToConsole("Memory - Wall = [ x0: %d | z0: %d | x1: %d | z1: %d ]", p[0].x, p[0].z, p[1].x, p[1].z);
-        pd->system->logToConsole("Memory - Pallete: %d", wall->pallete);
-        pd->system->logToConsole("Memory - yMin: %d | yMax: %d", wall->y[0], wall->y[1]);
-        pd->system->logToConsole("Memory - Nomral: %d", wall->normal);
-    }
+    //     pd->system->logToConsole("Memory - Wall = [ x0: %d | z0: %d | x1: %d | z1: %d ]", p[0].x, p[0].z, p[1].x, p[1].z);
+    //     pd->system->logToConsole("Memory - Pallete: %d", wall->pallete);
+    //     pd->system->logToConsole("Memory - yMin: %d | yMax: %d", wall->y[0], wall->y[1]);
+    //     pd->system->logToConsole("Memory - Nomral: %d", wall->normal);
+    // }
 }
 
 static int readChunkCount(SDFile* fptr) {
@@ -574,7 +602,8 @@ Mesh_Chunks* readMapData(const char* filename, int* outSectorAmt, WaterSlice** w
 
         memset(&chunks[i].map, 0, sizeof(Mesh_t));
         chunks[i].pos = points->chunkPos;
-        chunks[i].whd = points->chunkWHD;
+        chunks[i].min = points->chunkMin;
+        chunks[i].max = points->chunkMax;
         writeChunkData(&chunks[i].map, points, water, waterAmt);
     }
     

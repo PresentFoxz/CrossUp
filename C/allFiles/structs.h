@@ -204,7 +204,8 @@ typedef struct {
     int entityCount;
 
     Vector3f chunkPos;
-    Vector3f chunkWHD;
+    Vector3f chunkMin;
+    Vector3f chunkMax;
 } WorldChunks;
 
 #endif

@@ -175,7 +175,9 @@ static void addPlayer() {
         }
 
         Mesh_t model = anims->meshModel[player.currentFrame];
-        if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) { addObjToWorld3D(player.position, player.rotation, player.size, cam, 10.0f, model, false, -1, true); }
+        if (model.verts != NULL && model.triCount > 0 && model.bfc != NULL) {
+            addObjToWorld3D(player.position, player.rotation, player.size, cam, 10.0f, model, false, -1, true, false);
+        }
     } else if (player.dimention == D_BB) {
         addBilboard(player.position, player.size, cam, 0);
     } else if (player.dimention == D_2D) {
@@ -214,6 +216,8 @@ static void addEntities(int ents, int objs) {
 #define RENDER_DIST 150758.0f
 #define RENDER_DIST_WATER 75379.0f
 static void addMap() {
+    Vector3f cPos = cam.position;
+
     float renderDist = cam.farPlane * 0.8f;
     for (int i=0; i < sectorAmt; i++) {
         Mesh_Chunks* sector = &sectorMesh[i];
@@ -221,25 +225,40 @@ static void addMap() {
         Mesh_t map = sector->map;
         if (map.triCount <= 0) continue;
 
-        Vector3f pos = sector->pos;
-        Vector3f whd = sector->whd;
+        Vector3f pos  = sector->pos;
+        Vector3f rot  = {0, 0, 0};
+        Vector3f size = {1, 1, 1};
 
-        Vector3f rot = {0.0f, 0.0f, 0.0f};
-        Vector3f size = {1.0f, 1.0f, 1.0f};
+        Vector3f min = sector->min;
+        Vector3f max = sector->max;
 
-        Vector2f dist = {
-            (pos.x + whd.x * 0.5f) - cam.position.x,
-            (pos.z + whd.z * 0.5f) - cam.position.z
-        }; float distSq = dist.x*dist.x + dist.z*dist.z;
-        Vector2f halfWD = {
-            (whd.x * 0.5f),
-            (whd.z * 0.5f)
-        }; float chunkRadius = halfWD.x*halfWD.x + halfWD.z*halfWD.z;
-        float maxDist = RENDER_DIST + chunkRadius;
+        if ((cPos.x > min.x && cPos.x < max.x) && (cPos.z > min.z && cPos.z < max.z)) {
+            addObjToWorld3D(pos, rot, size, cam, 0.0f, map, false, -1, false, false);
+            continue;
+        }
 
-        if (distSq >= maxDist) continue;
+        Vector2f clamp = {cam.position.x, cam.position.z};
+        if (clamp.x < min.x) clamp.x = min.x;
+        if (clamp.z < min.z) clamp.z = min.z;
+        if (clamp.x > max.x) clamp.x = max.x;
+        if (clamp.z > max.z) clamp.z = max.z;
 
-        addObjToWorld3D(pos, rot, size, cam, 0.0f, map, false, -1, false);
+        int dx = cPos.x - clamp.x;
+        int dz = cPos.z - clamp.z;
+        int dist = dx*dx + dz*dz;
+        if (dist > renderDist * renderDist) continue;
+
+        addObjToWorld3D(pos, rot, size, cam, 0.0f, map, false, -1, false, false);
+
+        // Vector3f positions[4] = {
+        //     {sector->min.x, -50, sector->min.z},
+        //     {sector->max.x, -50, sector->max.z},
+        //     {sector->min.x, -50, sector->max.z},
+        //     {sector->max.x, -50, sector->min.z}
+        // };
+
+        // Vector3f rotDeg = {0, 0, 0};
+        // for (int p=0; p < 4; p++) { addLineTo3D(positions[p], rotDeg, 100, cam, true, 100); }
     }
 
     for (int w=0; w < waterAmt; w++) {
@@ -250,8 +269,8 @@ static void addMap() {
         Vector2i whd = waterSlice[w].max;
 
         Vector2f dist = {
-            (pos.x + whd.x * 0.5f) - cam.position.x,
-            (pos.z + whd.z * 0.5f) - cam.position.z
+            (pos.x + whd.x * 0.5f) - cPos.x,
+            (pos.z + whd.z * 0.5f) - cPos.z
         }; float distSq = dist.x*dist.x + dist.z*dist.z;
         Vector2f halfWD = {
             (whd.x * 0.5f),
@@ -314,9 +333,14 @@ static int update(void* userdata) {
         precomputedFunctions(&cam);
         gameRender();
         blitToScreen();
+
+        char msg[128];
+        sprintf(msg, "Cam: %d | %d | %d", (int)(cam.position.x), (int)(cam.position.y), (int)(cam.position.z));
+        pd->graphics->fillRect(0, 0, 300, 20, kColorBlack);
+        pd->graphics->drawText(msg, sizeof(msg), kASCIIEncoding, 2, 2);
     }
-    pd->graphics->fillRect(0, 0, 20, 20, kColorWhite);
-    pd->system->drawFPS(2, 2);
+    pd->graphics->fillRect(0, 220, 20, 20, kColorWhite);
+    pd->system->drawFPS(2, 222);
 
     return 1;
 }

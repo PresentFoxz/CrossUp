@@ -155,7 +155,7 @@ static void renderStart(Camera_t usedCam, textAnimsAtlas* allObjArray2D) {
     }
 }
 
-void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float depthOffset, Mesh_t model, bool lightUse, int textureID, bool outline) {
+void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, float depthOffset, Mesh_t model, bool lightUse, int textureID, bool outline, bool front) {
     if (allAmt >= allPointsCount) return;
 
     bool triFacing = false;
@@ -260,7 +260,7 @@ void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, f
                 oTris->uvUse      = false;
 
                 triOrder[allAmt].idx = allAmt;
-                triOrder[allAmt].dist = oDist - depthOffset;
+                triOrder[allAmt].dist = front ? 0 : oDist - depthOffset;
                 allAmt++;
             } continue;
         } else {
@@ -291,7 +291,7 @@ void addObjToWorld3D(Vector3f pos, Vector3f rot, Vector3f size, Camera_t cCam, f
             }
 
             triOrder[allAmt].idx = allAmt;
-            triOrder[allAmt].dist = dist - depthOffset;
+            triOrder[allAmt].dist = front ? 0 : dist - depthOffset;
 
             allAmt++;
         }
@@ -386,19 +386,46 @@ void addWaveToWorld3D(LineSlice* line, Vector2i boundMin, Vector2i boundMax, Cam
     Vector3f rot  = {0.0f, 0.0f, 0.0f};
     Vector3f size = {0.5f, 0.2f, 0.5f};
 
-    addObjToWorld3D(pos, rot, size, cCam, 50.0f, waves, false, -1, false);
+    addObjToWorld3D(pos, rot, size, cCam, 50.0f, waves, false, -1, false, false);
+}
+
+void addLineTo3D(Vector3f pos, Vector3f rot, int length, Camera_t cCam, bool front, uint8_t color) {
+    Mesh_t line = {0};
+
+    Vector3f v0 = {-0.5f, 0, -0.5f};
+    Vector3f v1 = {0.5f, 0, -0.5f};
+    Vector3f v2 = {0.5f, 2, -0.5f};
+    Vector3f v3 = {-0.5f, 2, -0.5f};
+
+    Vector2f uvTri1[3] = {
+        {1.0f, 1.0f},
+        {0.0f, 0.0f},
+        {0.0f, 1.0f}
+    };
+
+    Vector2f uvTri2[3] = {
+        {1.0f, 1.0f},
+        {1.0f, 0.0f},
+        {0.0f, 0.0f}
+    };
+
+    pushTri(&line, v0.x, v0.y, v0.z, v2.x, v2.y, v2.z, v1.x, v1.y, v1.z, uvTri1, 0, 15);
+    pushTri(&line, v0.x, v0.y, v0.z, v3.x, v3.y, v3.z, v2.x, v2.y, v2.z, uvTri2, 0, 25);
+
+    line.color[0] = color;
+    line.color[1] = color;
+
+    float dx = cCam.position.x - pos.x;
+    float dz = cCam.position.z - pos.z;
+
+    float facingCamAngle = atan2f(dx, dz);
+    Vector3f size = {0.5f, length, 0.5f};
+
+    addObjToWorld3D(pos, rot, size, cCam, 0, line, false, -1, false, front);
 }
 
 void addBilboard(Vector3f pos, Vector3f size, Camera_t cCam, int textureID) {
     Mesh_t bilboard = {0};
-
-    float yaw = cCam.rotation.y + M_PI;
-
-    float s = sinf(yaw);
-    float c = cosf(yaw);
-
-    float hw = size.x * 0.5f;
-    float hh = size.y * 0.5f;
 
     Vector3f v0 = {-0.5f, 0, -0.5f};
     Vector3f v1 = {0.5f, 0, -0.5f};
@@ -426,7 +453,7 @@ void addBilboard(Vector3f pos, Vector3f size, Camera_t cCam, int textureID) {
     float facingCamAngle = atan2f(dx, dz);
     Vector3f rot = {0, facingCamAngle, 0};
 
-    addObjToWorld3D(pos, rot, size, cCam, 50.0f, bilboard, false, textureID, false);
+    addObjToWorld3D(pos, rot, size, cCam, 50.0f, bilboard, false, textureID, false, false);
 }
 
 void addObjToWorld2D(Vector3f pos, Camera_t cCam, float objDepthOffset, float sprtDepthOffset, int anim, int animFrame) {

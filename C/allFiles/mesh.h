@@ -49,7 +49,8 @@ typedef struct {
 typedef struct {
     Mesh_t map;
     Vector3f pos;
-    Vector3f whd;
+    Vector3f min;
+    Vector3f max;
 } Mesh_Chunks;
 
 typedef struct {
